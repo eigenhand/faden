@@ -76,9 +76,54 @@ enum EH {
     static var mono: Font      { Font.eh(13.5, .footnote, monospaced: true) }
     static var title: Font     { Font.eh(26, .title) }
 
+    // Das obere Ende der Skala. Es fehlte.
+    //
+    // Ausgezählt kamen 87 % aller 128 Schriftaufrufe dieser App aus dem Bereich
+    // 8–12 pt: 12 pt neunundfünfzigmal, 11 pt neunzehnmal, 10 pt vierzehnmal. Der
+    // Fließtext zweimal, der Titel einmal. Die Vorlage lebt vom Gegenteil — eine
+    // große gezeichnete Marke gegen ein 10-pt-Wort, Verhältnis etwa 8:1. Übernommen
+    // war die Zurückhaltung, nicht der Kontrast.
+    //
+    // Die Antwort ist der Grund, warum es die App gibt, und stand mit 16 pt gegen
+    // ihre eigenen Metadaten mit 12 — Verhältnis 1,33. Mit 17 gegen 11 sind es 1,55,
+    // und weil die Frage als Überschrift 20 pt trägt, spannt der Zug 20 → 17 → 11.
+
+    /// Die Antwort selbst, eine Stufe über der Oberfläche ringsum.
+    static var answer: Font    { Font.eh(17, .body) }
+    /// Eine Frage, gesetzt als Überschrift ihres Zuges.
+    static var question: Font  { Font.eh(20, .title3, weight: .semibold) }
+    /// Beiwerk: Quellenzeile, Hosts, Zeitangaben.
+    static var meta: Font      { Font.eh(11, .caption) }
+
+    /// Durchschuss für Prosa.
+    ///
+    /// `lineSpacing` ist der *zusätzliche* Abstand zwischen Zeilen, nicht die
+    /// Zeilenhöhe. Fünf Punkt auf 17 pt Schrift ergeben etwa das 1,45-fache —
+    /// der Bereich, in dem Lesetypografie langen Text ansetzt. In der ganzen App
+    /// stand vorher nirgends ein `lineSpacing`; jede Antwort lief mit dem
+    /// Standarddurchschuss von Bedienoberflächen.
+    static let prose: CGFloat = 5
+
     // MARK: Metrics
+    // Zwei Radien, und jeder hat eine Aufgabe. Vorher trugen 47 von 57 Behältern
+    // denselben — alles war dieselbe Schachtel, also war nichts wichtig.
+    /// Was man anfasst: Eingabefeld, Schaltflächen, Blätter.
     static let radius: CGFloat = 14
+    /// Was man liest: Karten, Codeblöcke, Bilder.
     static let radiusSmall: CGFloat = 10
+
+    /// Höhe der Eingabezeile bei einer Textzeile: 21 pt Zeile plus zweimal 13.
+    static let composerHeight: CGFloat = 47
+    /// Die Eingabezeile, bei einer Zeile genau halbrund.
+    ///
+    /// Sie steht zwischen vier Kreisen. Ein Rechteck mit 14 pt Radius bildet mit
+    /// denen keine Familie — und als das Feld von 41 auf 47 pt wuchs, fiel das
+    /// Verhältnis Radius zu Höhe von 0,34 auf 0,30, also wurde es optisch kastiger,
+    /// ohne dass sich der Radius geändert hatte. Die Hälfte der Höhe macht bei einer
+    /// Zeile eine Kapsel und bleibt bei sechs Zeilen ein großzügig gerundetes Feld,
+    /// statt zum stehenden Stadion zu werden. Als Rechnung geschrieben, weil die
+    /// Höhe der Grund für den Wert ist.
+    static var radiusField: CGFloat { composerHeight / 2 }
     static let gutter: CGFloat = 18
     static let hairWidth: CGFloat = 1 / 3   // true hairline on @3x
 }
@@ -177,6 +222,12 @@ struct BrandRule: View {
 }
 
 /// Faint brand watermark, mirroring the site's 3 % mark in the lower right.
+///
+/// Gemessen lag sie vorher zwischen 42 % und 81 % der Bildschirmhöhe in der rechten
+/// Hälfte — mitten hinter der Textspalte. Bei 3 % Deckkraft stört das keinen
+/// Buchstaben, aber im leeren Zustand, wo nichts mit ihr konkurriert, las sie sich
+/// als Fleck statt als Absicht. Jetzt läuft sie aus der unteren rechten Ecke heraus:
+/// dieselbe Marke, dieselben 3 %, nur als Anschnitt, wie auf der Seite.
 struct BrandWatermark: View {
     var body: some View {
         GeometryReader { geo in
@@ -184,10 +235,10 @@ struct BrandWatermark: View {
                 .resizable()
                 .renderingMode(.template)
                 .aspectRatio(contentMode: .fit)
-                .frame(width: geo.size.width * 0.85)
+                .frame(width: geo.size.width * 0.72)
                 .foregroundStyle(EH.navy)
                 .opacity(0.03)
-                .offset(x: geo.size.width * 0.34, y: geo.size.height * 0.42)
+                .offset(x: geo.size.width * 0.52, y: geo.size.height * 0.66)
         }
         .allowsHitTesting(false)
         .ignoresSafeArea()

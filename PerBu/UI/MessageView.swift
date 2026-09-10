@@ -55,7 +55,7 @@ struct MessageView: View {
         if message.isCompactionSummary {
             CompactionMarker(message: message)
         } else if message.role == .user {
-            UserBubble(message: message, onEdit: { onEdit(message) })
+            QuestionHeading(message: message, onEdit: { onEdit(message) })
         } else {
             AssistantTurn(message: message, showThinking: showThinking,
                           isLast: isLastAssistant, failedToolIDs: failedToolIDs,
@@ -65,7 +65,14 @@ struct MessageView: View {
     }
 }
 
-private struct UserBubble: View {
+/// Die Frage, gesetzt als Überschrift ihres Zuges.
+///
+/// Vorher eine rechtsbündige Karte mit Rahmen. Zwei Dinge sprachen dagegen: die
+/// Frage stand in derselben Größe wie ihre eigene Antwort, und die Antwort — der
+/// Grund für die App — hatte als Einzige keinen Behälter, sah also aus wie das,
+/// was übrig blieb. Größe und Gewicht ordnen das ohne Rahmen, und der Zug liest
+/// sich als Dokument: Überschrift, dann Text.
+private struct QuestionHeading: View {
     let message: Message
     var onEdit: () -> Void = {}
 
@@ -82,8 +89,7 @@ private struct UserBubble: View {
 
     var body: some View {
         HStack {
-            Spacer(minLength: 44)
-            VStack(alignment: .trailing, spacing: 8) {
+            VStack(alignment: .leading, spacing: 10) {
                 if !images.isEmpty {
                     HStack(spacing: 6) {
                         ForEach(Array(images.enumerated()), id: \.offset) { _, img in
@@ -103,17 +109,11 @@ private struct UserBubble: View {
                 }
                 if !text.isEmpty {
                     Text(text)
-                        .font(EH.body)
+                        .font(EH.question)
                         .foregroundStyle(EH.navy)
                         .textSelection(.enabled)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
-                        .background(
-                            RoundedRectangle(cornerRadius: EH.radius, style: .continuous)
-                                .fill(EH.surface))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: EH.radius, style: .continuous)
-                                .stroke(EH.hair, lineWidth: EH.hairWidth))
+                        .fixedSize(horizontal: false, vertical: true)
+                        .contentShape(Rectangle())
                         // Editing a misunderstood question beats asking again further
                         // down, where the misunderstanding keeps steering the thread.
                         .contextMenu {
@@ -128,6 +128,7 @@ private struct UserBubble: View {
                         }
                 }
             }
+            Spacer(minLength: 0)
         }
     }
 }
@@ -175,8 +176,13 @@ private struct AssistantTurn: View {
             ToolTrace(steps: work.steps, thinking: work.thinking, showThinking: showThinking)
             if !text.isEmpty {
                 MarkdownText(raw: text, onQuote: onQuote)
-                    .font(EH.body)
-                    .foregroundStyle(EH.navy)
+                    .font(EH.answer)
+                    // Die Palette weist Navy den Überschriften und Slate dem
+                    // Fließtext zu — die Antwort stand trotzdem in Navy, also in der
+                    // Überschriftenfarbe. Slate misst 5,88:1 auf dem Grund, trägt AA
+                    // mit Abstand und lässt der Frage die dunklere Stufe.
+                    .foregroundStyle(EH.slate)
+                    .lineSpacing(EH.prose)
                     .textSelection(.enabled)
 
                 SourcesRow(sources: sources)

@@ -153,12 +153,14 @@ struct SourcesRow: View {
                     if reduceMotion { reveal = next }
                     else { withAnimation(.easeOut(duration: 0.18)) { reveal = next } }
                 } label: {
-                    HStack(spacing: 7) {
-                        Image(systemName: "link")
-                            .font(.eh(10, .caption2))
-                        Text(sources.count == 1 ? "1 Quelle" : "\(sources.count) Quellen")
-                            .font(.eh(11, .caption, weight: .medium))
-                            .tracking(0.6)
+                    // Das weit gesperrte Kleinversal ist die einzige Signatur der
+                    // Vorlage — und stand bis hierher nur in Formularen, im
+                    // Hauptbildschirm überhaupt nicht. Hier trägt es Struktur:
+                    // gesperrtes Wort, Zahl, Pfeil.
+                    HStack(spacing: 9) {
+                        EH.label(sources.count == 1 ? "Quelle" : "Quellen")
+                        Text("\(sources.count)")
+                            .font(.eh(10, .caption2, weight: .medium))
                         Image(systemName: "chevron.right")
                             .font(.eh(8, .caption2, weight: .semibold))
                             .rotationEffect(.degrees(reveal == .all ? 90 : 0))

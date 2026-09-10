@@ -121,6 +121,10 @@ struct MarkdownText: View {
                                 .font(EH.mono)
                                 .foregroundStyle(EH.navy)
                                 .textSelection(.enabled)
+                                // Prosa-Durchschuss gilt für Prosa. Code hat seine
+                                // eigene Zeilenlogik, und fünf Punkt dazwischen
+                                // zerreißen einen Block, den man als Form liest.
+                                .lineSpacing(1)
                                 .padding(.vertical, 2)
                         }
                     }

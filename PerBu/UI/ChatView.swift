@@ -61,7 +61,11 @@ struct ChatView: View {
             ScrollViewReader { proxy in
               GeometryReader { outer in
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 22) {
+                    // Zehn Punkt innerhalb eines Zuges, vierundzwanzig zusätzlich
+                    // davor — siehe unten. Vorher standen überall 22: eine Frage war
+                    // von ihrer eigenen Antwort genauso weit weg wie vom vorigen
+                    // Gespräch, und damit gab es keine Gruppen, nur eine Liste.
+                    LazyVStack(alignment: .leading, spacing: 10) {
                         // Waits for the store: showing "not set up yet" for one
                         // frame and replacing it is worse than showing nothing.
                         if model.isLoaded, model.messages.isEmpty, !model.isStreaming {
@@ -117,6 +121,10 @@ struct ChatView: View {
                                     inputFocused = true
                                 })
                                 .id(message.id)
+                                // Eine Frage beginnt einen Zug, also bekommt sie den
+                                // großen Abstand — außer der ersten, die keinen
+                                // vorigen Zug abzugrenzen hat.
+                                .padding(.top, message.role == .user && index > 0 ? 24 : 0)
                           }
                         }
 
@@ -608,11 +616,14 @@ struct ChatView: View {
                 // App war das einzige unter Apples Mindestmaß von 44, während jeder
                 // Kreis daneben es erfüllte.
                 .padding(.vertical, 13)
+                // `.circular`, nicht `.continuous`: bei Radius gleich halber Höhe
+                // flacht Apples Squircle die Enden merklich ab, und daneben stehen
+                // vier echte Kreise. Überall sonst in der App bleibt `.continuous`.
                 .background(
-                    RoundedRectangle(cornerRadius: EH.radius, style: .continuous)
+                    RoundedRectangle(cornerRadius: EH.radiusField, style: .circular)
                         .fill(EH.surface))
                 .overlay(
-                    RoundedRectangle(cornerRadius: EH.radius, style: .continuous)
+                    RoundedRectangle(cornerRadius: EH.radiusField, style: .circular)
                         .stroke(inputFocused ? EH.slate : EH.hairStrong,
                                 lineWidth: inputFocused ? 1.5 : EH.hairWidth))
                 .animation(.easeOut(duration: 0.15), value: inputFocused)

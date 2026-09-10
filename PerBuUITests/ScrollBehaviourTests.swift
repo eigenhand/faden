@@ -77,10 +77,7 @@ final class ScrollBehaviourTests: XCTestCase {
         for label in ["Verlauf", "Neue Unterhaltung", "Einstellungen"] {
             let button = app.buttons[label]
             XCTAssertTrue(button.exists, "\(label) fehlt")
-            XCTAssertGreaterThanOrEqual(button.frame.height, 44,
-                                        "\(label) ist nur \(button.frame.height) pt hoch")
-            XCTAssertGreaterThanOrEqual(button.frame.width, 44,
-                                        "\(label) ist nur \(button.frame.width) pt breit")
+            assertTarget(button, label)
         }
     }
 
@@ -88,8 +85,27 @@ final class ScrollBehaviourTests: XCTestCase {
     func testComposerTargetsAreLargeEnough() throws {
         let send = app.buttons["Senden"]
         XCTAssertTrue(send.exists)
-        XCTAssertGreaterThanOrEqual(send.frame.height, 44, "Senden ist zu klein")
-        XCTAssertGreaterThanOrEqual(send.frame.width, 44, "Senden ist zu schmal")
+        assertTarget(send, "Senden")
+    }
+
+    /// Ein 44-pt-Ziel, mit einem halben Punkt Nachsicht.
+    ///
+    /// Die Prüfung stand vorher auf `>= 44` und fiel bei **43,99999999999994** durch —
+    /// sechs Zehnbillionstel Punkt zu klein. Der Knopf hatte sich nicht geändert, nur
+    /// seine Position, und damit die Rundung der aufsummierten Layout-Arithmetik. Eine
+    /// Behauptung, die auf ein Bit hinter dem fünfzehnten Nachkommastellen reagiert,
+    /// prüft nicht die Trefffläche, sondern die Fließkommadarstellung. Ein halber Punkt
+    /// ist ein Drittel eines Gerätepixels bei @3x — unter jeder Schwelle, die ein
+    /// Daumen bemerkt, und weit über dem Rauschen.
+    private func assertTarget(_ element: XCUIElement, _ name: String,
+                              file: StaticString = #filePath, line: UInt = #line) {
+        let f = element.frame
+        XCTAssertGreaterThanOrEqual(f.height, 43.5,
+                                    "\(name) ist nur \(f.height) pt hoch",
+                                    file: file, line: line)
+        XCTAssertGreaterThanOrEqual(f.width, 43.5,
+                                    "\(name) ist nur \(f.width) pt breit",
+                                    file: file, line: line)
     }
 
     /// The trace must stay folded until it is asked for — with the one exception of
