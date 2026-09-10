@@ -1,0 +1,251 @@
+import Foundation
+
+// MARK: - LLM
+
+enum LLMWireFormat: String, Codable, CaseIterable, Identifiable {
+    case anthropic
+    case openai
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .anthropic: return "Anthropic Messages"
+        case .openai:    return "OpenAI-kompatibel"
+        }
+    }
+    var hint: String {
+        switch self {
+        case .anthropic: return "Anthropic API und alles, was /v1/messages spricht."
+        case .openai:    return "OpenAI, Groq, Together, OpenRouter, Mistral, Ollama, vLLM, LM Studio …"
+        }
+    }
+}
+
+/// Everything the app needs to talk to a model. No defaults are shipped: the endpoint,
+/// the key and the model id all come from the user.
+struct LLMConfig: Codable, Equatable, Identifiable {
+    var id: UUID = UUID()
+    var name: String = "Mein Modell"
+    var wireFormat: LLMWireFormat = .anthropic
+    /// Base URL without the path, e.g. https://api.anthropic.com
+    var baseURL: String = ""
+    /// Path appended to the base URL. Pre-filled per wire format, editable.
+    var path: String = "/v1/messages"
+    var model: String = ""
+    /// Nominal context window in tokens. Drives the bar and the compaction trigger.
+    var contextWindow: Int = 200_000
+    /// Largest prompt this endpoint has actually accepted. Some providers publish no
+    /// limits at all, so the app remembers what demonstrably worked and uses it as a
+    /// floor when suggesting a window.
+    var observedMaxPromptTokens: Int = 0
+    /// Ceiling the endpoint itself reported, when it did.
+    var reportedContextLimit: Int?
+    var reportedOutputLimit: Int?
+    var maxOutputTokens: Int = 4096
+    var temperature: Double = 1.0
+    /// Extra headers, e.g. `HTTP-Referer` for OpenRouter.
+    var extraHeaders: [String: String] = [:]
+    /// Whether this model accepts images. Off by default: there is no reliable way
+    /// to ask an arbitrary endpoint, and sending an image to a text-only model is a
+    /// hard error rather than a graceful degradation.
+    var supportsVision: Bool = false
+    /// Anthropic only: ask for adaptive thinking and stream a summary of it.
+    var requestThinking: Bool = false
+    /// Anthropic only: mark the system prompt cacheable. Harmless on the first-party
+    /// API, but some compatible endpoints reject the field.
+    var useCacheControl: Bool = true
+    /// Keychain reference; the key itself never lives in UserDefaults.
+    var keychainAccount: String = UUID().uuidString
+
+    /// Decoded field by field so that adding a property does not invalidate every
+    /// stored settings file. Swift's synthesised decoder ignores default values and
+    /// throws on a missing key, which silently reset the user's whole configuration.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let d = LLMConfig()
+        id                    = try c.decodeIfPresent(UUID.self, forKey: .id) ?? d.id
+        name                  = try c.decodeIfPresent(String.self, forKey: .name) ?? d.name
+        wireFormat            = try c.decodeIfPresent(LLMWireFormat.self, forKey: .wireFormat) ?? d.wireFormat
+        baseURL               = try c.decodeIfPresent(String.self, forKey: .baseURL) ?? d.baseURL
+        path                  = try c.decodeIfPresent(String.self, forKey: .path) ?? d.path
+        model                 = try c.decodeIfPresent(String.self, forKey: .model) ?? d.model
+        contextWindow         = try c.decodeIfPresent(Int.self, forKey: .contextWindow) ?? d.contextWindow
+        observedMaxPromptTokens = try c.decodeIfPresent(Int.self, forKey: .observedMaxPromptTokens) ?? 0
+        reportedContextLimit  = try c.decodeIfPresent(Int.self, forKey: .reportedContextLimit)
+        reportedOutputLimit   = try c.decodeIfPresent(Int.self, forKey: .reportedOutputLimit)
+        maxOutputTokens       = try c.decodeIfPresent(Int.self, forKey: .maxOutputTokens) ?? d.maxOutputTokens
+        temperature           = try c.decodeIfPresent(Double.self, forKey: .temperature) ?? d.temperature
+        extraHeaders          = try c.decodeIfPresent([String: String].self, forKey: .extraHeaders) ?? [:]
+        supportsVision        = try c.decodeIfPresent(Bool.self, forKey: .supportsVision) ?? false
+        requestThinking       = try c.decodeIfPresent(Bool.self, forKey: .requestThinking) ?? false
+        useCacheControl       = try c.decodeIfPresent(Bool.self, forKey: .useCacheControl) ?? true
+        keychainAccount       = try c.decodeIfPresent(String.self, forKey: .keychainAccount) ?? d.keychainAccount
+    }
+
+    init() {}
+
+    var endpointURL: URL? {
+        let base = baseURL.trimmingCharacters(in: .whitespaces)
+            .trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        guard !base.isEmpty else { return nil }
+        return URL(string: base + path)
+    }
+
+    var isComplete: Bool { endpointURL != nil && !model.trimmingCharacters(in: .whitespaces).isEmpty }
+
+    static func defaultPath(for format: LLMWireFormat) -> String {
+        switch format {
+        case .anthropic: return "/v1/messages"
+        case .openai:    return "/v1/chat/completions"
+        }
+    }
+}
+
+// MARK: - Search
+
+enum HTTPMethodKind: String, Codable, CaseIterable, Identifiable {
+    case get = "GET", post = "POST"
+    var id: String { rawValue }
+}
+
+enum AuthStyle: Codable, Equatable, Hashable {
+    /// e.g. header "X-Subscription-Token" with template "{{key}}", or "Authorization" with "Bearer {{key}}"
+    case header(name: String, valueTemplate: String)
+    case queryParam(name: String)
+    case none
+
+    var describe: String {
+        switch self {
+        case .header(let n, let v): return "Header \(n): \(v)"
+        case .queryParam(let n):    return "Query ?\(n)="
+        case .none:                 return "ohne"
+        }
+    }
+}
+
+/// A declarative description of *how to call a search API and how to read its answer*.
+///
+/// This is the artefact the auto-configuration produces. It is plain data, so it is
+/// synthesised once by a model, stored on the phone, and from then on executed entirely
+/// locally by `RecipeEngine` — no model call is involved in a normal search.
+struct SearchRecipe: Codable, Equatable, Identifiable {
+    var id: UUID = UUID()
+    var name: String = "Eigener Anbieter"
+
+    // ---- Request shape
+    var method: HTTPMethodKind = .get
+    /// Full URL, may contain `{{query}}`.
+    var url: String = ""
+    /// For GET: the parameter carrying the query, e.g. `q`.
+    var queryParamName: String? = "q"
+    /// Static query items, e.g. `count=5`, `search_lang=de`.
+    var staticQueryItems: [String: String] = [:]
+    var authStyle: AuthStyle = .none
+    var headers: [String: String] = ["Accept": "application/json"]
+    /// For POST: a JSON body template with `{{query}}`, `{{key}}`, `{{count}}` placeholders.
+    var bodyTemplate: String?
+
+    // ---- Response shape
+    /// Dotted path to the array of results, e.g. `web.results`, `data`, `organic`.
+    var resultsPath: String = ""
+    /// Dotted paths *inside* one result item.
+    var titleKey: String = "title"
+    var urlKey: String = "url"
+    var snippetKey: String = "description"
+    var dateKey: String?
+    /// Optional path to a provider-written answer/summary shown before the results.
+    var answerPath: String?
+    /// Path *inside a result* to an array of further text fragments. Providers often
+    /// return a short teaser plus several longer passages; using only the teaser
+    /// throws away most of what was retrieved.
+    var extraTextKey: String?
+    /// Path inside a result to the name of the source, e.g. `profile.name`.
+    var sourceKey: String?
+    /// Further result lists in the same response, e.g. `news.results`. For current
+    /// events these often matter more than the plain web results.
+    var additionalResultPaths: [String] = []
+
+    // ---- Provenance
+    var isBuiltIn: Bool = false
+    /// Set when a model synthesised this recipe, for display in settings.
+    var synthesizedBy: String?
+    var synthesizedAt: Date?
+
+    var keychainAccount: String = UUID().uuidString
+
+    init() {}
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let d = SearchRecipe()
+        id               = try c.decodeIfPresent(UUID.self, forKey: .id) ?? d.id
+        name             = try c.decodeIfPresent(String.self, forKey: .name) ?? d.name
+        method           = try c.decodeIfPresent(HTTPMethodKind.self, forKey: .method) ?? d.method
+        url              = try c.decodeIfPresent(String.self, forKey: .url) ?? d.url
+        queryParamName   = try c.decodeIfPresent(String.self, forKey: .queryParamName)
+        staticQueryItems = try c.decodeIfPresent([String: String].self, forKey: .staticQueryItems) ?? [:]
+        authStyle        = try c.decodeIfPresent(AuthStyle.self, forKey: .authStyle) ?? .none
+        headers          = try c.decodeIfPresent([String: String].self, forKey: .headers) ?? d.headers
+        bodyTemplate     = try c.decodeIfPresent(String.self, forKey: .bodyTemplate)
+        resultsPath      = try c.decodeIfPresent(String.self, forKey: .resultsPath) ?? ""
+        titleKey         = try c.decodeIfPresent(String.self, forKey: .titleKey) ?? d.titleKey
+        urlKey           = try c.decodeIfPresent(String.self, forKey: .urlKey) ?? d.urlKey
+        snippetKey       = try c.decodeIfPresent(String.self, forKey: .snippetKey) ?? d.snippetKey
+        dateKey          = try c.decodeIfPresent(String.self, forKey: .dateKey)
+        answerPath       = try c.decodeIfPresent(String.self, forKey: .answerPath)
+        extraTextKey     = try c.decodeIfPresent(String.self, forKey: .extraTextKey)
+        sourceKey        = try c.decodeIfPresent(String.self, forKey: .sourceKey)
+        additionalResultPaths = try c.decodeIfPresent([String].self, forKey: .additionalResultPaths) ?? []
+        isBuiltIn        = try c.decodeIfPresent(Bool.self, forKey: .isBuiltIn) ?? false
+        synthesizedBy    = try c.decodeIfPresent(String.self, forKey: .synthesizedBy)
+        synthesizedAt    = try c.decodeIfPresent(Date.self, forKey: .synthesizedAt)
+        keychainAccount  = try c.decodeIfPresent(String.self, forKey: .keychainAccount) ?? d.keychainAccount
+    }
+}
+
+// MARK: - Persisted app settings
+
+struct AppSettings: Codable, Equatable {
+    var llms: [LLMConfig] = []
+    var activeLLMID: UUID?
+
+    var recipes: [SearchRecipe] = []
+    var activeRecipeID: UUID?
+
+    var persona = Persona()
+    var speech = SpeechConfig()
+    var memory = MemoryConfig()
+    var searchEnabled: Bool = true
+    var resultsPerSearch: Int = 5
+    /// Fraction of the context window at which a background compaction fires.
+    var compactionThreshold: Double = 0.75
+    var autoCompactEnabled: Bool = true
+    var showThinking: Bool = true
+
+    init() {}
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let d = AppSettings()
+        llms                = try c.decodeIfPresent([LLMConfig].self, forKey: .llms) ?? []
+        activeLLMID         = try c.decodeIfPresent(UUID.self, forKey: .activeLLMID)
+        recipes             = try c.decodeIfPresent([SearchRecipe].self, forKey: .recipes) ?? []
+        persona             = try c.decodeIfPresent(Persona.self, forKey: .persona) ?? Persona()
+        speech              = try c.decodeIfPresent(SpeechConfig.self, forKey: .speech) ?? SpeechConfig()
+        memory              = try c.decodeIfPresent(MemoryConfig.self, forKey: .memory) ?? MemoryConfig()
+        activeRecipeID      = try c.decodeIfPresent(UUID.self, forKey: .activeRecipeID)
+        searchEnabled       = try c.decodeIfPresent(Bool.self, forKey: .searchEnabled) ?? d.searchEnabled
+        resultsPerSearch    = try c.decodeIfPresent(Int.self, forKey: .resultsPerSearch) ?? d.resultsPerSearch
+        compactionThreshold = try c.decodeIfPresent(Double.self, forKey: .compactionThreshold) ?? d.compactionThreshold
+        autoCompactEnabled  = try c.decodeIfPresent(Bool.self, forKey: .autoCompactEnabled) ?? d.autoCompactEnabled
+        showThinking        = try c.decodeIfPresent(Bool.self, forKey: .showThinking) ?? d.showThinking
+    }
+
+    var activeLLM: LLMConfig? {
+        guard let id = activeLLMID else { return llms.first }
+        return llms.first { $0.id == id } ?? llms.first
+    }
+    var activeRecipe: SearchRecipe? {
+        guard let id = activeRecipeID else { return recipes.first }
+        return recipes.first { $0.id == id } ?? recipes.first
+    }
+}
