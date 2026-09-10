@@ -137,7 +137,7 @@ struct ToolTrace: View {
             .padding(.vertical, 4)
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(EHTap())
         .accessibilityLabel(spokenSummary)
         .accessibilityHint(expanded ? "Schritte ausblenden" : "Einzelne Schritte anzeigen")
     }

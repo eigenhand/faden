@@ -54,7 +54,11 @@ struct MarkdownText: View {
 
                 case .heading(let s, let level):
                     inline(s)
-                        .font(.system(size: level <= 1 ? 20 : level == 2 ? 17 : 15.5, weight: .semibold))
+                        // Stile statt fester Größen: eine Überschrift, die nicht
+                        // mitwächst, während der Absatz darunter es tut, kehrt die
+                        // Hierarchie bei großer Schrift um.
+                        .font(.system(level <= 1 ? .title3 : level == 2 ? .headline : .subheadline,
+                                      weight: .semibold))
                         .padding(.top, 4)
 
                 case .bullet(let items):
@@ -108,7 +112,7 @@ struct MarkdownText: View {
                                     .frame(width: 44, height: 28)
                                     .contentShape(Rectangle())
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(EHTap())
                             .accessibilityLabel(copiedCode == s ? "Code kopiert" : "Code kopieren")
                         }
                         .padding(.trailing, -8)
@@ -281,7 +285,17 @@ final class MarkdownCache {
         if let hit = attributed[s] { return hit }
         let opts = AttributedString.MarkdownParsingOptions(
             interpretedSyntax: .inlineOnlyPreservingWhitespace)
-        let made = (try? AttributedString(markdown: s, options: opts)) ?? AttributedString(s)
+        var made = (try? AttributedString(markdown: s, options: opts)) ?? AttributedString(s)
+        // A link that looks exactly like the words around it is not a link. The
+        // answer sets one foreground style for the whole block, which overrides the
+        // tint SwiftUI would otherwise give a link — so it is marked per run here.
+        //
+        // Underlined rather than recoloured: telling links apart by colour alone is
+        // the thing WCAG 1.4.1 exists to prevent, and the palette has no link colour
+        // that would clear the contrast floor against the body text anyway.
+        for run in made.runs where run.link != nil {
+            made[run.range].underlineStyle = .single
+        }
         attributed[s] = made
         attributedOrder.append(s)
         evict(&attributed, &attributedOrder)

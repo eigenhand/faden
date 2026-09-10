@@ -58,8 +58,6 @@ struct ChatView: View {
         @Bindable var model = model
 
         return VStack(spacing: 0) {
-            header
-
             ScrollViewReader { proxy in
               GeometryReader { outer in
                 ScrollView {
@@ -76,6 +74,7 @@ struct ChatView: View {
                                         visionAvailable: model.visionAvailable,
                                         memoryEnabled: model.settings.memory.isReady,
                                         cameraAvailable: CameraPicker.isAvailable,
+                                        voiceAvailable: model.voiceInputAvailable,
                                         onPick: { prompt in
                                             draft = prompt
                                             inputFocused = true
@@ -83,10 +82,16 @@ struct ChatView: View {
                                         onAddImage: {
                                             if CameraPicker.isAvailable { showCamera = true }
                                             else { showLibrary = true }
-                                        })
+                                        },
+                                        onStartVoice: { model.startVoiceConversation() })
                                 }
                             }
-                            .padding(.top, 50)
+                            // Fünfzig Punkt Luft über der Marke, dazu 52 für die
+                            // Knöpfe: 102, die im Standardfall fehlten. Ein leerer Chat
+                            // startet mit Tastatur, und dann endet das Sichtfenster bei
+                            // 471 — der vierte Vorschlag lag mit 50 Punkt teils hinter
+                            // der Eingabezeile.
+                            .padding(.top, 26)
                         }
 
                         ForEach(Array(model.messages.enumerated()), id: \.element.id) { index, message in
@@ -140,9 +145,27 @@ struct ChatView: View {
                                 })
                     }
                     .padding(.horizontal, EH.gutter)
+                    // Platz für die schwebenden Knöpfe: der Inhalt beginnt darunter,
+                    // läuft beim Scrollen aber dahinter durch.
+                    .padding(.top, Self.headerHeight)
                     .padding(.bottom, 12)
                 }
                 .scrollDismissesKeyboard(.interactively)
+                // Der Text läuft hinter den Knöpfen durch und löst sich nach oben
+                // auf, statt in die Statusleiste zu laufen. Ohne das kollidierte er
+                // mit der Uhr — beides unlesbar. Die Maske schneidet zugleich ab,
+                // was ein Rollbereich sonst in den Sicherheitsbereich hinein
+                // zeichnet.
+                .mask(
+                    LinearGradient(
+                        stops: [
+                            .init(color: .clear, location: 0),
+                            .init(color: .black,
+                                  location: min(0.5, Self.headerHeight / max(1, outer.size.height))),
+                            .init(color: .black, location: 1),
+                        ],
+                        startPoint: .top, endPoint: .bottom)
+                )
                 .coordinateSpace(name: transcriptSpace)
                 // A preference, not an `onChange` inside the `GeometryReader`:
                 // preferences are delivered *after* layout, so this cannot write
@@ -204,7 +227,7 @@ struct ChatView: View {
                     .padding(.vertical, 7)
                     .background(EH.surfaceSunk)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(EHTap())
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
@@ -225,6 +248,7 @@ struct ChatView: View {
             }
             .ignoresSafeArea()
         }
+        .overlay(alignment: .top) { header }
         .onAppear {
             raiseKeyboardIfNothingToRead()
             takeIntentQuestion()
@@ -270,10 +294,21 @@ struct ChatView: View {
 
     private func raiseKeyboardIfNothingToRead() {
         guard model.isLoaded, model.isConfigured,
-              model.messages.isEmpty, !model.isStreaming,
               !model.voiceModeActive, !showSettings, !showHistory
         else { return }
-        inputFocused = true
+
+        if model.messages.isEmpty {
+            guard !model.isStreaming else { return }
+            inputFocused = true
+        } else {
+            // Senken wiegt so schwer wie Heben, und das fehlte hier.
+            //
+            // Wer aus einem leeren Chat — Tastatur oben — eine gespeicherte
+            // Unterhaltung öffnet, landete mit der Tastatur über genau dem Text,
+            // den er zum Lesen aufgerufen hat. Die Regel oben nennt beide
+            // Richtungen; umgesetzt war nur eine.
+            inputFocused = false
+        }
     }
 
     private func scroll(_ proxy: ScrollViewProxy, animated: Bool) {
@@ -303,7 +338,7 @@ struct ChatView: View {
             .overlay(Capsule().stroke(EH.hairStrong, lineWidth: EH.hairWidth))
             .shadow(color: EH.navy.opacity(0.10), radius: 10, y: 3)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(EHTap())
         .padding(.bottom, 10)
         .dynamicTypeSize(...DynamicTypeSize.accessibility2)
         .transition(.opacity.combined(with: .move(edge: .bottom)))
@@ -314,31 +349,29 @@ struct ChatView: View {
 
     // MARK: Header
 
+    /// Wie viel Raum die schwebenden Knöpfe oben einnehmen: 38 pt Kreis, 3 pt
+    /// Polster für das Antippziel, 4 pt Luft — beides mal zwei.
+    private static let headerHeight: CGFloat = 38 + 3 * 2 + 4 * 2
+
     private var header: some View {
-        HStack(spacing: 12) {
-            // Proportions taken from the lockup rather than guessed: measured there,
-            // the mark stands 2.24× the height of the word. In the header it was
-            // 1.25×, which is why the hand read as an afterthought beside the name.
-            Image("BrandMark")
-                .resizable()
-                .renderingMode(.template)
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 36, height: 36)
-                .foregroundStyle(EH.navy)
-
-            Text("perbu")
-                .font(.brand(18))
-                .tracking(0.2)
-                .foregroundStyle(EH.navy)
-                .padding(.leading, -2)
-
-            Spacer()
-
-            // Drei Knöpfe, nicht fünf. Was das Gespräch selbst betrifft — sprechen —
-            // gehört an die Eingabezeile, wo man ohnehin hinsieht. Und was man selten
-            // braucht — das Gemerkte durchsehen — gehört in die Einstellungen, nicht
-            // dauerhaft in eine Zeile, in der jeder Knopf um Platz ringt.
-            HStack(spacing: 0) {
+        // Nur die drei Knöpfe. Keine Marke, kein Titel.
+        //
+        // Die Leiste kostet 59 pt, oben drauf 59 pt Statusleiste — 13,5 % der
+        // Bildschirmhöhe, bevor ein Wort Inhalt beginnt. Die Knöpfe rechtfertigen
+        // ihren Anteil: Verlauf, neuer Chat und Einstellungen sind selten, für sie
+        // ist die schlecht erreichbare obere Ecke verkraftbar, und die häufigen
+        // Handlungen sitzen längst unten an der Eingabezeile.
+        //
+        // Die Marke rechtfertigte ihren nicht. Ein Logo in der oberen Leiste ist
+        // dort begründet, wo eine Reise beginnt — Start- und Übersichtsbildschirme.
+        // Hier ist jeder Bildschirm der Inhalt, und man weiß, welche App man gerade
+        // geöffnet hat. Sie bleibt, wo sie wirkt: App-Symbol, Startbildschirm,
+        // leerer Chat.
+        // Abstand 4 plus 3 pt Polster je Knopf: sichtbar 38 pt, antippbar 44 —
+        // dieselbe Rechnung wie in der Eingabezeile, damit oben und unten dieselbe
+        // Formensprache steht.
+        HStack(spacing: 4) {
+            Spacer(minLength: 0)
             headerButton("clock.arrow.circlepath", label: "Verlauf", shortcut: "y") {
                 showHistory = true
             }
@@ -346,20 +379,20 @@ struct ChatView: View {
                 model.newConversation()
                 inputFocused = true      // a new chat is an invitation to type
             }
-            headerButton("slider.horizontal.3", label: "Einstellungen", shortcut: ",") {
+            // Zahnrad, nicht Schieberegler: in Apples eigenen Apps steht
+            // `slider.horizontal.3` für Filter und Anpassungen. Damit war es ein
+            // app-eigenes Symbol, und für die wurde gemessen, dass nur 34 % richtig
+            // erraten, was ein Antippen tut — konventionell sind es 60 %.
+            headerButton("gearshape", label: "Einstellungen", shortcut: ",") {
                 showSettings = true
             }
-            }
-            .padding(.trailing, -7)   // the 44 pt targets overhang the gutter
         }
         .padding(.horizontal, EH.gutter)
-        .padding(.vertical, 6)
-        .overlay(alignment: .bottom) {
-            Rectangle().fill(EH.hair).frame(height: EH.hairWidth)
-        }
+        .padding(.trailing, -3)   // das Polster der Ziele ragt in den Rand
+        .padding(.vertical, 4)
         // Content scales all the way; chrome does not. At the largest accessibility
-        // sizes the toolbar icons otherwise overlap and the wordmark breaks mid-word,
-        // which helps nobody — the icons are already at tap size.
+        // sizes the toolbar icons otherwise overlap, which helps nobody — the icons
+        // are already at tap size.
         .dynamicTypeSize(...DynamicTypeSize.xxLarge)
     }
 
@@ -373,13 +406,16 @@ struct ChatView: View {
             Image(systemName: icon)
                 .font(.eh(15, .callout, weight: .regular))
                 .foregroundStyle(EH.slate)
-                // 30 pt of icon inside a 44 pt target: what you see is unchanged,
-                // what you can hit meets Apple's minimum. The group carries no
-                // spacing of its own — the targets themselves do the spacing.
-                .frame(width: 44, height: 44)
-                .contentShape(Rectangle())
+                // Sichtbarer Kreis mit Umrandung, 38 pt, in einem 44-pt-Ziel. Die
+                // Füllung ist deckend, weil ohne Leiste der Inhalt darunter
+                // durchscrollt — ein randloses Symbol über Text wäre unlesbar.
+                .frame(width: 38, height: 38)
+                .background(Circle().fill(EH.surface))
+                .overlay(Circle().stroke(EH.hairStrong, lineWidth: EH.hairWidth))
+                .padding(3)
+                .contentShape(Circle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(EHTap())
         .accessibilityLabel(label)
         .modifier(OptionalShortcut(key: shortcut))
     }
@@ -432,14 +468,46 @@ struct ChatView: View {
     // MARK: Composer
 
     private var composer: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            if !model.attachments.isEmpty || loadingImages {
-                attachmentStrip
+        VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 8) {
+                if !model.attachments.isEmpty || loadingImages {
+                    attachmentStrip
+                }
+                composerRow
             }
-            composerRow
+            .padding(.horizontal, EH.gutter)
+            .padding(.top, 10)
+            .padding(.bottom, 4)
+
+            brandFooter
         }
-        .padding(.horizontal, EH.gutter)
-        .padding(.vertical, 10)
+    }
+
+    /// Die Herkunft, unter der Eingabezeile — in jedem Zustand dieselbe Stelle.
+    ///
+    /// Im Rollbereich ging es nicht. Gemessen: mit vier Vorschlägen und Tastatur —
+    /// dem Standardfall des Tester-Builds — endet das Sichtfenster bei 471 Punkt,
+    /// der Inhalt braucht bis 523. Die Zeile lag also 52 Punkt hinter der
+    /// Eingabezeile, unsichtbar. Mit drei Vorschlägen war die Hälfte des
+    /// Schriftzugs abgeschnitten (gemessen 5,4 von 10,7 Punkt Höhe). Und je kleiner
+    /// das Gerät, desto schlimmer.
+    ///
+    /// Hier kostet sie neun Punkt und steht immer: das Polster unter der
+    /// Eingabezeile geht von zehn auf vier zurück, die Zeile selbst trägt zwölf.
+    /// Die 34 Punkt darunter gehören dem Home-Indikator und bleiben frei — deshalb
+    /// sitzt sie über ihm, nicht in ihm.
+    ///
+    /// Keine Schaltfläche. Zehn Punkt Text wären ein Ziel weit unter Apples 44, und
+    /// bei offener Tastatur liegt diese Stelle zwischen Eingabefeld und oberster
+    /// Tastenreihe — ein Fehlgriff dort öffnet Safari. Antippbar ist die Herkunft in
+    /// den Einstellungen.
+    private var brandFooter: some View {
+        Text("eigenhand.dev")
+            .font(.eh(10, .caption2))
+            .tracking(0.6)
+            .foregroundStyle(EH.muted)
+            .frame(maxWidth: .infinity)
+            .padding(.bottom, 2)
     }
 
     private var attachmentStrip: some View {
@@ -470,7 +538,7 @@ struct ChatView: View {
                                 .padding(6)
                                 .contentShape(Circle())
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(EHTap())
                         .offset(x: 11, y: -11)
                         .accessibilityLabel("Bild entfernen")
                     }
@@ -489,14 +557,20 @@ struct ChatView: View {
     }
 
     private var composerRow: some View {
-        // Spacing 4 plus 3 pt of padding on each control leaves the 10 pt gap the
-        // eye sees, while every target grows from 38 to 44 pt.
+        // Acht Punkt zwischen den Bedienelementen, nicht vier.
+        //
+        // Jeder Kreis misst 38 pt und sitzt mit 3 pt Polster in einem 44-pt-Ziel —
+        // das erfüllt Apples Mindestmaß. Die *Abstände* dazwischen taten es nicht:
+        // Materials Regel verlangt 8 dp zwischen benachbarten Bedienelementen, und
+        // bei vier Kreisen nebeneinander ist das der Unterschied zwischen Mikrofon
+        // und Senden. Die Forschung zu Trefferflächen beziffert 44–48 pt mit 60–80 %
+        // weniger Fehlgriffen; der Abstand gehört zu derselben Rechnung.
         //
         // Die Zeile selbst wird animiert, nicht nur der Knopf: sonst würde das
         // Textfeld in die frei werdende Breite springen, während der Knopf noch
         // wegfährt. `draft.isEmpty` wechselt nur beim ersten und letzten Zeichen,
         // also läuft das nicht bei jedem Tastendruck.
-        HStack(alignment: .bottom, spacing: 4) {
+        HStack(alignment: .bottom, spacing: 8) {
             if model.visionAvailable {
                 // Where there is a camera, the plus asks which. Where there is none —
                 // the simulator, mostly — a menu of one entry would be a pointless
@@ -529,7 +603,11 @@ struct ChatView: View {
                 .focused($inputFocused)
                 .submitLabel(.send)
                 .padding(.horizontal, 14)
-                .padding(.vertical, 10)
+                // 21 pt Zeilenhöhe plus zweimal 13 ergibt 47 pt. Vorher waren es
+                // zweimal 10 und damit 41 — das am häufigsten angetippte Element der
+                // App war das einzige unter Apples Mindestmaß von 44, während jeder
+                // Kreis daneben es erfüllte.
+                .padding(.vertical, 13)
                 .background(
                     RoundedRectangle(cornerRadius: EH.radius, style: .continuous)
                         .fill(EH.surface))
@@ -563,7 +641,7 @@ struct ChatView: View {
                         .padding(3)
                         .contentShape(Circle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(EHTap())
                 .accessibilityLabel("Sprachmodus")
                 // Fährt zur Seite weg, statt zu verschwinden: ein Knopf, der beim
                 // ersten Buchstaben schlicht wegblinkt, liest sich wie ein Fehler.
@@ -601,7 +679,7 @@ struct ChatView: View {
                         .padding(3)
                         .contentShape(Circle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(EHTap())
                 .keyboardShortcut(.escape, modifiers: [])
                 .accessibilityLabel("Antwort stoppen")
             } else {
@@ -614,7 +692,7 @@ struct ChatView: View {
                         .padding(3)
                         .contentShape(Circle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(EHTap())
                 .disabled(!canSend)
                 // Return still makes a new line — the field is multi-line on purpose.
                 .keyboardShortcut(.return, modifiers: .command)
@@ -776,7 +854,7 @@ struct ErrorNote: View {
                             .font(.eh(10, .caption2, weight: .medium))
                             .foregroundStyle(EH.muted)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(EHTap())
                 }
                 if let retry, isWorthRetrying {
                     Button("Nochmal versuchen") { retry() }

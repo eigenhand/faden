@@ -475,10 +475,57 @@ final class AppModel {
         if voiceModeActive { stopVoiceConversation() }
     }
 
+    /// Lets the buffered text appear at a constant pace.
+    ///
+    /// Twenty times a second, a slice of what has arrived moves onto the screen —
+    /// sized so the buffer empties in about a third of a second. That keeps the text
+    /// well ahead of any reading speed (research on streaming puts normal reading at
+    /// a handful of words per second, and the point of streaming is to stay above
+    /// that, not to be instant) while the motion itself stays even.
+    ///
+    /// It never lags: the slice is proportional to the backlog, so a burst is drawn
+    /// down faster than a trickle, and the wait is bounded whatever the provider does.
+    private func startRevealing(_ state: TurnState) {
+        guard state.revealTask == nil else { return }
+
+        // Someone who has asked for less movement gets the text as it lands.
+        if reduceMotionEnabled {
+            state.liveText += state.pendingText
+            state.pendingText = ""
+            return
+        }
+
+        state.revealTask = Task { @MainActor [weak self, weak state] in
+            while let state, !Task.isCancelled {
+                if state.pendingText.isEmpty {
+                    // Nothing waiting: stop, and let the next delta start it again.
+                    if !(self?.isStreaming(state) ?? false) { break }
+                    state.revealTask = nil
+                    return
+                }
+                let slice = max(1, Int((Double(state.pendingText.count) / 6.0).rounded(.up)))
+                let cut = state.pendingText.index(state.pendingText.startIndex,
+                                                  offsetBy: min(slice, state.pendingText.count))
+                state.liveText += state.pendingText[..<cut]
+                state.pendingText.removeSubrange(..<cut)
+                try? await Task.sleep(nanoseconds: 50_000_000)   // 20 Hz
+            }
+            state?.revealTask = nil
+        }
+    }
+
+    private func isStreaming(_ state: TurnState) -> Bool { state.isStreaming }
+
+    /// Whether the reader has asked the system for less movement.
+    private var reduceMotionEnabled: Bool {
+        UIAccessibility.isReduceMotionEnabled
+    }
+
     private func handle(_ event: TurnEvent, in state: TurnState) {
         switch event {
         case .text(let d):
-            state.liveText += d
+            state.pendingText += d
+            startRevealing(state)
         case .thinking(let d):
             state.liveThinking += d
         case .toolStarted(let id, let name, _):
@@ -738,6 +785,12 @@ final class AppModel {
     /// Called when the user stops mid-stream: keep what already arrived.
     private func flushLiveIntoTranscript(_ state: TurnState) {
         guard var conversation = current else { return }
+        // Was noch im Puffer liegt, gehört in die Antwort — sonst fehlen die letzten
+        // Worte, wenn der Strom endet, bevor der Puffer leer ist.
+        if !state.pendingText.isEmpty {
+            state.liveText += state.pendingText
+            state.pendingText = ""
+        }
         var blocks: [ContentBlock] = []
         if !state.liveThinking.isEmpty { blocks.append(.thinking(state.liveThinking)) }
         if !state.liveText.isEmpty { blocks.append(.text(state.liveText)) }

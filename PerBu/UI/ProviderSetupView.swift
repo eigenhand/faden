@@ -151,7 +151,7 @@ struct ProviderSetupView: View {
                                             }
                                         }
                                     }
-                                    .buttonStyle(.plain)
+                                    .buttonStyle(EHTap())
                                 }
                             }
                         }

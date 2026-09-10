@@ -65,7 +65,7 @@ struct AutoConfigView: View {
                                                 }
                                             }
                                         }
-                                        .buttonStyle(.plain)
+                                        .buttonStyle(EHTap())
                                     }
                                 }
                             }

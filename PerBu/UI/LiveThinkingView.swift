@@ -43,7 +43,7 @@ struct LiveThinkingView: View {
                 }
                 .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(EHTap())
 
             if isOpen {
                 ScrollViewReader { proxy in

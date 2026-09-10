@@ -164,6 +164,15 @@ final class ScrollBehaviourTests: XCTestCase {
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 3),
                       "Im leeren Chat muss die Tastatur ohne Zutun bereitstehen")
         shot("Leerer Chat, Tastatur bereit")
+
+        // Und wieder zurück. Die Regel gilt in beide Richtungen: geöffnet wird eine
+        // gespeicherte Unterhaltung zum Lesen, nicht zum Tippen.
+        try openFixture()
+        let gone = expectation(for: NSPredicate(format: "count == 0"),
+                               evaluatedWith: app.keyboards)
+        XCTAssertEqual(XCTWaiter.wait(for: [gone], timeout: 4), .completed,
+                       "Beim Öffnen einer Unterhaltung muss die Tastatur weichen")
+        shot("Zurück im Gespräch, Tastatur unten")
     }
 
     /// A conversation must be passable to someone else — as a file, through the
@@ -213,6 +222,68 @@ final class ScrollBehaviourTests: XCTestCase {
                        "Nach dem ersten Buchstaben muss der Sprachmodus verschwinden")
         XCTAssertTrue(app.buttons["Senden"].exists, "Senden muss bleiben")
         shot("Nach dem ersten Buchstaben")
+    }
+
+    /// Die Herkunft steht unter der Eingabezeile — in jedem Zustand dieselbe Stelle.
+    ///
+    /// Im Rollbereich hielt das nicht: mit vier Vorschlägen und offener Tastatur lag
+    /// die Zeile hinter der Eingabezeile, mit drei war sie halb abgeschnitten. Der
+    /// leere Chat mit Tastatur ist genau der Fall, der das aufdeckt — also prüft der
+    /// Test ihn mit.
+    ///
+    /// Needs the fixture: `./seed-fixture.sh <udid>` before running.
+    func testBrandSitsBelowTheComposer() throws {
+        try openFixture()
+
+        let field = app.textViews.firstMatch.exists
+            ? app.textViews.firstMatch : app.textFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 4))
+
+        let mark = app.staticTexts["eigenhand.dev"]
+        XCTAssertTrue(mark.waitForExistence(timeout: 3),
+                      "Im laufenden Gespräch fehlt die Herkunft unter der Eingabezeile")
+        XCTAssertGreaterThan(mark.frame.minY, field.frame.maxY,
+                             "Die Herkunft muss unter der Eingabezeile stehen, nicht darüber")
+        shot("Herkunft unter der Eingabezeile")
+
+        app.buttons["Neue Unterhaltung"].tap()
+        let keyboard = app.keyboards.firstMatch
+        XCTAssertTrue(keyboard.waitForExistence(timeout: 4))
+        XCTAssertTrue(mark.waitForExistence(timeout: 3),
+                      "Im leeren Chat fehlt die Herkunft")
+        XCTAssertGreaterThan(mark.frame.minY, field.frame.maxY,
+                             "Auch im leeren Chat gehört sie unter die Eingabezeile")
+        XCTAssertLessThan(mark.frame.maxY, keyboard.frame.minY,
+                          "Die Zeile darf nicht unter der Tastatur liegen")
+        shot("Herkunft im leeren Chat, Tastatur offen")
+
+        // Zustand wiederherstellen, statt ihn dem naechsten Test zu hinterlassen.
+        try openFixture()
+    }
+
+    /// A long history is unusable by scrolling — it needs to be searchable.
+    ///
+    /// Needs the fixture: `./seed-fixture.sh <udid>` before running.
+    func testHistoryCanBeSearched() throws {
+        try openFixture()
+        app.buttons["Verlauf"].tap()
+        let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 4), "Der Verlauf hat kein Suchfeld")
+
+        let row = app.buttons.containing(
+            NSPredicate(format: "label CONTAINS %@", "Swift 6 Strict Concurrency")).firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 3))
+
+        field.tap()
+        field.typeText("Concurrency")
+        XCTAssertTrue(row.exists, "Der passende Eintrag ist verschwunden")
+
+        // Und etwas, das nicht passt, filtert ihn weg.
+        field.typeText("xyz")
+        let gone = expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: row)
+        XCTAssertEqual(XCTWaiter.wait(for: [gone], timeout: 4), .completed,
+                       "Die Suche filtert nicht")
+        shot("Verlauf mit Suche")
     }
 
     /// Code offered in an answer must be takeable in one tap.

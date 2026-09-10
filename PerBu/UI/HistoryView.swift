@@ -1,6 +1,24 @@
 import SwiftUI
 
 struct HistoryView: View {
+    /// Filters the list.
+    ///
+    /// Every AI chat app that shipped a conversation list had to add this afterwards:
+    /// a long history is unusable by scrolling, and the answer worth coming back for
+    /// is the one you cannot find. Titles and the opening question are both searched,
+    /// because people remember what they asked more reliably than what the app named
+    /// the conversation.
+    @State private var search = ""
+
+    private var shown: [Conversation] {
+        let q = search.trimmingCharacters(in: .whitespaces)
+        guard !q.isEmpty else { return model.conversations }
+        return model.conversations.filter {
+            $0.title.localizedCaseInsensitiveContains(q)
+                || $0.preview.localizedCaseInsensitiveContains(q)
+        }
+    }
+
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
 
@@ -10,7 +28,7 @@ struct HistoryView: View {
                 EH.scene
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 10) {
-                        ForEach(model.conversations) { conversation in
+                        ForEach(shown) { conversation in
                             Button {
                                 model.switchTo(conversation.id)
                                 dismiss()
@@ -34,7 +52,7 @@ struct HistoryView: View {
                                     }
                                 }
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(EHTap())
                             .contextMenu {
                                 // A conversation travels as a file: AirDrop, Messages,
                                 // Files — whatever the share sheet offers. Nothing
@@ -52,6 +70,7 @@ struct HistoryView: View {
                     .padding(EH.gutter)
                 }
             }
+            .searchable(text: $search, prompt: "Titel oder Frage")
             .navigationTitle("Verlauf")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

@@ -73,7 +73,7 @@ struct ModelEditor: View {
                                     }
                                     .foregroundStyle(EH.slate)
                                 }
-                                .buttonStyle(.plain)
+                                .buttonStyle(EHTap())
                                 .disabled(model.settings.llms[i].endpointURL == nil)
                             }
                             TextField("z. B. anbieter/modell-name", text: $model.settings.llms[i].model)

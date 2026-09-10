@@ -40,7 +40,7 @@ struct SettingsView: View {
                                         active: model.settings.activeLLMID == llm.id
                                              || (model.settings.activeLLMID == nil && model.settings.llms.first?.id == llm.id))
                                 }
-                                .buttonStyle(.plain)
+                                .buttonStyle(EHTap())
                             }
                             HStack(spacing: 10) {
                                 // A push, not a sheet: this screen is itself presented
@@ -59,9 +59,9 @@ struct SettingsView: View {
                                             .stroke(model.settings.llms.isEmpty ? .clear : EH.hair,
                                                     lineWidth: EH.hairWidth))
                                 }
-                                .buttonStyle(.plain)
+                                .buttonStyle(EHTap())
 
-                                Button("Einzeln") {
+                                Button("Von Hand eintragen") {
                                     var c = LLMConfig()
                                     c.path = LLMConfig.defaultPath(for: c.wireFormat)
                                     model.settings.llms.append(c)
@@ -94,7 +94,7 @@ struct SettingsView: View {
                                         active: model.settings.activeRecipeID == recipe.id
                                              || (model.settings.activeRecipeID == nil && model.settings.recipes.first?.id == recipe.id))
                                 }
-                                .buttonStyle(.plain)
+                                .buttonStyle(EHTap())
                             }
 
                             Menu {
@@ -134,7 +134,7 @@ struct SettingsView: View {
                                     subtitle: personaSubtitle,
                                     active: true)
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(EHTap())
                         }
 
                         section("Sprache") {
@@ -146,7 +146,7 @@ struct SettingsView: View {
                                     active: model.settings.speech.sttSource == .remote
                                          || model.settings.speech.ttsSource != .off)
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(EHTap())
                         }
 
                         section("Gedächtnis") {
@@ -159,7 +159,7 @@ struct SettingsView: View {
                                         : (model.settings.memory.enabled ? "unvollständig" : "aus"),
                                     active: model.settings.memory.isReady)
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(EHTap())
 
                             // Der einzige Weg zum Gemerkten. Vorher hing dafür ein
                             // Symbol dauerhaft in der Kopfzeile — für etwas, das man
@@ -172,7 +172,7 @@ struct SettingsView: View {
                                         ? "ansehen und einzeln löschen" : "noch nichts gemerkt",
                                     active: false)
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(EHTap())
                         }
 
                         section("Kontext") {
@@ -235,6 +235,25 @@ struct SettingsView: View {
                             Text("Keys liegen im Schlüsselbund dieses Geräts. Der Verlauf bleibt lokal. PerBu spricht ausschließlich mit den Endpoints, die du hier einträgst.")
                                 .font(.eh(12, .caption))
                                 .foregroundStyle(EH.muted)
+
+                            // Die zweite Stelle für die Herkunft: hier sucht man sie,
+                            // wenn man sie sucht, und sie steht niemandem im Weg,
+                            // der gerade liest.
+                            Link(destination: URL(string: "https://eigenhand.dev")!) {
+                                HStack(spacing: 7) {
+                                    Image("BrandMark")
+                                        .resizable().renderingMode(.template)
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 16, height: 16)
+                                    Text("eigenhand.dev")
+                                        .font(.eh(12, .caption))
+                                        .underline()
+                                }
+                                .foregroundStyle(EH.slate)
+                                .padding(.vertical, 8)
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(EHTap())
                         }
                         .padding(.top, 4)
                     }

@@ -94,7 +94,7 @@ struct VoiceModeView: View {
                         .padding(.vertical, 13)
                         .background(Capsule().fill(EH.navy))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(EHTap())
                 .padding(.bottom, 44)
             }
         }

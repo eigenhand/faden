@@ -12,6 +12,15 @@ import Foundation
 final class TurnState {
     var isStreaming = false
     var liveText = ""
+    /// Text that has arrived from the provider but is not on screen yet.
+    ///
+    /// Delivery is not even. Inter-token latency spikes — a fifth of a second every
+    /// so often — arrive as clumps of words, and a clump landing at once reads as
+    /// stuttering even when the average rate is high. Buffering here and draining at
+    /// a steady tick separates how fast the text arrives from how fast it appears.
+    var pendingText = ""
+    /// Drains `pendingText` into `liveText`.
+    var revealTask: Task<Void, Never>?
     var liveThinking = ""
     var liveTools: [ToolActivity] = []
     var errorMessage: String?
@@ -31,6 +40,9 @@ final class TurnState {
     var lastFailedCompactionAt: Int?
 
     func clearLive() {
+        revealTask?.cancel()
+        revealTask = nil
+        pendingText = ""
         liveText = ""
         liveThinking = ""
         liveTools = []

@@ -65,7 +65,7 @@ struct ModelPickerSheet: View {
                                             }
                                         }
                                     }
-                                    .buttonStyle(.plain)
+                                    .buttonStyle(EHTap())
                                 }
                                 if shown.isEmpty {
                                     Text("Nichts gefunden.")

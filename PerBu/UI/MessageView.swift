@@ -202,7 +202,7 @@ struct ThinkingDisclosure: View {
                 }
                 .foregroundStyle(EH.muted)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(EHTap())
 
             if expanded {
                 Text(text)
@@ -292,7 +292,7 @@ struct CompactionMarker: View {
                     Rectangle().fill(EH.hair).frame(height: EH.hairWidth)
                 }
             }
-            .buttonStyle(.plain)
+            .buttonStyle(EHTap())
 
             if expanded {
                 HairlineCard(padding: 14, fill: EH.surfaceSunk) {

@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Design tokens from eigenhand.dev
 /// --navy #374559 · --slate #525F73 · --bg #fafbfc · --muted #8a93a3 · --hair #d9dee6
@@ -66,10 +67,14 @@ enum EH {
             .foregroundStyle(EH.muted)
     }
 
-    static let body      = Font.eh(16, .callout)
-    static let bodySmall = Font.eh(14, .footnote)
-    static let mono      = Font.eh(13.5, .footnote, monospaced: true)
-    static let title     = Font.eh(26, .title)
+    // Berechnet, nicht gespeichert: `Font.eh` fragt `UIFontMetrics` nach der
+    // aktuellen Textgröße, und ein `static let` würde diese Antwort einmal beim
+    // Programmstart festschreiben. Genau das war zu sehen — die Kopfzeile wuchs mit
+    // der Einstellung, der Fließtext nicht, weil er aus diesen Konstanten kam.
+    static var body: Font      { Font.eh(16, .callout) }
+    static var bodySmall: Font { Font.eh(14, .footnote) }
+    static var mono: Font      { Font.eh(13.5, .footnote, monospaced: true) }
+    static var title: Font     { Font.eh(26, .title) }
 
     // MARK: Metrics
     static let radius: CGFloat = 14
@@ -92,21 +97,38 @@ extension Font {
         Font.custom("HelveticaNeue", size: size, relativeTo: .body)
     }
 
-    /// A system font at a chosen point size that still grows with the reader's text
-    /// size setting.
+    /// A system font that grows with the reader's text size *and* can be set bold.
     ///
-    /// `Font.system(size:)` is frozen at that number: someone who has set a larger
-    /// text size system-wide still gets 16 pt here, which is the difference between
-    /// legible and unusable for a lot of people. `Font.custom` with an empty name
-    /// falls back to the system typeface while honouring `relativeTo`, which is what
-    /// makes it scale.
+    /// Three attempts, and the first two each broke one half of that:
+    ///
+    /// `Font.system(size:)` is frozen at the number given — someone who has set a
+    /// larger text size system-wide still got 16 pt.
+    ///
+    /// `Font.custom("", size:relativeTo:)` scaled, but a font addressed by name has
+    /// no bold or italic face to fall back on, so `**fett**` and `*kursiv*` came out
+    /// at normal weight. Monospace and strikethrough still worked, which is what made
+    /// it look like a Markdown problem rather than a font problem.
+    ///
+    /// `UIFontMetrics` fixed the weights but moved the scaling from layout time to
+    /// body-evaluation time: a view that does not itself read `dynamicTypeSize` never
+    /// re-runs its body when the setting changes, so its text stayed at the size it
+    /// had at launch while neighbouring views grew.
+    ///
+    /// The style-based system fonts have neither problem. They resolve when the text
+    /// is laid out, so the scaling needs no plumbing, and they are real system fonts
+    /// with real faces. The price is Apple's size ladder instead of hand-picked
+    /// numbers — `size` is therefore only a hint at which rung was meant, and the
+    /// style decides. That is the better ladder anyway: it is the one the system
+    /// scales against.
     static func eh(_ size: CGFloat,
                    _ style: TextStyle = .callout,
                    weight: Weight = .regular,
                    monospaced: Bool = false) -> Font {
-        let base = Font.custom("", size: size, relativeTo: style)
-        return monospaced ? base.monospaced().weight(weight) : base.weight(weight)
+        let base = Font.system(style, design: monospaced ? .monospaced : .default,
+                               weight: weight)
+        return base
     }
+
 }
 
 extension Color {
@@ -169,6 +191,37 @@ struct BrandWatermark: View {
         }
         .allowsHitTesting(false)
         .ignoresSafeArea()
+    }
+}
+
+/// The press itself, made visible.
+///
+/// Thirty-four buttons in this app were set to `.buttonStyle(.plain)`, which draws
+/// the label and nothing else — pressing them produced no acknowledgement at all.
+/// NN/g's eyetracking work puts a number on what weak clickability signifiers cost:
+/// 22 % more task time and 25 % more fixations than strong ones, both significant.
+/// Feedback on press is the cheapest part of that to give back, and the part whose
+/// absence turns a tap into a question of whether the tap registered.
+///
+/// Opacity does the work, with a hair of scale on top. Both are brief enough to read
+/// as the button answering rather than as an animation, and the scale steps aside for
+/// anyone who has asked the system for less movement.
+struct EHTap: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        Pressed(pressed: configuration.isPressed) { configuration.label }
+    }
+
+    private struct Pressed<Label: View>: View {
+        let pressed: Bool
+        @ViewBuilder var label: Label
+        @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+        var body: some View {
+            label
+                .opacity(pressed ? 0.55 : 1)
+                .scaleEffect(pressed && !reduceMotion ? 0.97 : 1)
+                .animation(.easeOut(duration: 0.1), value: pressed)
+        }
     }
 }
 

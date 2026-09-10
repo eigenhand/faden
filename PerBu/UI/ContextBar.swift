@@ -65,7 +65,7 @@ struct ContextBar: View {
                             .font(.eh(10, .caption2, weight: .medium))
                             .foregroundStyle(EH.muted)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(EHTap())
                     .accessibilityLabel("Kontext jetzt verdichten")
                 }
             }

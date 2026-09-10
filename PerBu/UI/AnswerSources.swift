@@ -168,7 +168,7 @@ struct SourcesRow: View {
                     .padding(.vertical, 4)
                     .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(EHTap())
                 .accessibilityLabel(sources.count == 1 ? "Eine Quelle" : "\(sources.count) Quellen")
                 .accessibilityHint(nextReveal == .all ? "Alle Quellen anzeigen"
                                                       : "Quellen ausblenden")
@@ -194,7 +194,7 @@ struct SourcesRow: View {
                                 .frame(maxWidth: .infinity, minHeight: 36, alignment: .leading)
                                 .contentShape(Rectangle())
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(EHTap())
                             .accessibilityLabel("\(source.title.isEmpty ? source.host : source.title), \(source.host)")
                             .accessibilityHint("Öffnet die Seite")
                             .accessibilityIdentifier("answerSource")

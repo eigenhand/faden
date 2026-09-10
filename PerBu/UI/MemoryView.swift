@@ -100,7 +100,7 @@ struct MemoryView: View {
                     }
                     .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(EHTap())
 
                 if expanded == node.id {
                     if !node.nodeDescription.isEmpty {

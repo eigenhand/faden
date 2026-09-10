@@ -46,7 +46,9 @@ struct MessageActions: View {
         HStack(spacing: 20) {
             iconAction(copied ? "checkmark" : "doc.on.doc", label: "Kopieren") { copy() }
             if isLast, !model.isStreaming {
-                iconAction("arrow.clockwise", label: "Neu holen") { model.regenerateLastAnswer() }
+                iconAction("arrow.clockwise", label: "Nochmal antworten") {
+                    model.regenerateLastAnswer()
+                }
                 iconAction("arrow.down.right.and.arrow.up.left", label: "Kürzer") {
                     onFollowUp("Fasse das kürzer — die Hälfte, gleiche Substanz.")
                 }
@@ -65,7 +67,7 @@ struct MessageActions: View {
                 .foregroundStyle(EH.muted)
                 .frame(minWidth: 44, minHeight: 44)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(EHTap())
         .accessibilityLabel(label)
     }
 
@@ -85,14 +87,14 @@ struct MessageActions: View {
             }
 
             if isLast, !model.isStreaming {
-                action("arrow.clockwise", label: "Neu") {
+                action("arrow.clockwise", label: "Nochmal") {
                     model.regenerateLastAnswer()
                 }
                 // Accordion editing, made one tap instead of a retyped prompt.
                 action("arrow.down.right.and.arrow.up.left", label: "Kürzer") {
                     onFollowUp("Fasse das kürzer — die Hälfte, gleiche Substanz.")
                 }
-                action("arrow.up.left.and.arrow.down.right", label: "Mehr") {
+                action("arrow.up.left.and.arrow.down.right", label: "Länger") {
                     onFollowUp("Geh darauf genauer ein.")
                 }
             }
@@ -116,7 +118,7 @@ struct MessageActions: View {
             }
             .foregroundStyle(EH.muted)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(EHTap())
         .accessibilityLabel(label)
     }
 }
@@ -142,6 +144,6 @@ struct QuoteButton: View {
             }
             .foregroundStyle(EH.muted)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(EHTap())
     }
 }

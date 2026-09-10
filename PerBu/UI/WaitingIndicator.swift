@@ -60,22 +60,25 @@ struct PromptSuggestions: View {
     let memoryEnabled: Bool
     /// True where a camera exists, which changes what the image opener promises.
     let cameraAvailable: Bool
+    let voiceAvailable: Bool
     var onPick: (String) -> Void
     var onAddImage: () -> Void
+    var onStartVoice: () -> Void
 
     private enum Opener {
         case ask(icon: String, question: String)
         case image(icon: String, label: String)
+        case voice(icon: String, label: String)
 
         var icon: String {
             switch self {
-            case .ask(let i, _), .image(let i, _): return i
+            case .ask(let i, _), .image(let i, _), .voice(let i, _): return i
             }
         }
         var text: String {
             switch self {
             case .ask(_, let q): return q
-            case .image(_, let l): return l
+            case .image(_, let l), .voice(_, let l): return l
             }
         }
     }
@@ -95,9 +98,16 @@ struct PromptSuggestions: View {
         if memoryEnabled {
             out.append(.ask(icon: "brain", question: "Was weißt du bislang über mich?"))
         }
+        // Der eine beschriftete Weg zum Sprachmodus. In der Eingabezeile steht dafür
+        // ein nacktes `waveform` direkt neben einem `mic` — zwei Audio-Symbole
+        // nebeneinander, eines für „halten und diktieren“, eines für „freihändig
+        // reden“. Hier ist Platz für die Worte, und hier wird das Symbol gelernt.
+        if voiceAvailable {
+            out.append(.voice(icon: "waveform", label: "Freihändig sprechen"))
+        }
         out.append(.ask(icon: "text.alignleft",
                         question: "Formulier mir eine kurze, freundliche Absage."))
-        return Array(out.prefix(3))
+        return Array(out.prefix(4))
     }
 
     var body: some View {
@@ -107,6 +117,7 @@ struct PromptSuggestions: View {
                     switch opener {
                     case .ask(_, let question): onPick(question)
                     case .image:                onAddImage()
+                    case .voice:                onStartVoice()
                     }
                 } label: {
                     HStack(spacing: 9) {
@@ -127,7 +138,7 @@ struct PromptSuggestions: View {
                     .overlay(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
                         .stroke(EH.hair, lineWidth: EH.hairWidth))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(EHTap())
             }
         }
         .padding(.horizontal, 28)

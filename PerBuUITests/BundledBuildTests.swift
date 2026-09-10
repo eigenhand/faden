@@ -94,6 +94,46 @@ final class BundledBuildTests: XCTestCase {
         shot("Öffner als Fragen")
     }
 
+    /// The text must arrive complete, and appear evenly.
+    ///
+    /// The buffer that smooths the stream is also the place where the last words of
+    /// an answer can go missing: if the stream ends before it is drained and nothing
+    /// flushes it, the answer is silently cut short. So the prompt asks for a known
+    /// ending, and the test looks for it.
+    func testStreamArrivesCompleteAndEvenly() throws {
+        guard !app.buttons["Einrichten"].waitForExistence(timeout: 3) else {
+            throw XCTSkip("Build ohne eingebetteten Schlüssel")
+        }
+        app.buttons["Neue Unterhaltung"].tap()
+
+        let field = app.textViews.firstMatch.exists
+            ? app.textViews.firstMatch : app.textFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 4))
+        field.tap()
+        field.typeText("Zähle von eins bis zwanzig, jede Zahl als Wort, "
+                       + "durch Komma getrennt, ohne weiteren Text.")
+        app.buttons["Senden"].tap()
+
+        // Während es läuft: Bildschirmfotos in gleichen Abständen, damit sich
+        // hinterher nachrechnen lässt, ob der Text gleichmäßig gewachsen ist.
+        let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        for i in 0..<40 {
+            let png = XCUIScreen.main.screenshot().pngRepresentation
+            try? png.write(to: dir.appendingPathComponent(String(format: "stream-%02d.png", i)))
+            if app.buttons["Kopieren"].firstMatch.exists { break }
+            Thread.sleep(forTimeInterval: 0.15)
+        }
+
+        XCTAssertTrue(app.buttons["Kopieren"].firstMatch.waitForExistence(timeout: 90),
+                      "Keine Antwort erhalten")
+        // Das verabredete Ende muss dastehen — sonst hat der Puffer geschluckt.
+        let ending = app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS[c] %@", "zwanzig")).firstMatch
+        XCTAssertTrue(ending.waitForExistence(timeout: 10),
+                      "Die Antwort endet nicht mit „zwanzig“ — der Puffer wurde nicht geleert")
+        print("STREAM Bilder in \(dir.path)")
+    }
+
     /// The model must be able to reach into the memory graph itself.
     func testMemoryToolIsReachable() throws {
         guard !app.buttons["Einrichten"].waitForExistence(timeout: 3) else {
