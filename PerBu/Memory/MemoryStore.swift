@@ -296,6 +296,26 @@ actor MemoryStore {
         edges[id] = e
     }
 
+    /// Der Mittelvektor über alle nutzbaren Einbettungen.
+    ///
+    /// Wird für die Zentrierung der Vektoren vom Gerät gebraucht. Aus dem Bestand
+    /// gerechnet statt gespeichert: er ändert sich mit jeder neuen Erinnerung, und
+    /// über ein paar tausend Vektoren zu mitteln kostet weniger als eine Millisekunde.
+    func centroid(model: String) -> [Float]? {
+        let dimension = dominantDimension(for: model)
+        var sum: [Float] = []
+        var count = 0
+        for v in (nodesWithEmbeddings(model: model).compactMap(\.embedding)
+                  + edgesWithEmbeddings(model: model).compactMap(\.embedding)) {
+            if sum.isEmpty { sum = [Float](repeating: 0, count: v.count) }
+            guard sum.count == v.count else { continue }
+            for i in 0 ..< v.count { sum[i] += v[i] }
+            count += 1
+        }
+        guard count > 0, dimension != nil else { return nil }
+        return sum.map { $0 / Float(count) }
+    }
+
     /// Was die Suche benutzen darf: nur Vektoren aus dem eingestellten Modell.
     func nodesWithEmbeddings(model: String) -> [MemoryNode] {
         let dimension = dominantDimension(for: model)

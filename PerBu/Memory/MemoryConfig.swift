@@ -4,6 +4,16 @@ import Foundation
 struct MemoryConfig: Codable, Equatable {
     var enabled: Bool = false
 
+    /// Woher die Vektoren kommen.
+    enum Source: String, Codable, CaseIterable {
+        /// Über den Endpoint des Nutzers — die Voreinstellung, und die genauere.
+        case endpoint
+        /// Auf dem Gerät, mit Apples Modell. Gröber, dafür verlässt kein Satz das
+        /// Telefon und es braucht überhaupt keinen Endpoint.
+        case onDevice
+    }
+    var source: Source = .endpoint
+
     /// Embeddings come from an OpenAI-compatible endpoint.
     var embeddingBaseURL: String = ""
     var embeddingPath: String = "/v1/embeddings"
@@ -33,9 +43,37 @@ struct MemoryConfig: Codable, Equatable {
         return URL(string: b + embeddingPath)
     }
 
-    var isReady: Bool {
-        enabled && embeddingURL != nil && !embeddingModel.trimmingCharacters(in: .whitespaces).isEmpty
+    /// Der Name, der als Herkunft an jedem Vektor steht.
+    ///
+    /// Nicht `embeddingModel`: auf dem Gerät gibt es kein Feld, in das jemand einen
+    /// Namen tippt, und der Stempel braucht trotzdem einen — sonst ließen sich die
+    /// beiden Quellen nicht auseinanderhalten, und genau dafür ist er da.
+    var effectiveModel: String {
+        switch source {
+        case .endpoint: return embeddingModel
+        case .onDevice: return LocalEmbedder.modelIdentifier
+        }
     }
+
+    var isReady: Bool {
+        guard enabled else { return false }
+        switch source {
+        case .onDevice:
+            return LocalEmbedder.isSupported
+        case .endpoint:
+            return embeddingURL != nil && !embeddingModel.trimmingCharacters(in: .whitespaces).isEmpty
+        }
+    }
+
+    /// Ob die Ähnlichkeiten vor dem Vergleich zentriert werden müssen.
+    ///
+    /// Beim lokalen Modell liegen alle Kosinuswerte über 0,95 — gemessen: Hund zu
+    /// „Welches Haustier habe ich?" 0,979, Auto zur selben Frage 0,970. Die
+    /// Rangfolge stimmt noch, aber die Mindestähnlichkeit filtert nichts mehr, weil
+    /// jeder Wert über jedem Schwellwert liegt. Den Mittelvektor des Bestands
+    /// abzuziehen ist das übliche Mittel dagegen und stellt die Bedeutung des
+    /// Reglers wieder her. Auf die Trefferquote wirkt es nicht — auch das gemessen.
+    var needsCentering: Bool { source == .onDevice }
 
     init() {}
 
@@ -43,6 +81,7 @@ struct MemoryConfig: Codable, Equatable {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         let d = MemoryConfig()
         enabled                   = try c.decodeIfPresent(Bool.self, forKey: .enabled) ?? false
+        source                    = try c.decodeIfPresent(Source.self, forKey: .source) ?? d.source
         embeddingBaseURL          = try c.decodeIfPresent(String.self, forKey: .embeddingBaseURL) ?? ""
         embeddingPath             = try c.decodeIfPresent(String.self, forKey: .embeddingPath) ?? d.embeddingPath
         embeddingModel            = try c.decodeIfPresent(String.self, forKey: .embeddingModel) ?? ""

@@ -11,6 +11,9 @@ struct MemorySettingsView: View {
     @State private var working = false
     @State private var confirmRebuild = false
     @State private var confirmDrop = false
+    @State private var assetsReady = LocalEmbedder.hasAssets
+    @State private var loadingAssets = false
+    @State private var assetProblem: String?
 
     var body: some View {
         @Bindable var model = model
@@ -31,9 +34,11 @@ struct MemorySettingsView: View {
 
                     if model.settings.memory.enabled {
                         VStack(alignment: .leading, spacing: 12) {
-                            if !BundledSetup.isManaged {
-                            EH.label("Einbettungen")
-                            Text("Für das Wiederfinden braucht es Vektoren. Der Endpoint spricht dasselbe Format wie dein Modell — oft derselbe Anbieter.")
+                            sourceSection
+
+                            if !BundledSetup.isManaged, model.settings.memory.source == .endpoint {
+                            EH.label("Endpoint")
+                            Text("Der Endpoint spricht dasselbe Format wie dein Modell — oft derselbe Anbieter.")
                                 .font(.eh(12, .caption)).foregroundStyle(EH.muted)
                             field("Endpoint", text: $model.settings.memory.embeddingBaseURL,
                                   placeholder: "https://api.beispiel.dev")
@@ -145,12 +150,116 @@ struct MemorySettingsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task {
             stored = Keychain.has(account: model.settings.memory.embeddingKeychainAccount)
+            // Die Wahrheit über das Modell steht im Dateisystem, nicht in einer
+            // Zustandsvariablen von vorhin: ein Download kann angekommen sein,
+            // während dieser Bildschirm zu war.
+            assetsReady = LocalEmbedder.hasAssets
             await MemoryStore.shared.load()
             counts = await MemoryStore.shared.counts
             await refreshIndex()
             model.memoryProgress.pending = index.needsWork
         }
         .onDisappear { model.persist() }
+    }
+
+    // MARK: Woher die Vektoren kommen
+
+    /// Die Wahl zwischen Endpoint und Gerät — mit den gemessenen Zahlen daneben.
+    ///
+    /// Beide Wege haben einen klaren Preis, und keiner davon ist eine Meinung: das
+    /// Netzmodell trifft öfter, das Gerät gibt nichts heraus und kostet 108 MB. Wer
+    /// das entscheiden soll, soll beides sehen.
+    @ViewBuilder
+    private var sourceSection: some View {
+        @Bindable var model = model
+
+        EH.label("Einbettungen")
+
+        Picker("Woher", selection: $model.settings.memory.source) {
+            Text("Dein Endpoint").tag(MemoryConfig.Source.endpoint)
+            Text("Auf dem Gerät").tag(MemoryConfig.Source.onDevice)
+        }
+        .pickerStyle(.segmented)
+        .disabled(!LocalEmbedder.isSupported)
+        .onChange(of: model.settings.memory.source) { _, _ in
+            Task { await refreshIndex() }
+        }
+
+        if model.settings.memory.source == .onDevice {
+            VStack(alignment: .leading, spacing: 8) {
+                if !LocalEmbedder.isSupported {
+                    Text("Dieses Gerät bringt das Modell nicht mit.")
+                        .font(.eh(12, .caption)).foregroundStyle(EH.bad)
+                } else if assetsReady {
+                    HStack(spacing: 7) {
+                        Image(systemName: "checkmark.circle")
+                            .font(.eh(12, .caption)).foregroundStyle(EH.good)
+                        Text("Modell liegt auf diesem Gerät.")
+                            .font(EH.bodySmall).foregroundStyle(EH.slate)
+                    }
+                } else {
+                    Button { loadAssets() } label: {
+                        HStack(spacing: 8) {
+                            if loadingAssets {
+                                ProgressView().controlSize(.mini).tint(.white)
+                            } else {
+                                Image(systemName: "arrow.down.circle").font(.eh(12, .caption))
+                            }
+                            Text(loadingAssets ? "Lädt … das dauert" : "Modell laden · 108 MB")
+                                .font(.eh(13, .footnote))
+                        }
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 14).padding(.vertical, 10)
+                        .background(RoundedRectangle(cornerRadius: EH.radius, style: .continuous)
+                            .fill(EH.navy))
+                    }
+                    .buttonStyle(EHTap())
+                    .disabled(loadingAssets)
+                }
+
+                if loadingAssets {
+                    // Apples `requestAssets()` meldet keinen Fortschritt, nur fertig
+                    // oder nicht. Einen Balken zu zeigen, der nichts misst, wäre
+                    // gelogen; also steht hier, woran man ist.
+                    Text("Apple lädt das Modell im Hintergrund. Einen Fortschritt meldet das System dabei nicht — du kannst die App in der Zwischenzeit benutzen.")
+                        .font(.eh(12, .caption)).foregroundStyle(EH.muted)
+                }
+
+                if let assetProblem {
+                    Text(assetProblem).font(.eh(12, .caption)).foregroundStyle(EH.bad)
+                }
+
+                Text("Kein Satz verlässt das Telefon, und es braucht keinen Endpoint. "
+                     + "Dafür trifft es gröber: auf neun Fragen gegen vierzehn Erinnerungen "
+                     + "fünfmal richtig gegen siebenmal beim Netzmodell. Eingebettet wird in "
+                     + "8 ms je Satz statt gut acht Sekunden für eine ganze Aufnahme.")
+                    .font(.eh(12, .caption)).foregroundStyle(EH.muted)
+            }
+        } else {
+            Text("Für das Wiederfinden braucht es Vektoren. Sie entstehen bei deinem Anbieter.")
+                .font(.eh(12, .caption)).foregroundStyle(EH.muted)
+        }
+
+        if index.foreign > 0 {
+            Text("Ein Wechsel macht den vorhandenen Index unbrauchbar — die Vektoren der "
+                 + "anderen Quelle liegen in einem anderen Raum. Sie werden ersetzt, unten steht wie viele.")
+                .font(.eh(12, .caption)).foregroundStyle(EH.warn)
+        }
+    }
+
+    private func loadAssets() {
+        loadingAssets = true
+        assetProblem = nil
+        Task {
+            do {
+                try await LocalEmbedder.requestAssets()
+                assetsReady = LocalEmbedder.hasAssets
+                if !assetsReady { assetProblem = "Das Modell wurde nicht geladen." }
+            } catch {
+                assetProblem = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+            }
+            loadingAssets = false
+        }
     }
 
     // MARK: Index
@@ -163,7 +272,7 @@ struct MemorySettingsView: View {
     /// zum eingestellten Modell überhaupt passen.
     @ViewBuilder
     private var indexSection: some View {
-        let modelName = model.settings.memory.embeddingModel.trimmingCharacters(in: .whitespaces)
+        let modelName = model.settings.memory.effectiveModel.trimmingCharacters(in: .whitespaces)
 
         VStack(alignment: .leading, spacing: 10) {
             EH.label("Index")
@@ -263,7 +372,7 @@ struct MemorySettingsView: View {
     }
 
     private func refreshIndex() async {
-        index = await MemoryStore.shared.indexStatus(model: model.settings.memory.embeddingModel)
+        index = await MemoryStore.shared.indexStatus(model: model.settings.memory.effectiveModel)
     }
 
     private func rebuild() {

@@ -52,6 +52,11 @@ struct Embedder {
     }
 
     private func embedOnce(_ texts: [String]) async throws -> [[Float]] {
+        // Auf dem Gerät gibt es keine Leitung, kein Ratenlimit und keinen
+        // Wiederholungsbedarf — der Weg endet hier.
+        if config.source == .onDevice {
+            return try await LocalEmbedder.shared.embed(texts)
+        }
         guard let url = config.embeddingURL, !config.embeddingModel.isEmpty else {
             throw MemoryError.notConfigured("Der Einbettungs-Endpoint")
         }

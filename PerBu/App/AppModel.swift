@@ -908,7 +908,7 @@ final class AppModel {
         backfillTask = Task { [weak self] in
             defer { Task { @MainActor in self?.backfillTask = nil } }
             await MemoryStore.shared.load()
-            var pending = await MemoryStore.shared.pendingEmbeddingCount(model: memoryConfig.embeddingModel)
+            var pending = await MemoryStore.shared.pendingEmbeddingCount(model: memoryConfig.effectiveModel)
             await MainActor.run { progress.pending = pending }
             guard pending > 0 else { return }
 
@@ -921,7 +921,7 @@ final class AppModel {
                         Task { @MainActor in progress.status = status }
                     })
                 guard done > 0 else { break }
-                pending = await MemoryStore.shared.pendingEmbeddingCount(model: memoryConfig.embeddingModel)
+                pending = await MemoryStore.shared.pendingEmbeddingCount(model: memoryConfig.effectiveModel)
                 await MainActor.run { progress.pending = pending }
             }
             await MainActor.run { progress.status = nil }

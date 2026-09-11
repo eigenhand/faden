@@ -33,16 +33,42 @@ struct TripletSearch {
     /// All scores are kept, not just the top ones: ranking a triplet needs the
     /// similarity of both its endpoints, and an endpoint that missed the seed cut
     /// is exactly what distinguishes two facts hanging off the same person.
+    /// Zieht den Mittelvektor ab und normiert neu.
+    ///
+    /// Nur für die Vektoren vom Gerät nötig. Bei BERT-artigen Modellen zeigen alle
+    /// Sätze in dieselbe Richtung — gemessen lagen sämtliche Kosinuswerte über 0,95,
+    /// und der Abstand zwischen einer passenden und einer unpassenden Erinnerung
+    /// betrug neun Tausendstel. Die Rangfolge überlebt das, die Mindestähnlichkeit
+    /// nicht: jeder Wert liegt über jedem Schwellwert, also filtert der Regler
+    /// nichts. Was alle gemeinsam haben, abzuziehen lässt übrig, was sie
+    /// unterscheidet, und gibt dem Regler seine Bedeutung zurück.
+    private static func centred(_ v: [Float], _ centroid: [Float]?) -> [Float] {
+        guard let centroid, centroid.count == v.count else { return v }
+        var out = [Float](repeating: 0, count: v.count)
+        var norm: Float = 0
+        for i in 0 ..< v.count {
+            let d = v[i] - centroid[i]
+            out[i] = d
+            norm += d * d
+        }
+        norm = norm.squareRoot()
+        guard norm > 0 else { return v }
+        for i in 0 ..< out.count { out[i] /= norm }
+        return out
+    }
+
     static func seeds(for queryVector: [Float],
                       nodes: [MemoryNode],
                       edges: [MemoryEdge],
                       limit: Int,
-                      minimum: Double) -> Scored {
+                      minimum: Double,
+                      centroid: [Float]? = nil) -> Scored {
+        let query = centred(queryVector, centroid)
         var nodeSimilarity: [UUID: Double] = [:]
         var nodeScores: [Seed] = []
         for n in nodes {
             guard let v = n.embedding else { continue }
-            let s = cosineSimilarity(queryVector, v)
+            let s = cosineSimilarity(query, centred(v, centroid))
             nodeSimilarity[n.id] = s
             if s >= minimum { nodeScores.append(Seed(id: n.id, similarity: s)) }
         }
@@ -50,7 +76,7 @@ struct TripletSearch {
         var edgeScores: [Seed] = []
         for e in edges {
             guard let v = e.embedding else { continue }
-            let s = cosineSimilarity(queryVector, v)
+            let s = cosineSimilarity(query, centred(v, centroid))
             edgeSimilarity[e.id] = s
             if s >= minimum { edgeScores.append(Seed(id: e.id, similarity: s)) }
         }
