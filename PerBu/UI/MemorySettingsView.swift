@@ -7,6 +7,10 @@ struct MemorySettingsView: View {
     @State private var testState: String?
     @State private var testing = false
     @State private var counts: (nodes: Int, edges: Int) = (0, 0)
+    @State private var index = MemoryStore.IndexStatus()
+    @State private var working = false
+    @State private var confirmRebuild = false
+    @State private var confirmDrop = false
 
     var body: some View {
         @Bindable var model = model
@@ -130,6 +134,8 @@ struct MemorySettingsView: View {
                             Text("Alles Gemerkte steht eine Ebene zurück unter „Gespeicherte Gedanken“ — dort einzeln nachlesen und löschen. Der Graph liegt als Datei auf diesem Gerät.")
                                 .font(.eh(12, .caption)).foregroundStyle(EH.muted)
                         }
+
+                        indexSection
                     }
                 }
                 .padding(EH.gutter)
@@ -141,9 +147,144 @@ struct MemorySettingsView: View {
             stored = Keychain.has(account: model.settings.memory.embeddingKeychainAccount)
             await MemoryStore.shared.load()
             counts = await MemoryStore.shared.counts
-            model.memoryProgress.pending = await MemoryStore.shared.pendingEmbeddingCount
+            await refreshIndex()
+            model.memoryProgress.pending = index.needsWork
         }
         .onDisappear { model.persist() }
+    }
+
+    // MARK: Index
+
+    /// Was im Index liegt, und was man damit tun kann.
+    ///
+    /// Vektoren aus zwei Modellen im selben Raum zu vergleichen ergibt keinen
+    /// Fehler, sondern eine Zahl ohne Bedeutung — und damit stille Falschtreffer.
+    /// Deshalb steht hier nicht „so viele Einbettungen", sondern wie viele davon
+    /// zum eingestellten Modell überhaupt passen.
+    @ViewBuilder
+    private var indexSection: some View {
+        let modelName = model.settings.memory.embeddingModel.trimmingCharacters(in: .whitespaces)
+
+        VStack(alignment: .leading, spacing: 10) {
+            EH.label("Index")
+
+            if index.total == 0 {
+                Text("Noch nichts eingebettet.")
+                    .font(EH.bodySmall).foregroundStyle(EH.slate)
+            } else {
+                HStack(alignment: .firstTextBaseline, spacing: 0) {
+                    zahl(index.usable, "nutzbar", EH.good)
+                    if index.foreign > 0 { zahl(index.foreign, "fremd", EH.warn) }
+                    if index.missing > 0 { zahl(index.missing, "offen", EH.muted) }
+                }
+                // Drei große Zahlen mit winzigen Kleinversalien darunter liest eine
+                // Sprachausgabe als Zahlenfolge vor. Zusammengefasst ist es ein Satz.
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(index.usable) nutzbar, \(index.foreign) fremd, \(index.missing) offen")
+                .accessibilityIdentifier("indexStatus")
+
+                if let dimension = index.dimension {
+                    Text("\(modelName.isEmpty ? "Kein Modell eingetragen" : modelName) · \(dimension) Dimensionen")
+                        .font(.eh(11, .caption)).foregroundStyle(EH.muted)
+                }
+
+                if index.foreign > 0 {
+                    let fremde = index.byModel
+                        .filter { EmbeddingStamp.normalise($0.key) != EmbeddingStamp.normalise(modelName) }
+                        .sorted { $0.value > $1.value }
+                        .map { "\($0.key) (\($0.value))" }
+                        .joined(separator: ", ")
+                    HStack(alignment: .top, spacing: 7) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.eh(12, .caption)).foregroundStyle(EH.warn)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("Aus anderer Herkunft: \(fremde)")
+                                .font(EH.bodySmall).foregroundStyle(EH.navy)
+                            Text("Diese Vektoren zählen nicht mit — sie stammen aus einem anderen Raum. Beim nächsten Nachholen werden sie ersetzt.")
+                                .font(.eh(12, .caption)).foregroundStyle(EH.muted)
+                        }
+                    }
+                }
+            }
+
+            if index.total > 0 {
+                HStack(spacing: 10) {
+                    Button { confirmRebuild = true } label: {
+                        knopf("arrow.clockwise", "Neu aufbauen")
+                    }
+                    .buttonStyle(EHTap())
+                    .disabled(working || modelName.isEmpty)
+
+                    Button { confirmDrop = true } label: {
+                        knopf("trash", "Index löschen")
+                    }
+                    .buttonStyle(EHTap())
+                    .disabled(working)
+                }
+                .opacity(working ? 0.5 : 1)
+
+                Text("Gelöscht wird nur der Index, nicht das Gemerkte. Die Fakten bleiben; bis ein neuer Index steht, findet die Ähnlichkeitssuche sie nicht. Solange das Gedächtnis an ist und ein Endpoint steht, baut Faden ihn von selbst wieder auf.")
+                    .font(.eh(12, .caption)).foregroundStyle(EH.muted)
+            }
+        }
+        .confirmationDialog("Index neu aufbauen?", isPresented: $confirmRebuild, titleVisibility: .visible) {
+            Button("\(index.total) neu einbetten", role: .destructive) { rebuild() }
+            Button("Abbrechen", role: .cancel) {}
+        } message: {
+            Text("Alle Vektoren werden verworfen und über deinen Endpoint neu geholt. Das kostet \(index.total) Einbettungen.")
+        }
+        .confirmationDialog("Index löschen?", isPresented: $confirmDrop, titleVisibility: .visible) {
+            Button("Löschen", role: .destructive) { drop() }
+            Button("Abbrechen", role: .cancel) {}
+        } message: {
+            Text("Die Vektoren werden entfernt, die Fakten bleiben.")
+        }
+    }
+
+    private func zahl(_ n: Int, _ wort: String, _ farbe: Color) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text("\(n)").font(.eh(20, .title3, weight: .semibold)).foregroundStyle(farbe)
+            EH.label(wort)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func knopf(_ symbol: String, _ titel: String) -> some View {
+        HStack(spacing: 7) {
+            Image(systemName: symbol).font(.eh(11, .caption))
+            Text(titel).font(.eh(13, .footnote))
+        }
+        .foregroundStyle(EH.slate)
+        .padding(.horizontal, 12).padding(.vertical, 9)
+        .background(RoundedRectangle(cornerRadius: EH.radius, style: .continuous).fill(EH.surface))
+        .overlay(RoundedRectangle(cornerRadius: EH.radius, style: .continuous)
+            .stroke(EH.hairStrong, lineWidth: EH.hairWidth))
+        .contentShape(Rectangle())
+    }
+
+    private func refreshIndex() async {
+        index = await MemoryStore.shared.indexStatus(model: model.settings.memory.embeddingModel)
+    }
+
+    private func rebuild() {
+        working = true
+        Task {
+            await MemoryStore.shared.dropEmbeddings(keeping: nil)
+            await refreshIndex()
+            model.memoryProgress.pending = index.needsWork
+            working = false
+            model.runBackfill()
+        }
+    }
+
+    private func drop() {
+        working = true
+        Task {
+            await MemoryStore.shared.dropEmbeddings(keeping: nil)
+            await refreshIndex()
+            model.memoryProgress.pending = index.needsWork
+            working = false
+        }
     }
 
     private func runTest() {

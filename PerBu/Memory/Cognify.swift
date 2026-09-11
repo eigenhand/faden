@@ -98,12 +98,20 @@ struct Cognify {
             }
 
             for (i, var node) in newNodes.enumerated() {
-                node.embedding = vectors.indices.contains(i) ? vectors[i] : nil
+                let vector = vectors.indices.contains(i) ? vectors[i] : nil
+                node.embedding = vector
+                node.embeddingStamp = vector.map {
+                    EmbeddingStamp(model: memory.embeddingModel, dimension: $0.count)
+                }
                 await MemoryStore.shared.upsert(node)
             }
             for (i, var edge) in newEdges.enumerated() {
                 let index = newNodes.count + i
-                edge.embedding = vectors.indices.contains(index) ? vectors[index] : nil
+                let vector = vectors.indices.contains(index) ? vectors[index] : nil
+                edge.embedding = vector
+                edge.embeddingStamp = vector.map {
+                    EmbeddingStamp(model: memory.embeddingModel, dimension: $0.count)
+                }
                 await MemoryStore.shared.upsert(edge)
             }
             await MemoryStore.shared.commit()
@@ -126,8 +134,11 @@ struct Cognify {
         guard memory.isReady else { return 0 }
         await MemoryStore.shared.load()
 
-        let nodes = await MemoryStore.shared.nodesMissingEmbeddings(limit: limit)
-        let edges = await MemoryStore.shared.edgesMissingEmbeddings(limit: limit)
+        // Fremde Vektoren zählen hier wie fehlende: sie sind vorhanden, aber im
+        // falschen Raum, und das Nachholen ist genau der Weg, auf dem sie ersetzt
+        // werden — ohne dass jemand etwas anstoßen muss.
+        let nodes = await MemoryStore.shared.nodesNeedingEmbedding(model: memory.embeddingModel, limit: limit)
+        let edges = await MemoryStore.shared.edgesNeedingEmbedding(model: memory.embeddingModel, limit: limit)
         guard !nodes.isEmpty || !edges.isEmpty else { return 0 }
 
         let embedder = Embedder(config: memory, apiKey: embeddingKey)
@@ -138,14 +149,15 @@ struct Cognify {
             onProgress?("Anbieter ausgelastet, neuer Versuch in einer Minute (\(attempt)) …")
         }) else { return 0 }
 
-        for (i, var node) in nodes.enumerated() where vectors.indices.contains(i) {
-            node.embedding = vectors[i]
-            await MemoryStore.shared.setEmbedding(vectors[i], forNode: node.id)
+        for (i, node) in nodes.enumerated() where vectors.indices.contains(i) {
+            let stamp = EmbeddingStamp(model: memory.embeddingModel, dimension: vectors[i].count)
+            await MemoryStore.shared.setEmbedding(vectors[i], stamp: stamp, forNode: node.id)
         }
         for (i, edge) in edges.enumerated() {
             let index = nodes.count + i
             guard vectors.indices.contains(index) else { continue }
-            await MemoryStore.shared.setEmbedding(vectors[index], forEdge: edge.id)
+            let stamp = EmbeddingStamp(model: memory.embeddingModel, dimension: vectors[index].count)
+            await MemoryStore.shared.setEmbedding(vectors[index], stamp: stamp, forEdge: edge.id)
         }
         await MemoryStore.shared.commit()
         return texts.count
@@ -160,8 +172,10 @@ struct Cognify {
         let embedder = Embedder(config: memory, apiKey: embeddingKey)
         let queryVector = try await embedder.embed(question)
 
-        let nodes = await MemoryStore.shared.nodesWithEmbeddings()
-        let edges = await MemoryStore.shared.edgesWithEmbeddings()
+        // Nur Vektoren aus dem eingestellten Modell. Alles andere liegt in einem
+        // anderen Raum; ein Kosinus dagegen ist eine Zahl ohne Bedeutung.
+        let nodes = await MemoryStore.shared.nodesWithEmbeddings(model: memory.embeddingModel)
+        let edges = await MemoryStore.shared.edgesWithEmbeddings(model: memory.embeddingModel)
         let scored = TripletSearch.seeds(
             for: queryVector, nodes: nodes, edges: edges,
             limit: memory.wideSearchTopK, minimum: memory.minimumSimilarity)

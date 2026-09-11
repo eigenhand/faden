@@ -240,6 +240,40 @@ final class ScrollBehaviourTests: XCTestCase {
         shot("Nach dem ersten Buchstaben")
     }
 
+    /// Einbettungen aus zwei Modellen dürfen nicht als ein Index gelten.
+    ///
+    /// Der Fehler, den das verhindert, macht keinen Lärm: wer das Einbettungsmodell
+    /// wechselt, behält die alten Vektoren, und ein Kosinus zwischen zwei Räumen
+    /// liefert Zahlen, die wie Treffer aussehen. Die Fixture stellt genau diesen Fall
+    /// her — sechs Vektoren vom eingestellten Modell plus eine Kante, drei aus einem
+    /// anderen Modell, zwei ohne Stempel aus der Zeit davor, zwei ganz ohne Vektor.
+    ///
+    /// Needs the fixture: `./seed-memory.sh <udid>` before running.
+    func testIndexClassifiesEmbeddingsByProvenance() throws {
+        app.buttons["Einstellungen"].tap()
+
+        let gedaechtnis = app.buttons.containing(
+            NSPredicate(format: "label CONTAINS %@", "Wissensgraph")).firstMatch
+        guard gedaechtnis.waitForExistence(timeout: 4) else {
+            throw XCTSkip("Gedächtnis-Fixture fehlt — ./seed-memory.sh <udid> ausführen")
+        }
+        gedaechtnis.tap()
+
+        let status = app.otherElements["indexStatus"]
+        guard status.waitForExistence(timeout: 5) else {
+            throw XCTSkip("Kein Index in der Fixture")
+        }
+        XCTAssertEqual(status.label, "7 nutzbar, 5 fremd, 2 offen",
+                       "Die Einstufung nach Herkunft stimmt nicht")
+        shot("Index nach Herkunft eingestuft")
+
+        // Die fremden zählen zur Arbeit, die noch ansteht — sonst bliebe der Index
+        // still halb falsch, statt beim nächsten Nachholen ersetzt zu werden.
+        XCTAssertTrue(app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS %@", "7 warten auf Einbettung")).firstMatch.exists,
+            "Fremde Vektoren müssen wie fehlende behandelt werden")
+    }
+
     /// Die Herkunft steht unter der Eingabezeile — in jedem Zustand dieselbe Stelle.
     ///
     /// Im Rollbereich hielt das nicht: mit vier Vorschlägen und offener Tastatur lag

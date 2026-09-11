@@ -162,41 +162,148 @@ actor MemoryStore {
         return map
     }
 
-    /// What still needs a vector — the queue the backfill works through.
-    func nodesMissingEmbeddings(limit: Int) -> [MemoryNode] {
-        Array(nodes.values.filter { $0.isValid && $0.embedding == nil }
+    // MARK: Der Index
+
+    /// Wie der gespeicherte Index zum eingestellten Modell steht.
+    struct IndexStatus: Equatable {
+        /// Vektor vorhanden und vom eingestellten Modell — nutzbar.
+        var usable = 0
+        /// Vektor vorhanden, aber aus einem anderen Modell oder mit anderer
+        /// Dimension. Rechnerisch unbrauchbar, muss neu eingebettet werden.
+        var foreign = 0
+        /// Noch gar kein Vektor.
+        var missing = 0
+        /// Welche Modelle im Index stecken, mit Anzahl — damit sichtbar ist,
+        /// *was* da liegt, statt nur, dass etwas nicht passt.
+        var byModel: [String: Int] = [:]
+        /// Die Dimension, auf die sich das eingestellte Modell eingependelt hat.
+        var dimension: Int?
+
+        var total: Int { usable + foreign + missing }
+        var needsWork: Int { foreign + missing }
+        var isClean: Bool { needsWork == 0 }
+    }
+
+    /// Die Dimension, die das eingestellte Modell hier tatsächlich liefert.
+    ///
+    /// Nicht aus einer Tabelle, sondern aus dem Bestand: Anbieter ändern die Länge
+    /// unter demselben Modellnamen. Die häufigste gewinnt; Ausreißer gelten damit
+    /// als fremd und werden neu geholt.
+    private func dominantDimension(for model: String) -> Int? {
+        let wanted = EmbeddingStamp.normalise(model)
+        var counts: [Int: Int] = [:]
+        for stamp in allStamps() where EmbeddingStamp.normalise(stamp.model) == wanted {
+            counts[stamp.dimension, default: 0] += 1
+        }
+        return counts.max { $0.value < $1.value }?.key
+    }
+
+    private func allStamps() -> [EmbeddingStamp] {
+        nodes.values.filter(\.isValid).compactMap(\.embeddingStamp)
+            + edges.values.filter(\.isValid).compactMap(\.embeddingStamp)
+    }
+
+    func indexStatus(model: String) -> IndexStatus {
+        var status = IndexStatus()
+        status.dimension = dominantDimension(for: model)
+
+        func classify(embedding: [Float]?, stamp: EmbeddingStamp?) {
+            guard embedding != nil else { status.missing += 1; return }
+            if let stamp {
+                status.byModel[stamp.model, default: 0] += 1
+                if stamp.matches(model: model, dimension: status.dimension) {
+                    status.usable += 1
+                } else {
+                    status.foreign += 1
+                }
+            } else {
+                // Vektor ohne Stempel: aus einer Fassung vor dieser Kennzeichnung.
+                // Unbekannte Herkunft ist so gut wie falsche Herkunft.
+                status.byModel["unbekannt", default: 0] += 1
+                status.foreign += 1
+            }
+        }
+
+        for n in nodes.values where n.isValid { classify(embedding: n.embedding, stamp: n.embeddingStamp) }
+        for e in edges.values where e.isValid { classify(embedding: e.embedding, stamp: e.embeddingStamp) }
+        return status
+    }
+
+    /// Alles, was für das eingestellte Modell noch einen Vektor braucht — fehlend
+    /// wie fremd. Die Warteschlange des Nachholens.
+    func nodesNeedingEmbedding(model: String, limit: Int) -> [MemoryNode] {
+        let dimension = dominantDimension(for: model)
+        return Array(nodes.values
+            .filter { $0.isValid && !usable($0.embedding, $0.embeddingStamp, model, dimension) }
             .sorted { $0.updatedAt > $1.updatedAt }
             .prefix(limit))
     }
 
-    func edgesMissingEmbeddings(limit: Int) -> [MemoryEdge] {
-        Array(edges.values.filter { $0.isValid && $0.embedding == nil }
+    func edgesNeedingEmbedding(model: String, limit: Int) -> [MemoryEdge] {
+        let dimension = dominantDimension(for: model)
+        return Array(edges.values
+            .filter { $0.isValid && !usable($0.embedding, $0.embeddingStamp, model, dimension) }
             .sorted { $0.createdAt > $1.createdAt }
             .prefix(limit))
     }
 
-    var pendingEmbeddingCount: Int {
-        nodes.values.filter { $0.isValid && $0.embedding == nil }.count
-            + edges.values.filter { $0.isValid && $0.embedding == nil }.count
+    private func usable(_ embedding: [Float]?, _ stamp: EmbeddingStamp?,
+                        _ model: String, _ dimension: Int?) -> Bool {
+        guard embedding != nil, let stamp else { return false }
+        return stamp.matches(model: model, dimension: dimension)
     }
 
-    func setEmbedding(_ vector: [Float], forNode id: UUID) {
+    func pendingEmbeddingCount(model: String) -> Int {
+        indexStatus(model: model).needsWork
+    }
+
+    /// Wirft Vektoren weg — entweder alle, oder alles außer dem einen Modell.
+    ///
+    /// Weggeworfen statt aufgehoben, und zwar aus Platzgründen: ein Vektor mit 4096
+    /// Dimensionen belegt in dieser JSON-Datei rund 48 KB. Zwei Modelle nebeneinander
+    /// aufzuheben verdoppelt eine Datei, die ohnehin bei jedem Start vollständig
+    /// gelesen wird.
+    @discardableResult
+    func dropEmbeddings(keeping model: String?) -> Int {
+        let dimension = model.flatMap { dominantDimension(for: $0) }
+        var dropped = 0
+
+        for (id, var n) in nodes where n.embedding != nil {
+            if let model, usable(n.embedding, n.embeddingStamp, model, dimension) { continue }
+            n.embedding = nil; n.embeddingStamp = nil
+            nodes[id] = n; dropped += 1
+        }
+        for (id, var e) in edges where e.embedding != nil {
+            if let model, usable(e.embedding, e.embeddingStamp, model, dimension) { continue }
+            e.embedding = nil; e.embeddingStamp = nil
+            edges[id] = e; dropped += 1
+        }
+        save()
+        return dropped
+    }
+
+    func setEmbedding(_ vector: [Float], stamp: EmbeddingStamp, forNode id: UUID) {
         guard var n = nodes[id] else { return }
         n.embedding = vector
+        n.embeddingStamp = stamp
         nodes[id] = n
     }
 
-    func setEmbedding(_ vector: [Float], forEdge id: UUID) {
+    func setEmbedding(_ vector: [Float], stamp: EmbeddingStamp, forEdge id: UUID) {
         guard var e = edges[id] else { return }
         e.embedding = vector
+        e.embeddingStamp = stamp
         edges[id] = e
     }
 
-    func nodesWithEmbeddings() -> [MemoryNode] {
-        nodes.values.filter { $0.isValid && $0.embedding != nil }
+    /// Was die Suche benutzen darf: nur Vektoren aus dem eingestellten Modell.
+    func nodesWithEmbeddings(model: String) -> [MemoryNode] {
+        let dimension = dominantDimension(for: model)
+        return nodes.values.filter { $0.isValid && usable($0.embedding, $0.embeddingStamp, model, dimension) }
     }
 
-    func edgesWithEmbeddings() -> [MemoryEdge] {
-        edges.values.filter { $0.isValid && $0.embedding != nil }
+    func edgesWithEmbeddings(model: String) -> [MemoryEdge] {
+        let dimension = dominantDimension(for: model)
+        return edges.values.filter { $0.isValid && usable($0.embedding, $0.embeddingStamp, model, dimension) }
     }
 }

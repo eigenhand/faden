@@ -28,6 +28,36 @@ struct ExtractedEdge: Codable, Equatable {
 
 // MARK: - Stored graph
 
+/// Woher ein Vektor stammt.
+///
+/// Zwei Einbettungen sind nur dann vergleichbar, wenn sie aus demselben Modell
+/// kommen. Ohne diesen Stempel stand am Knoten nur die Zahlenreihe: wer in den
+/// Einstellungen das Einbettungsmodell wechselte, behielt die alten Vektoren, und
+/// die Ähnlichkeitssuche rechnete danach zwischen zwei Räumen, die nichts
+/// miteinander zu tun haben. Das schlägt nicht fehl, es liefert still Unsinn —
+/// die schlechteste Art von Fehler.
+///
+/// Die Dimension steht dabei, weil der Name allein nicht reicht: derselbe
+/// Modellname liefert je nach Anbieter und Einstellung unterschiedlich lange
+/// Vektoren, und ein Kosinus zwischen verschieden langen Vektoren ist nicht
+/// falsch berechnet, sondern gar nicht definiert.
+struct EmbeddingStamp: Codable, Equatable {
+    var model: String
+    var dimension: Int
+
+    /// Modellnamen kommen aus einem Textfeld — Groß-/Kleinschreibung und
+    /// Leerzeichen sollen keinen Neuaufbau des Index auslösen.
+    static func normalise(_ model: String) -> String {
+        model.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
+    func matches(model: String, dimension: Int?) -> Bool {
+        guard Self.normalise(self.model) == Self.normalise(model) else { return false }
+        guard let dimension else { return true }
+        return self.dimension == dimension
+    }
+}
+
 /// A node in the persisted memory graph — cognee's `DataPoint`, reduced to the
 /// fields that carry weight on a phone.
 struct MemoryNode: Identifiable, Codable, Equatable {
@@ -47,6 +77,9 @@ struct MemoryNode: Identifiable, Codable, Equatable {
     var mentions: Int = 1
     /// Embedding of the node's embeddable text.
     var embedding: [Float]?
+    /// Aus welchem Modell dieser Vektor stammt. `nil` heißt: aus einer Fassung vor
+    /// dieser Kennzeichnung, also unbekannter Herkunft und damit unbrauchbar.
+    var embeddingStamp: EmbeddingStamp?
 
     var isValid: Bool { validTo == nil }
 
@@ -79,6 +112,7 @@ struct MemoryEdge: Identifiable, Codable, Equatable {
     var validTo: Date?
     var mentions: Int = 1
     var embedding: [Float]?
+    var embeddingStamp: EmbeddingStamp?
     /// Adjusted by feedback; cognee weights triplets by it during ranking.
     var weight: Double = 1.0
 
