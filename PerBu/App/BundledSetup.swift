@@ -46,6 +46,14 @@ enum BundledSetup {
     /// and multiplied again by every tool round. At that point it does not read as
     /// slow, it reads as broken.
     static let chatModel = "z-ai/glm-5.3-flash"
+
+    /// Woraufhin ausgewichen wird, wenn das Hauptmodell nicht antwortet.
+    ///
+    /// Es ist das langsamere der beiden — gemessen 72 s gegen 12 s auf derselben
+    /// Frage, weshalb es nicht das Hauptmodell ist. Als Ausweichmodell ist genau das
+    /// die richtige Wahl: langsam schlägt kaputt. Ein Anbieter nimmt selten zwei
+    /// Modelle gleichzeitig vom Netz.
+    static let fallbackChatModel = "qwen/qwen3.8-flash-next"
     static let contextWindow = 1_048_576
     static let maxOutputTokens = 64_000
 

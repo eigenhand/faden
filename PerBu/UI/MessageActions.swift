@@ -19,10 +19,17 @@ struct MessageActions: View {
 
     @State private var copied = false
 
-    /// Only worth naming when more than one model is set up — otherwise it is noise
-    /// on every single answer.
+    /// Nennenswert, wenn mehrere Modelle eingerichtet sind — oder wenn geantwortet
+    /// hat, was gar nicht eingestellt war.
+    ///
+    /// Der zweite Fall ist das Ausweichmodell: es springt ein, ohne zu fragen, und
+    /// still die Antwort einer anderen Maschine unterzuschieben wäre genau die Art
+    /// von Hilfsbereitschaft, die einem später niemand glaubt. Sonst bleibt die
+    /// Zeile weg, weil sie unter jeder einzelnen Antwort Lärm wäre.
     private var attribution: String? {
-        guard model.settings.llms.count > 1, let name = message.producedBy else { return nil }
+        guard let name = message.producedBy else { return nil }
+        let eingestellt = model.settings.activeLLM?.model
+        guard model.settings.llms.count > 1 || name != eingestellt else { return nil }
         return name.split(separator: "/").last.map(String.init) ?? name
     }
 
@@ -101,10 +108,15 @@ struct MessageActions: View {
             Spacer(minLength: 0)
 
             if let attribution {
+                // Nachrangig im Platz: die Zeile ist eine Auskunft, die Knöpfe sind
+                // Bedienelemente. Ohne das nahm der Modellname sich seine Breite und
+                // die Beschriftungen brachen um — „Kopiere / n", „Nochm / al".
                 Text(attribution)
                     .font(.eh(10, .caption2))
                     .foregroundStyle(EH.muted)
                     .lineLimit(1)
+                    .truncationMode(.tail)
+                    .layoutPriority(-1)
                     .accessibilityLabel("beantwortet von \(attribution)")
             }
         }
@@ -117,6 +129,7 @@ struct MessageActions: View {
                 Text(label).font(.eh(10, .caption2, weight: .medium)).tracking(0.4)
             }
             .foregroundStyle(EH.muted)
+            .fixedSize()
         }
         .buttonStyle(EHTap())
         .accessibilityLabel(label)

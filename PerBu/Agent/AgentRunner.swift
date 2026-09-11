@@ -304,6 +304,45 @@ struct AgentRunner {
         return out.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    // MARK: Ausweichen
+
+    /// Das Ausweichmodell für diesen Endpoint, oder nil.
+    ///
+    /// Gebunden an die Basis-URL, nicht an „dies ist ein Testflight-Build": das
+    /// Ausweichmodell liegt bei einem bestimmten Anbieter, und wer in derselben App
+    /// seinen eigenen Endpoint einträgt, bekäme sonst einen Modellnamen vorgesetzt,
+    /// den sein Anbieter nicht kennt — ein zweiter Fehlschlag statt einer Rettung.
+    static func fallbackModel(for config: LLMConfig) -> String? {
+        let base = config.baseURL.trimmingCharacters(in: CharacterSet(charactersIn: "/ "))
+        guard base == BundledSetup.baseURL.trimmingCharacters(in: CharacterSet(charactersIn: "/ ")),
+              !BundledSetup.fallbackChatModel.isEmpty,
+              config.model != BundledSetup.fallbackChatModel
+        else { return nil }
+        return BundledSetup.fallbackChatModel
+    }
+
+    /// Ob ein anderes Modell diesen Fehler überhaupt beheben könnte.
+    ///
+    /// Ausgenommen ist, was lokal feststeht — kein Endpoint, kein Schlüssel — und
+    /// HTTP 401, weil ein falscher Schlüssel mit jedem Modellnamen falsch bleibt.
+    ///
+    /// **403 ist ausdrücklich dabei**, und das ist gemessen, nicht überlegt. Beim
+    /// ersten Versuch stand hier `status != 403`, weil 403 nach Schlüsselproblem
+    /// aussieht. Der Anbieter antwortet auf ein unbekanntes Modell aber genau so:
+    /// „key not allowed to access model. This key can only access models=['public']".
+    /// Das ist eine Absage an das *Modell*, nicht an den Schlüssel — also der Fall,
+    /// für den das Ausweichen gebaut wurde, und er wäre still übersprungen worden.
+    static func isWorthRetrying(_ error: Error) -> Bool {
+        if let llm = error as? LLMError {
+            switch llm {
+            case .notConfigured, .missingKey: return false
+            case .http(let status, _):        return status != 401
+            case .transport, .decoding:       return true
+            }
+        }
+        return true
+    }
+
     // MARK: The loop
 
     /// Streams one turn. `history` is mutated in place so the caller keeps the exact
@@ -320,6 +359,11 @@ struct AgentRunner {
             providerName: settings.activeRecipe?.name)
         let provider = ProviderFactory.make(for: config.wireFormat)
 
+        // Veränderbar, weil bei einem Fehlschlag das Modell gewechselt wird. Die
+        // Einstellungen des Nutzers bleiben unberührt — das gilt für diesen Zug.
+        var activeConfig = config
+        var didFallBack = false
+
         var iteration = 0
         while iteration < maxIterations {
             iteration += 1
@@ -328,6 +372,7 @@ struct AgentRunner {
             var thinking = ""
             var pendingCalls: [(id: String, name: String, input: JSONValue)] = []
             var failure: String?
+            var caught: Error?
 
             do {
                 // Stamped here rather than stored: the conversation on disk stays
@@ -335,7 +380,7 @@ struct AgentRunner {
                 for try await event in provider.stream(
                     messages: TurnContext.applied(to: history, memories: recalled),
                     system: system, tools: tools,
-                    config: config, apiKey: apiKey
+                    config: activeConfig, apiKey: apiKey
                 ) {
                     if Task.isCancelled { break }
                     switch event {
@@ -359,9 +404,23 @@ struct AgentRunner {
                 failure = nil
             } catch {
                 failure = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+                caught = error
             }
 
             if let failure {
+                // Einmal auf das Ausweichmodell, und nur solange nichts angekommen
+                // ist. Nach den ersten Zeichen wäre es kein zweiter Versuch mehr,
+                // sondern eine zweite Antwort hinter der halben ersten — der Leser
+                // sähe den Bruch mitten im Satz.
+                if !didFallBack,
+                   text.isEmpty, thinking.isEmpty, pendingCalls.isEmpty,
+                   let error = caught, Self.isWorthRetrying(error),
+                   let fallback = Self.fallbackModel(for: activeConfig) {
+                    didFallBack = true
+                    activeConfig.model = fallback
+                    iteration -= 1          // dieselbe Runde noch einmal
+                    continue
+                }
                 await onEvent(.failed(failure))
                 return
             }
@@ -377,7 +436,8 @@ struct AgentRunner {
                 return
             }
             var reply = Message(role: .assistant, blocks: blocks)
-            reply.producedBy = config.model
+            // Das Modell, das wirklich geantwortet hat — nicht das eingestellte.
+            reply.producedBy = activeConfig.model
             history.append(reply)
 
             guard !pendingCalls.isEmpty else {
