@@ -67,7 +67,9 @@ enum ConversationTransfer {
             .replacingOccurrences(of: ":", with: "-")
             .trimmingCharacters(in: .whitespacesAndNewlines)
         let stem = title.isEmpty ? "Unterhaltung" : String(title.prefix(60))
-        return stem + ".perbu"
+        // Neue Dateien heißen .faden; .perbu bleibt in der Info.plist als
+        // gültige Endung stehen, damit die aus den Builds davor weiter aufgehen.
+        return stem + ".faden"
     }
 }
 

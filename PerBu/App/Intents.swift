@@ -16,7 +16,7 @@ final class IntentInbox {
     var question: String?
 }
 
-/// "Frag PerBu …" — from Siri, Spotlight, the Shortcuts app and the Action button.
+/// "Frag Faden …" — from Siri, Spotlight, the Shortcuts app and the Action button.
 ///
 /// This is the cheapest re-entry point there is: no extension, no app group, no
 /// second bundle identifier, nothing to register in the developer portal. It is
@@ -24,9 +24,9 @@ final class IntentInbox {
 /// reach for when they are not already looking at it — which is the whole problem
 /// with an app that only exists once you have found and tapped it.
 struct AskPerBu: AppIntent {
-    static let title: LocalizedStringResource = "PerBu fragen"
+    static let title: LocalizedStringResource = "Faden fragen"
     static let description = IntentDescription(
-        "Stellt PerBu eine Frage und öffnet die Antwort in der App.")
+        "Stellt Faden eine Frage und öffnet die Antwort in der App.")
 
     /// The answer belongs in the transcript, where it can be followed up, quoted and
     /// remembered — not in a one-shot dialog that disappears.
@@ -36,7 +36,7 @@ struct AskPerBu: AppIntent {
     var question: String
 
     static var parameterSummary: some ParameterSummary {
-        Summary("PerBu \(\.$question) fragen")
+        Summary("Faden \(\.$question) fragen")
     }
 
     @MainActor
@@ -51,7 +51,7 @@ struct AskPerBu: AppIntent {
 /// Opens the app on an empty chat, ready to type.
 struct NewPerBuChat: AppIntent {
     static let title: LocalizedStringResource = "Neue Unterhaltung"
-    static let description = IntentDescription("Öffnet PerBu mit einem leeren Chat.")
+    static let description = IntentDescription("Öffnet Faden mit einem leeren Chat.")
     static let openAppWhenRun = true
 
     @MainActor

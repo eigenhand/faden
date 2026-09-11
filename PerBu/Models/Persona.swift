@@ -51,7 +51,7 @@ struct Persona: Codable, Equatable {
     /// What the assistant is called. Empty means the app's own name.
     var name: String = ""
 
-    var displayName: String { name.isEmpty ? "PerBu" : name }
+    var displayName: String { name.isEmpty ? "Faden" : name }
 
     /// The paragraph that goes into the system prompt.
     var instructions: String {

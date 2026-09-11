@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Walks the user through teaching PerBu an unknown search endpoint.
+/// Walks the user through teaching Faden an unknown search endpoint.
 ///
 /// Step one asks which model should do the reading. Step two probes the endpoint
 /// until it answers 200, hands the shape of that answer to the chosen model, and
@@ -80,7 +80,7 @@ struct AutoConfigView: View {
                                         .fill(EH.surface))
                                     .overlay(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
                                         .stroke(EH.hair, lineWidth: EH.hairWidth))
-                                Text("Mit dieser Anfrage klopft PerBu den Endpoint ab, bis eine gültige Antwort zurückkommt.")
+                                Text("Mit dieser Anfrage klopft Faden den Endpoint ab, bis eine gültige Antwort zurückkommt.")
                                     .font(.eh(12, .caption)).foregroundStyle(EH.muted)
                             }
 

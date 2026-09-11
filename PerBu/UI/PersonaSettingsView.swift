@@ -22,7 +22,7 @@ struct PersonaSettingsView: View {
 
                     VStack(alignment: .leading, spacing: 8) {
                         EH.label("Name")
-                        TextField("PerBu", text: $model.settings.persona.name)
+                        TextField("Faden", text: $model.settings.persona.name)
                             .font(EH.body).foregroundStyle(EH.navy)
                             .textFieldStyle(.plain)
                             .padding(.horizontal, 12).padding(.vertical, 10)

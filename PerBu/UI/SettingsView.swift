@@ -232,7 +232,7 @@ struct SettingsView: View {
 
                         VStack(alignment: .leading, spacing: 6) {
                             BrandRule(width: 40)
-                            Text("Keys liegen im Schlüsselbund dieses Geräts. Der Verlauf bleibt lokal. PerBu spricht ausschließlich mit den Endpoints, die du hier einträgst.")
+                            Text("Keys liegen im Schlüsselbund dieses Geräts. Der Verlauf bleibt lokal. Faden spricht ausschließlich mit den Endpoints, die du hier einträgst.")
                                 .font(.eh(12, .caption))
                                 .foregroundStyle(EH.muted)
 

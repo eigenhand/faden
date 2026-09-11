@@ -34,7 +34,7 @@ struct MemoryView: View {
                         BrandRule()
                         EH.label("noch nichts gemerkt")
                         Text(model.settings.memory.isReady
-                             ? "Nach ein paar Gesprächen steht hier, was PerBu über dich weiß."
+                             ? "Nach ein paar Gesprächen steht hier, was Faden über dich weiß."
                              : "Richte unter Einstellungen › Gedächtnis einen Einbettungs-Endpoint ein.")
                             .font(EH.bodySmall).foregroundStyle(EH.slate)
                             .multilineTextAlignment(.center).padding(.horizontal, 40)

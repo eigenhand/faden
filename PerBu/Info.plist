@@ -5,12 +5,12 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>de</string>
 	<key>CFBundleDisplayName</key>
-	<string>PerBu</string>
+	<string>Faden</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleTypeName</key>
-			<string>PerBu-Unterhaltung</string>
+			<string>Faden-Unterhaltung</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>LSHandlerRank</key>
@@ -44,9 +44,9 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Zum Fotografieren einer Vorlage, die du dem Modell zeigen möchtest. Das Bild geht nur an den Endpoint, den du eingerichtet hast.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Zum Diktieren und für den Sprachmodus nimmt PerBu auf, während du die Taste hältst.</string>
+	<string>Zum Diktieren und für den Sprachmodus nimmt Faden auf, während du die Taste hältst.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Für das Diktat wandelt PerBu deine Aufnahme in Text um — mit Apples Spracherkennung auf dem Gerät, sofern verfügbar.</string>
+	<string>Für das Diktat wandelt Faden deine Aufnahme in Text um — mit Apples Spracherkennung auf dem Gerät, sofern verfügbar.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -71,17 +71,19 @@
 				<string>public.json</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>PerBu-Unterhaltung</string>
+			<string>Faden-Unterhaltung</string>
 			<key>UTTypeIdentifier</key>
 			<string>dev.eigenhand.perbu.conversation</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
 				<array>
+					<string>faden</string>
 					<string>perbu</string>
 				</array>
 				<key>public.mime-type</key>
 				<array>
+					<string>application/vnd.faden+json</string>
 					<string>application/vnd.perbu+json</string>
 				</array>
 			</dict>

@@ -336,7 +336,7 @@ struct ChatView: View {
             HStack(spacing: 7) {
                 Image(systemName: "arrow.down")
                     .font(.eh(11, .caption, weight: .medium))
-                Text(model.isStreaming ? "PerBu schreibt weiter" : "Zum Ende")
+                Text(model.isStreaming ? "Faden schreibt weiter" : "Zum Ende")
                     .font(.eh(12, .caption))
             }
             .foregroundStyle(EH.slate)
@@ -815,7 +815,7 @@ struct EmptyState: View {
             } else {
                 VStack(spacing: 14) {
                     EH.label("Noch nichts eingerichtet")
-                    Text("PerBu bringt kein Modell und keinen Suchanbieter mit. Trage deinen Endpoint, deinen Key und den Modellnamen ein — alles bleibt auf diesem Gerät.")
+                    Text("Faden bringt kein Modell und keinen Suchanbieter mit. Trage deinen Endpoint, deinen Key und den Modellnamen ein — alles bleibt auf diesem Gerät.")
                         .font(EH.bodySmall)
                         .foregroundStyle(EH.slate)
                         .multilineTextAlignment(.center)

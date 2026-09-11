@@ -112,7 +112,7 @@ struct SpeechSettingsView: View {
                     // ---- Hands-free
                     VStack(alignment: .leading, spacing: 10) {
                         EH.label("Freihändig sprechen")
-                        Text("Im Sprachmodus sendet PerBu von selbst, sobald du eine Weile still bist, "
+                        Text("Im Sprachmodus sendet Faden von selbst, sobald du eine Weile still bist, "
                              + "liest die Antwort vor und hört dann wieder zu. Zu erreichen über das "
                              + "Wellen-Symbol oben im Chat.")
                             .font(.eh(12, .caption)).foregroundStyle(EH.muted)

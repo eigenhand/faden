@@ -215,7 +215,7 @@ struct SearchEditor: View {
                 showAdvanced = true
             }
         } message: { offer in
-            Text(offer.reason + "\n\nPerBu kann den Endpoint selbst abklopfen, sich die Antwort ansehen und den Parser von einem deiner Modelle ableiten lassen. Der fertige Parser läuft danach lokal auf diesem Gerät.")
+            Text(offer.reason + "\n\nFaden kann den Endpoint selbst abklopfen, sich die Antwort ansehen und den Parser von einem deiner Modelle ableiten lassen. Der fertige Parser läuft danach lokal auf diesem Gerät.")
         }
     }
 

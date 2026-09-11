@@ -19,7 +19,7 @@ struct MemorySettingsView: View {
                     Toggle(isOn: $model.settings.memory.enabled) {
                         VStack(alignment: .leading, spacing: 3) {
                             Text("Gedächtnis führen").font(EH.body).foregroundStyle(EH.navy)
-                            Text("PerBu baut aus euren Gesprächen einen Wissensgraphen: Dinge und ihre Beziehungen, statt loser Notizen.")
+                            Text("Faden baut aus euren Gesprächen einen Wissensgraphen: Dinge und ihre Beziehungen, statt loser Notizen.")
                                 .font(.eh(12, .caption)).foregroundStyle(EH.muted)
                         }
                     }
@@ -113,7 +113,7 @@ struct MemorySettingsView: View {
                                     VStack(alignment: .leading, spacing: 3) {
                                         Text("\(model.memoryProgress.pending) warten auf Einbettung")
                                             .font(EH.bodySmall).foregroundStyle(EH.navy)
-                                        Text("Die Fakten sind gespeichert, nur noch nicht durchsuchbar. PerBu versucht es im Minutentakt weiter.")
+                                        Text("Die Fakten sind gespeichert, nur noch nicht durchsuchbar. Faden versucht es im Minutentakt weiter.")
                                             .font(.eh(12, .caption)).foregroundStyle(EH.muted)
                                     }
                                 }
