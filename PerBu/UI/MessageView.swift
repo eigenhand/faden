@@ -76,6 +76,17 @@ private struct QuestionHeading: View {
     let message: Message
     var onEdit: () -> Void = {}
 
+    /// Wie viel von einer Frage oben steht, bevor sie aufgeklappt werden muss.
+    ///
+    /// Eine Frage ist die Überschrift ihres Zuges — und eine Überschrift, die den
+    /// halben Bildschirm füllt, ist keine mehr. Wer etwas Langes einwirft, einen
+    /// Textauszug oder eine Liste, bekommt sonst zwanzig Punkt Halbfett über die
+    /// ganze Seite und findet die Antwort nicht mehr, die darunter anfängt.
+    private static let collapsedLines = 3
+
+    @State private var expanded = false
+    @State private var truncated = false
+
     private var images: [(data: String, mediaType: String)] {
         message.blocks.compactMap {
             if case .image(let d, let m) = $0 { return (d, m) }
@@ -108,11 +119,17 @@ private struct QuestionHeading: View {
                     }
                 }
                 if !text.isEmpty {
-                    Text(text)
+                    // Über den Zwischenspeicher, nicht frisch geparst: das Transkript
+                    // baut sich bei jedem gestreamten Token neu auf, und Markdown in
+                    // `body` zu zerlegen war schon einmal die Stelle, an der die CPU
+                    // beim Scrollen festhing.
+                    Text(MarkdownCache.shared.inline(text))
                         .font(EH.question)
                         .foregroundStyle(EH.navy)
                         .textSelection(.enabled)
+                        .lineLimit(expanded ? nil : Self.collapsedLines)
                         .fixedSize(horizontal: false, vertical: true)
+                        .background(measureOverflow)
                         .contentShape(Rectangle())
                         // Editing a misunderstood question beats asking again further
                         // down, where the misunderstanding keeps steering the thread.
@@ -126,10 +143,50 @@ private struct QuestionHeading: View {
                                 Label("Kopieren", systemImage: "doc.on.doc")
                             }
                         }
+
+                    if truncated { unfoldButton }
                 }
             }
             Spacer(minLength: 0)
         }
+    }
+
+    /// Ob der Text in die drei Zeilen passt — gemessen, nicht geschätzt.
+    ///
+    /// `ViewThatFits` bekommt hier den Platz angeboten, den die gekürzte Fassung
+    /// belegt, und nimmt den vollen Text nur, wenn er hineinpasst. Tut er es nicht,
+    /// greift die Ausweichfassung — und genau das ist die Antwort auf die Frage.
+    /// Über Zeichenzahl zu raten ginge daneben, sobald jemand die Textgröße ändert
+    /// oder das Gerät dreht.
+    private var measureOverflow: some View {
+        ViewThatFits(in: .vertical) {
+            Text(MarkdownCache.shared.inline(text))
+                .font(EH.question)
+                .hidden()
+            Color.clear.onAppear { truncated = true }
+        }
+        .allowsHitTesting(false)
+    }
+
+    private var unfoldButton: some View {
+        Button {
+            withAnimation(.easeOut(duration: 0.2)) { expanded.toggle() }
+        } label: {
+            HStack(spacing: 5) {
+                Image(systemName: "chevron.down")
+                    .font(.eh(8, .caption2, weight: .semibold))
+                    .rotationEffect(.degrees(expanded ? 180 : 0))
+                Text(expanded ? "Weniger" : "Ganze Nachricht")
+                    .font(.eh(11, .caption, weight: .medium))
+                    .tracking(0.4)
+            }
+            .foregroundStyle(EH.muted)
+            .padding(.vertical, 6)
+            .padding(.trailing, 10)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(EHTap())
+        .accessibilityLabel(expanded ? "Nachricht einklappen" : "Ganze Nachricht zeigen")
     }
 }
 

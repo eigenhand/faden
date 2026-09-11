@@ -41,6 +41,18 @@ msgs = [
                "```swift\nfunc harvest(_ json: JSONValue) -> [SearchResult] {\n"
                "    additionalResultPaths.flatMap { collect(at: $0, in: json) }\n}\n```\n\n"
                "Eine der drei Suchen lief in ein Ratenlimit.")]},
+ # Zweiter Zug, bewusst hinter dem ersten: eine Nutzernachricht mit Text beginnt
+ # einen neuen Zug, und mitten hineingesetzt schneidet sie der ersten Antwort ihre
+ # Werkzeugergebnisse ab — samt Quellen. Die lange Frage prueft das Aufklappen.
+ {"id": str(uuid.uuid4()), "role": "user", "createdAt": now % 4, "tokens": 120,
+  "blocks": [T("Kannst du mir das **kurz einordnen**? Hier ist, was ich gefunden habe:\n"
+               "- **Sprachmodus 6**: seit einem Jahr stabil, die Umstellung bleibt Arbeit.\n"
+               "- *Sendable*: die Annotation kostet mehr, als die Einfuehrungen zugeben.\n"
+               "- `@MainActor`: verschiebt das Problem, loest es aber nicht immer.\n"
+               "Und was heisst Datenrennsicherheit in dem Zusammenhang eigentlich genau?")]},
+ {"id": str(uuid.uuid4()), "role": "assistant", "createdAt": now % 5, "tokens": 60,
+  "blocks": [T("**Datenrennsicherheit** heisst: der Compiler beweist, dass zwei "
+               "Aufgaben nicht gleichzeitig auf denselben Zustand schreiben.")]},
 ]
 import datetime
 # Auf jetzt gestempelt, damit der Start die Unterhaltung wiederherstellt statt einen

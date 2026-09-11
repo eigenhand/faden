@@ -240,6 +240,37 @@ final class ScrollBehaviourTests: XCTestCase {
         shot("Nach dem ersten Buchstaben")
     }
 
+    /// Eine lange Frage bleibt eine Überschrift, und Markdown darin wird gesetzt.
+    ///
+    /// Die Frage steht seit dem Umbau in 20 pt Halbfett. Wer einen Auszug einwirft,
+    /// füllte damit den halben Bildschirm und schob die Antwort — den Grund für die
+    /// App — unter die Falz. Drei Zeilen, dann auf Wunsch der Rest.
+    ///
+    /// Needs the fixture: `./seed-fixture.sh <udid>` before running.
+    func testLongQuestionFoldsToThreeLines() throws {
+        try openFixture()
+
+        let auf = app.buttons["Ganze Nachricht zeigen"]
+        XCTAssertTrue(auf.waitForExistence(timeout: 4),
+                      "Eine lange Frage muss sich aufklappen lassen")
+
+        // Die rohen Sternchen dürfen nicht dastehen — Markdown wird gesetzt, nicht
+        // gezeigt. Die Prüfung greift auf die gekürzte wie auf die volle Fassung.
+        XCTAssertFalse(app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS %@", "**")).firstMatch.exists,
+            "In der Frage stehen rohe Markdown-Zeichen")
+        shot("Frage auf drei Zeilen")
+
+        auf.tap()
+        let zu = app.buttons["Nachricht einklappen"]
+        XCTAssertTrue(zu.waitForExistence(timeout: 3),
+                      "Aufgeklappt muss sie sich auch wieder einklappen lassen")
+        XCTAssertTrue(app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS %@", "Datenrennsicherheit in dem Zusammenhang")).firstMatch.exists,
+            "Aufgeklappt muss der Schluss der Frage sichtbar sein")
+        shot("Frage ganz")
+    }
+
     /// Einbettungen aus zwei Modellen dürfen nicht als ein Index gelten.
     ///
     /// Der Fehler, den das verhindert, macht keinen Lärm: wer das Einbettungsmodell
