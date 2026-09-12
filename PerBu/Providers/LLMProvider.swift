@@ -37,6 +37,54 @@ enum LLMError: LocalizedError {
     }
 }
 
+extension Array where Element == Message {
+
+    /// Entfernt Werkzeugaufrufe, zu denen kein Ergebnis in der Historie steht —
+    /// und Ergebnisse, zu denen kein Aufruf steht.
+    ///
+    /// Beide Formate verlangen die Paarung. OpenAI-kompatible Endpoints antworten
+    /// auf eine Assistenznachricht mit `tool_calls` ohne passende `tool`-Nachrichten
+    /// mit HTTP 400, Anthropic ebenso. Und weil bei jeder Anfrage die *ganze*
+    /// Historie mitgeht, ist ein einziges verwaistes Paar kein einmaliger Fehler:
+    /// ab da geht in diesem Gespräch keine Nachricht mehr durch. Genau so ist es
+    /// aufgefallen — zwei Antworten mit Quellen, und danach nichts mehr.
+    ///
+    /// Entstehen kann es beim Abbrechen: das Modell hat die Aufrufe schon gestellt,
+    /// die Werkzeuge sind noch nicht gelaufen. Die Stelle ist repariert, aber das
+    /// hilft keinem Gespräch, das schon auf dem Gerät liegt. Deshalb steht der
+    /// Schutz hier, an der Leitung, wo jede Anfrage vorbeimuss.
+    func pairingToolCallsAndResults() -> [Message] {
+        var called: Set<String> = []
+        var answered: Set<String> = []
+        for m in self {
+            for b in m.blocks {
+                switch b {
+                case .toolUse(let id, _, _):    called.insert(id)
+                case .toolResult(let id, _, _): answered.insert(id)
+                default: break
+                }
+            }
+        }
+        // Der Normalfall, und er soll nichts kosten: nichts kopieren, wenn alles paart.
+        guard called != answered else { return self }
+
+        return compactMap { m in
+            var kept: [ContentBlock] = []
+            for b in m.blocks {
+                switch b {
+                case .toolUse(let id, _, _):    if answered.contains(id) { kept.append(b) }
+                case .toolResult(let id, _, _): if called.contains(id) { kept.append(b) }
+                default: kept.append(b)
+                }
+            }
+            guard !kept.isEmpty else { return nil }
+            var out = m
+            out.blocks = kept
+            return out
+        }
+    }
+}
+
 protocol LLMProvider: Sendable {
     /// Streams a single assistant turn.
     func stream(

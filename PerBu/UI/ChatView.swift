@@ -746,9 +746,9 @@ struct ChatView: View {
     }
 
     private func submit() {
-        let text = draft
-        draft = ""
-        model.send(text)
+        // Erst leeren, wenn es angenommen wurde. Vorher war es umgekehrt, und jeder
+        // stille Ausstieg in `send` hat den getippten Text mitgenommen.
+        if model.send(draft) { draft = "" }
         // Keep the caret where the next question goes; sending from the keyboard
         // otherwise drops focus and the next keystroke goes nowhere.
         inputFocused = true

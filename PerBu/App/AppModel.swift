@@ -395,15 +395,33 @@ final class AppModel {
 
     // MARK: Sending
 
-    func send(_ text: String) {
+    /// Nimmt eine Nachricht an — oder sagt, warum nicht.
+    ///
+    /// Der Rückgabewert ist der Grund, warum es einen gibt: die Eingabezeile leerte
+    /// ihr Feld, *bevor* sie hier fragte, und dieses Verfahren hat drei stille
+    /// Ausstiege. Traf einer zu, war der getippte Text weg und nichts sagte warum —
+    /// „die Nachricht geht nicht durch". Wer den Text zerstört, muss vorher wissen,
+    /// dass er angekommen ist.
+    @discardableResult
+    func send(_ text: String) -> Bool {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         let staged = attachments
-        guard !trimmed.isEmpty || !staged.isEmpty, !isStreaming else { return }
+        guard !trimmed.isEmpty || !staged.isEmpty else { return false }
+        guard !isStreaming else {
+            // Ein laufender Zug kann acht Werkzeugrunden lang dauern — bei einer
+            // Antwort mit mehreren Quellen ist das der Normalfall, nicht die
+            // Ausnahme. Das ist die Erklärung, die vorher fehlte.
+            errorMessage = "Die Antwort läuft noch. Stoppe sie, wenn du etwas anderes fragen willst."
+            return false
+        }
         guard let config = settings.activeLLM, config.isComplete else {
             errorMessage = "Richte zuerst ein Modell ein: Endpoint, Key und Modellname."
-            return
+            return false
         }
-        guard var conversation = current else { return }
+        guard var conversation = current else {
+            errorMessage = "Keine Unterhaltung offen — öffne eine neue und versuche es nochmal."
+            return false
+        }
 
         // Images first: both wire formats read better when the picture precedes the
         // question about it.
@@ -421,6 +439,7 @@ final class AppModel {
         current = conversation
         recomputeUsage()
         runTurn(for: conversation, config: config, question: trimmed)
+        return true
     }
 
     /// Starts the model working on a conversation as it now stands.

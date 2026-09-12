@@ -10,7 +10,7 @@ struct AnthropicProvider: LLMProvider {
 
     private func wireMessages(_ messages: [Message]) -> [[String: Any]] {
         var out: [[String: Any]] = []
-        for m in messages where m.role != .system {
+        for m in messages.pairingToolCallsAndResults() where m.role != .system {
             var blocks: [[String: Any]] = []
             for b in m.blocks {
                 switch b {

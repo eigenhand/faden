@@ -444,7 +444,17 @@ struct AgentRunner {
                 await onEvent(.finished)
                 return
             }
-            if Task.isCancelled { await onEvent(.finished); return }
+            if Task.isCancelled {
+                // Nicht einfach aussteigen: die Aufrufe stehen schon in der Historie,
+                // und ohne Ergebnisse daneben lehnt der Anbieter *jede* weitere
+                // Anfrage in diesem Gespräch ab — die ganze Historie geht ja jedes
+                // Mal mit. Also wird der Abbruch aufgeschrieben statt verschwiegen.
+                history.append(Message(role: .user, blocks: pendingCalls.map {
+                    .toolResult(toolUseID: $0.id, content: "Abgebrochen.", isError: true)
+                }))
+                await onEvent(.finished)
+                return
+            }
 
             // Parallel calls run concurrently, and every result goes back in one
             // user message — splitting them teaches the model to stop parallelising.

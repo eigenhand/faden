@@ -10,7 +10,7 @@ struct OpenAIProvider: LLMProvider {
         var out: [[String: Any]] = []
         if !system.isEmpty { out.append(["role": "system", "content": system]) }
 
-        for m in messages where m.role != .system {
+        for m in messages.pairingToolCallsAndResults() where m.role != .system {
             switch m.role {
             case .user:
                 // Tool results are their own `role: "tool"` messages here.
