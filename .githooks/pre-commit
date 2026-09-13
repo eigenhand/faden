@@ -1,0 +1,27 @@
+#!/bin/bash
+# Verhindert, dass ein eingesetzter Beta-Schluessel in die Historie geraet.
+#
+# Liegt versioniert im Repo, nicht in .git/hooks — ein Haken dort wandert bei
+# keinem Klonen mit, also haette ihn weder ein Mitwirkender noch man selbst nach
+# dem naechsten Klonen. Scharf wird er mit:
+#
+#     git config core.hooksPath .githooks
+#
+# release.sh und run-bundled-tests.sh schreiben die echten Schluessel in
+# BundledSetup.swift und raeumen per trap wieder auf. Bricht einer davon zwischen
+# diesen beiden Schritten ab, steht der Schluessel im Arbeitsverzeichnis — und ein
+# Commit in diesem Moment bekommt man aus der Historie nicht mehr heraus.
+BUNDLED="PerBu/App/BundledSetup.swift"
+if git diff --cached --name-only | grep -q "^$BUNDLED$"; then
+  if git show ":$BUNDLED" | grep -qE '^    static let (apiKey|searchKey) = "..+"'; then
+    echo "ABBRUCH: In $BUNDLED steht ein Schluessel." >&2
+    echo "         Erst leeren, dann committen:" >&2
+    echo "         sed -i '' -E 's/(static let (apiKey|searchKey)) = .*/\\1 = \"\"/' $BUNDLED" >&2
+    exit 1
+  fi
+fi
+# Und generell: nichts, was nach einem Schluessel aussieht
+if git diff --cached -U0 | grep -qE '^\+.*(sk-[A-Za-z0-9]{16,}|BSA[A-Za-z0-9]{24,})'; then
+  echo "ABBRUCH: Die Aenderung enthaelt etwas, das nach einem API-Schluessel aussieht." >&2
+  exit 1
+fi

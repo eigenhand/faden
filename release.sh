@@ -5,7 +5,7 @@
 #   1. Bundle-ID dev.eigenhand.perbu registriert
 #   2. App-Eintrag angelegt (Name, Primärsprache, SKU)
 #   3. API-Key mit der Rolle "App Manager" — liegt bereits unter
-#      ~/.appstoreconnect/private_keys/AuthKey_2U24996BLJ.p8
+#      ~/.appstoreconnect/private_keys/AuthKey_<KEY_ID>.p8
 #
 # Aufruf:  ASC_ISSUER_ID=<issuer-uuid> ./release.sh
 set -euo pipefail
@@ -13,7 +13,9 @@ set -euo pipefail
 # Lokale Konfiguration, falls vorhanden (steht in .gitignore).
 [ -f .release.env ] && . ./.release.env
 
-KEY_ID="${ASC_KEY_ID:-2U24996BLJ}"
+# Keine Vorgabe: eine fest eingebaute Key ID ist ein Detail ueber ein fremdes
+# Konto, und ein Fork wuerde still damit signieren wollen.
+KEY_ID="${ASC_KEY_ID:?ASC_KEY_ID fehlt. In .release.env eintragen; die ID ist Teil des Dateinamens unter ~/.appstoreconnect/private_keys/AuthKey_<ID>.p8}"
 : "${ASC_ISSUER_ID:?Issuer ID fehlt. Entweder in .release.env eintragen oder ASC_ISSUER_ID=... voranstellen. Zu finden in App Store Connect > Users and Access > Integrations > App Store Connect API, ueber der Key-Liste.}"
 
 ARCHIVE="build/PerBu.xcarchive"

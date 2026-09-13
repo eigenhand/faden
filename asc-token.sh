@@ -1,7 +1,7 @@
 #!/bin/bash
 cd /Users/christophguk/PerBu
 . ./.release.env
-KEY_ID="${ASC_KEY_ID:-2U24996BLJ}"
+KEY_ID="${ASC_KEY_ID:?ASC_KEY_ID fehlt — in .release.env eintragen}"
 python3 - "$KEY_ID" "$ASC_ISSUER_ID" <<'PY'
 import base64, json, subprocess, sys, time, os
 key_id, issuer = sys.argv[1], sys.argv[2]
