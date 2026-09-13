@@ -22,11 +22,12 @@ struct SettingsView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 26) {
 
-                        // In a build that carries its own provider there is nothing
-                        // here to choose: the endpoint, the key and the model are
-                        // fixed, and showing the machinery only invites someone to
-                        // break a working setup.
-                        if !BundledSetup.isManaged {
+                        // Frueher war dieser Abschnitt in Builds mit eingebautem
+                        // Anbieter ausgeblendet: es gab nichts zu waehlen, und die
+                        // Maschinerie zu zeigen lud nur dazu ein, eine funktionierende
+                        // Einrichtung kaputtzumachen. Seit Apples Modell im System
+                        // danebensteht, gibt es etwas zu waehlen — und ein Tester, der
+                        // genau das ausprobieren soll, kam nicht heran.
                         section("Modell") {
                             if model.settings.llms.isEmpty {
                                 emptyRow("Noch kein Modell hinterlegt.")
@@ -70,7 +71,6 @@ struct SettingsView: View {
                                 }
                                 .buttonStyle(EHButtonStyle())
                             }
-                        }
                         }
 
                         section("Websuche") {
