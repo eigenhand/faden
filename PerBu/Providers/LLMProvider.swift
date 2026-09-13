@@ -160,8 +160,9 @@ extension LLMProvider {
 enum ProviderFactory {
     static func make(for format: LLMWireFormat) -> LLMProvider {
         switch format {
-        case .anthropic: return AnthropicProvider()
-        case .openai:    return OpenAIProvider()
+        case .anthropic:     return AnthropicProvider()
+        case .openai:        return OpenAIProvider()
+        case .appleOnDevice: return AppleProvider()
         }
     }
 }

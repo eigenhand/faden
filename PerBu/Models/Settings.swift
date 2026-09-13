@@ -5,19 +5,38 @@ import Foundation
 enum LLMWireFormat: String, Codable, CaseIterable, Identifiable {
     case anthropic
     case openai
+    /// Apples Modell im System. Kein Draht, daher streng genommen kein Wire-Format —
+    /// aber die Anbieterwahl haengt an diesem Schalter, und ein zweiter Schalter
+    /// daneben haette dieselben Zustaende noch einmal darstellbar gemacht.
+    case appleOnDevice
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .anthropic: return "Anthropic Messages"
-        case .openai:    return "OpenAI-kompatibel"
+        case .anthropic:      return "Anthropic Messages"
+        case .openai:         return "OpenAI-kompatibel"
+        case .appleOnDevice:  return "Apple, auf dem Gerät"
         }
     }
     var hint: String {
         switch self {
         case .anthropic: return "Anthropic API und alles, was /v1/messages spricht."
         case .openai:    return "OpenAI, Groq, Together, OpenRouter, Mistral, Ollama, vLLM, LM Studio …"
+        case .appleOnDevice:
+            return "Das Modell im System. Ohne Endpoint, ohne Schlüssel, ohne Netz — "
+                 + "und ohne Werkzeuge und Bilder."
         }
     }
+    /// Fuer den Segmentschalter, wo drei volle Namen alle drei abschneiden.
+    var shortLabel: String {
+        switch self {
+        case .anthropic:     return "Anthropic"
+        case .openai:        return "OpenAI"
+        case .appleOnDevice: return "Apple"
+        }
+    }
+
+    /// Ob dieses Format Adresse, Pfad und Schlüssel braucht.
+    var needsEndpoint: Bool { self != .appleOnDevice }
 }
 
 /// Everything the app needs to talk to a model. No defaults are shipped: the endpoint,
@@ -90,12 +109,21 @@ struct LLMConfig: Codable, Equatable, Identifiable {
         return URL(string: base + path)
     }
 
-    var isComplete: Bool { endpointURL != nil && !model.trimmingCharacters(in: .whitespaces).isEmpty }
+    /// Ob dieses Modell benutzbar ist.
+    ///
+    /// Apples Modell braucht weder Adresse noch Modellnamen — es ist da oder nicht,
+    /// und das entscheidet das System. Deshalb hier nur die Frage, ob die App es
+    /// ansprechen *darf*; ob es gerade bereit ist, sagt `AppleModel.status`.
+    var isComplete: Bool {
+        if wireFormat == .appleOnDevice { return true }
+        return endpointURL != nil && !model.trimmingCharacters(in: .whitespaces).isEmpty
+    }
 
     static func defaultPath(for format: LLMWireFormat) -> String {
         switch format {
-        case .anthropic: return "/v1/messages"
-        case .openai:    return "/v1/chat/completions"
+        case .anthropic:     return "/v1/messages"
+        case .openai:        return "/v1/chat/completions"
+        case .appleOnDevice: return ""
         }
     }
 }

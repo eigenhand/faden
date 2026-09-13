@@ -38,6 +38,9 @@ enum ModelCatalog {
     // MARK: Listing
 
     static func fetch(config: LLMConfig, apiKey: String) async throws -> [RemoteModel] {
+        // Apples Modell hat keine Modellliste — es ist genau eines, und ob es da ist,
+        // sagt das System und nicht eine Abfrage.
+        guard config.wireFormat.needsEndpoint else { throw LLMError.notConfigured }
         guard let base = config.endpointURL else { throw LLMError.notConfigured }
         // The list lives next to the chat path: …/v1/chat/completions -> …/v1/models
         var url = base.deletingLastPathComponent()
@@ -52,6 +55,8 @@ enum ModelCatalog {
             req.setValue(AnthropicProvider.version, forHTTPHeaderField: "anthropic-version")
         case .openai:
             if !apiKey.isEmpty { req.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization") }
+        case .appleOnDevice:
+            break  // oben schon ausgestiegen; der Fall steht hier nur fuer den Compiler
         }
         for (k, v) in config.extraHeaders { req.setValue(v, forHTTPHeaderField: k) }
 
@@ -119,7 +124,7 @@ enum ModelCatalog {
         cfg.maxOutputTokens = 99_999_999
         cfg.requestThinking = false
 
-        guard let url = cfg.endpointURL else { return (nil, nil) }
+        guard cfg.wireFormat.needsEndpoint, let url = cfg.endpointURL else { return (nil, nil) }
         var body: [String: Any]
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
@@ -136,6 +141,8 @@ enum ModelCatalog {
             if !apiKey.isEmpty { req.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization") }
             body = ["model": model, "max_tokens": 99_999_999,
                     "messages": [["role": "user", "content": "hi"]]]
+        case .appleOnDevice:
+            return (nil, nil)  // kein Endpoint, den man nach Grenzen fragen koennte
         }
         for (k, v) in cfg.extraHeaders { req.setValue(v, forHTTPHeaderField: k) }
         req.httpBody = try? JSONSerialization.data(withJSONObject: body)

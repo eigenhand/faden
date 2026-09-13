@@ -39,7 +39,7 @@ struct ModelEditor: View {
                             EH.label("Format")
                             Picker("", selection: $model.settings.llms[i].wireFormat) {
                                 ForEach(LLMWireFormat.allCases) { f in
-                                    Text(f.label).tag(f)
+                                    Text(f.shortLabel).tag(f)
                                 }
                             }
                             .pickerStyle(.segmented)
@@ -50,84 +50,88 @@ struct ModelEditor: View {
                                 .font(.eh(12, .caption)).foregroundStyle(EH.muted)
                         }
 
-                        field("Endpoint", text: $model.settings.llms[i].baseURL,
-                              placeholder: "https://api.beispiel.dev", mono: true, url: true)
-                        field("Pfad", text: $model.settings.llms[i].path,
-                              placeholder: "/v1/chat/completions", mono: true)
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                EH.label("Modell")
-                                Spacer()
-                                NavigationLink {
-                                    ModelPickerSheet(
-                                        config: model.settings.llms[i],
-                                        apiKey: Keychain.get(account: model.settings.llms[i].keychainAccount) ?? "") { picked in
-                                            apply(picked, at: i)
+                        if model.settings.llms[i].wireFormat.needsEndpoint {
+                            field("Endpoint", text: $model.settings.llms[i].baseURL,
+                                  placeholder: "https://api.beispiel.dev", mono: true, url: true)
+                            field("Pfad", text: $model.settings.llms[i].path,
+                                  placeholder: "/v1/chat/completions", mono: true)
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    EH.label("Modell")
+                                    Spacer()
+                                    NavigationLink {
+                                        ModelPickerSheet(
+                                            config: model.settings.llms[i],
+                                            apiKey: Keychain.get(account: model.settings.llms[i].keychainAccount) ?? "") { picked in
+                                                apply(picked, at: i)
+                                            }
+                                    } label: {
+                                        HStack(spacing: 4) {
+                                            Image(systemName: "list.bullet")
+                                                .font(.eh(9, .caption2, weight: .medium))
+                                            Text("vom Endpoint laden")
+                                                .font(.eh(11, .caption, weight: .medium))
                                         }
-                                } label: {
-                                    HStack(spacing: 4) {
-                                        Image(systemName: "list.bullet")
-                                            .font(.eh(9, .caption2, weight: .medium))
-                                        Text("vom Endpoint laden")
-                                            .font(.eh(11, .caption, weight: .medium))
+                                        .foregroundStyle(EH.slate)
                                     }
-                                    .foregroundStyle(EH.slate)
+                                    .buttonStyle(EHTap())
+                                    .disabled(model.settings.llms[i].endpointURL == nil)
                                 }
-                                .buttonStyle(EHTap())
-                                .disabled(model.settings.llms[i].endpointURL == nil)
+                                TextField("z. B. anbieter/modell-name", text: $model.settings.llms[i].model)
+                                    .font(EH.mono)
+                                    .foregroundStyle(EH.navy)
+                                    .textFieldStyle(.plain)
+                                    .autocorrectionDisabled()
+                                    .textInputAutocapitalization(.never)
+                                    .padding(.horizontal, 12).padding(.vertical, 10)
+                                    .background(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
+                                        .fill(EH.surface))
+                                    .overlay(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
+                                        .stroke(EH.hair, lineWidth: EH.hairWidth))
                             }
-                            TextField("z. B. anbieter/modell-name", text: $model.settings.llms[i].model)
-                                .font(EH.mono)
-                                .foregroundStyle(EH.navy)
-                                .textFieldStyle(.plain)
-                                .autocorrectionDisabled()
-                                .textInputAutocapitalization(.never)
-                                .padding(.horizontal, 12).padding(.vertical, 10)
-                                .background(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
-                                    .fill(EH.surface))
-                                .overlay(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
-                                    .stroke(EH.hair, lineWidth: EH.hairWidth))
-                        }
 
-                        VStack(alignment: .leading, spacing: 8) {
-                            EH.label("API-Key")
-                            SecureField(keyStored ? "gespeichert — zum Ersetzen tippen" : "sk-…", text: $draftKey)
-                                .textContentType(.oneTimeCode)
-                                .font(EH.mono)
-                                .textFieldStyle(.plain)
-                                .autocorrectionDisabled()
-                                .textInputAutocapitalization(.never)
-                                .padding(.horizontal, 12).padding(.vertical, 10)
-                                .background(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
-                                    .fill(EH.surface))
-                                .overlay(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
-                                    .stroke(EH.hair, lineWidth: EH.hairWidth))
-                                .onChange(of: draftKey) { _, new in
-                                    guard !new.isEmpty else { return }
-                                    Keychain.set(new, account: model.settings.llms[i].keychainAccount)
-                                    keyStored = true
-                                }
-                            Text("Wird im Schlüsselbund abgelegt, nicht in den Einstellungen.")
-                                .font(.eh(12, .caption)).foregroundStyle(EH.muted)
-                        }
-
-                        VStack(alignment: .leading, spacing: 8) {
-                            EH.label("Bilder")
-                            Toggle(isOn: $model.settings.llms[i].supportsVision) {
-                                Text("Bilder anhängen erlauben").font(EH.body).foregroundStyle(EH.navy)
-                            }
-                            .tint(EH.navy)
-                            if let note = visionNote {
-                                HStack(alignment: .top, spacing: 7) {
-                                    Image(systemName: note.good ? "checkmark.circle" : "minus.circle")
-                                        .font(.eh(12, .caption))
-                                        .foregroundStyle(note.good ? EH.good : EH.muted)
-                                    Text(note.text).font(.eh(12, .caption)).foregroundStyle(EH.slate)
-                                }
-                            } else {
-                                Text("Der Verbindungstest probiert es selbst aus und setzt den Schalter entsprechend.")
+                            VStack(alignment: .leading, spacing: 8) {
+                                EH.label("API-Key")
+                                SecureField(keyStored ? "gespeichert — zum Ersetzen tippen" : "sk-…", text: $draftKey)
+                                    .textContentType(.oneTimeCode)
+                                    .font(EH.mono)
+                                    .textFieldStyle(.plain)
+                                    .autocorrectionDisabled()
+                                    .textInputAutocapitalization(.never)
+                                    .padding(.horizontal, 12).padding(.vertical, 10)
+                                    .background(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
+                                        .fill(EH.surface))
+                                    .overlay(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
+                                        .stroke(EH.hair, lineWidth: EH.hairWidth))
+                                    .onChange(of: draftKey) { _, new in
+                                        guard !new.isEmpty else { return }
+                                        Keychain.set(new, account: model.settings.llms[i].keychainAccount)
+                                        keyStored = true
+                                    }
+                                Text("Wird im Schlüsselbund abgelegt, nicht in den Einstellungen.")
                                     .font(.eh(12, .caption)).foregroundStyle(EH.muted)
                             }
+
+                            VStack(alignment: .leading, spacing: 8) {
+                                EH.label("Bilder")
+                                Toggle(isOn: $model.settings.llms[i].supportsVision) {
+                                    Text("Bilder anhängen erlauben").font(EH.body).foregroundStyle(EH.navy)
+                                }
+                                .tint(EH.navy)
+                                if let note = visionNote {
+                                    HStack(alignment: .top, spacing: 7) {
+                                        Image(systemName: note.good ? "checkmark.circle" : "minus.circle")
+                                            .font(.eh(12, .caption))
+                                            .foregroundStyle(note.good ? EH.good : EH.muted)
+                                        Text(note.text).font(.eh(12, .caption)).foregroundStyle(EH.slate)
+                                    }
+                                } else {
+                                    Text("Der Verbindungstest probiert es selbst aus und setzt den Schalter entsprechend.")
+                                        .font(.eh(12, .caption)).foregroundStyle(EH.muted)
+                                }
+                            }
+                        } else {
+                            appleBlock
                         }
 
                         VStack(alignment: .leading, spacing: 16) {
@@ -174,7 +178,7 @@ struct ModelEditor: View {
                                             ProgressView().controlSize(.mini).tint(.white)
                                             Text(what)
                                         } else {
-                                            Text("Verbindung testen")
+                                            Text(model.settings.llms[i].wireFormat.needsEndpoint ? "Verbindung testen" : "Modell testen")
                                         }
                                     }
                                 }
@@ -270,6 +274,49 @@ struct ModelEditor: View {
         return "Anbieter nennt keine Grenze"
     }
 
+    /// Was statt Adresse, Schlüssel und Modellname dasteht.
+    ///
+    /// Zwei Dinge, und das zweite ist das wichtigere: ob das System das Modell
+    /// gerade hergibt, und was es nicht kann. Ein Modell ohne Werkzeuge als
+    /// gleichwertige Wahl neben einem großen Endpoint anzubieten, ohne das
+    /// dazuzusagen, würde bei der ersten Frage enttäuschen, die eine Websuche
+    /// gebraucht hätte.
+    private var appleBlock: some View {
+        let status = AppleModel.status
+        return VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 8) {
+                EH.label("Im System")
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: status.isUsable ? "checkmark.circle" : "exclamationmark.circle")
+                        .font(.eh(13, .caption))
+                        .foregroundStyle(status.isUsable ? EH.good : EH.warn)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(status.headline)
+                            .font(EH.bodySmall.weight(.medium))
+                            .foregroundStyle(EH.navy)
+                        Text(status.detail)
+                            .font(.eh(12, .caption))
+                            .foregroundStyle(EH.slate)
+                    }
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                EH.label("Was es nicht kann")
+                ForEach(AppleModel.limitations, id: \.self) { line in
+                    HStack(alignment: .top, spacing: 7) {
+                        Text("—").font(.eh(12, .caption)).foregroundStyle(EH.muted)
+                        Text(line).font(.eh(12, .caption)).foregroundStyle(EH.slate)
+                    }
+                }
+                Text("Dafür verlässt kein Wort dieser Unterhaltung das Telefon.")
+                    .font(.eh(12, .caption))
+                    .foregroundStyle(EH.muted)
+                    .padding(.top, 2)
+            }
+        }
+    }
+
     private var isActive: Bool {
         model.settings.activeLLMID == configID
             || (model.settings.activeLLMID == nil && model.settings.llms.first?.id == configID)
@@ -287,6 +334,10 @@ struct ModelEditor: View {
                 testState = .failed("Endpoint oder Modellname fehlt.")
                 return
             }
+            if !config.wireFormat.needsEndpoint, !AppleModel.status.isUsable {
+                testState = .failed(AppleModel.status.detail)
+                return
+            }
             let provider = ProviderFactory.make(for: config.wireFormat)
             let connectionLine: String
             do {
@@ -295,7 +346,12 @@ struct ModelEditor: View {
                     system: "Du antwortest knapp.",
                     config: config, apiKey: key, maxTokens: 3000)
                 let trimmed = reply.trimmingCharacters(in: .whitespacesAndNewlines)
-                connectionLine = "Verbindung steht. Antwort: „\(trimmed.prefix(60))“"
+                // „Verbindung“ waere bei Apples Modell gelogen — es gibt keine. Der
+                // Test ist derselbe und pruefte dort, ob das System das Modell
+                // hergibt und ob es antwortet.
+                connectionLine = config.wireFormat.needsEndpoint
+                    ? "Verbindung steht. Antwort: „\(trimmed.prefix(60))“"
+                    : "Das Modell antwortet: „\(trimmed.prefix(60))“"
                 testState = .ok(connectionLine)
             } catch {
                 testState = .failed((error as? LocalizedError)?.errorDescription ?? error.localizedDescription)

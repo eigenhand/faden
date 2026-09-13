@@ -43,7 +43,7 @@ struct ProviderSetupView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             EH.label("Format")
                             Picker("", selection: $wireFormat) {
-                                ForEach(LLMWireFormat.allCases) { Text($0.label).tag($0) }
+                                ForEach(LLMWireFormat.allCases) { Text($0.shortLabel).tag($0) }
                             }
                             .pickerStyle(.segmented)
                             .onChange(of: wireFormat) { _, new in
@@ -53,107 +53,111 @@ struct ProviderSetupView: View {
                             Text(wireFormat.hint).font(.eh(12, .caption)).foregroundStyle(EH.muted)
                         }
 
-                        field("Name des Anbieters", text: $name, placeholder: "z. B. TensorX")
-                        field("Endpoint", text: $baseURL, placeholder: "https://api.beispiel.dev", mono: true)
-                        field("Pfad", text: $path, placeholder: LLMConfig.defaultPath(for: wireFormat), mono: true)
+                        if wireFormat.needsEndpoint {
+                            field("Name des Anbieters", text: $name, placeholder: "z. B. TensorX")
+                            field("Endpoint", text: $baseURL, placeholder: "https://api.beispiel.dev", mono: true)
+                            field("Pfad", text: $path, placeholder: LLMConfig.defaultPath(for: wireFormat), mono: true)
 
-                        VStack(alignment: .leading, spacing: 8) {
-                            EH.label("API-Key")
-                            SecureField("sk-…", text: $key)
-                                .textContentType(.oneTimeCode)
-                                .font(EH.mono)
-                                .textFieldStyle(.plain)
-                                .autocorrectionDisabled()
-                                .textInputAutocapitalization(.never)
-                                .padding(.horizontal, 12).padding(.vertical, 10)
-                                .background(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
-                                    .fill(EH.surface))
-                                .overlay(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
-                                    .stroke(EH.hair, lineWidth: EH.hairWidth))
-                            Text("Wird einmal im Schlüsselbund abgelegt und von allen Modellen dieses Anbieters genutzt.")
-                                .font(.eh(12, .caption)).foregroundStyle(EH.muted)
-                        }
-
-                        Button {
-                            loadModels()
-                        } label: {
-                            HStack(spacing: 8) {
-                                if loading { ProgressView().controlSize(.mini).tint(.white) }
-                                Text(models.isEmpty ? "Modelle laden" : "Liste neu laden")
-                            }
-                        }
-                        .buttonStyle(EHButtonStyle(prominent: true))
-                        .disabled(!canLoad || loading)
-
-                        if let error {
-                            HairlineCard(padding: 13) {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    HStack(alignment: .top, spacing: 7) {
-                                        Image(systemName: "exclamationmark.circle")
-                                            .font(.eh(12, .caption)).foregroundStyle(EH.bad)
-                                        Text(error).font(.eh(12, .caption)).foregroundStyle(EH.slate)
-                                    }
-                                    Text("Der Modellname lässt sich auch von Hand eintragen:")
-                                        .font(.eh(12, .caption)).foregroundStyle(EH.muted)
-                                    TextField("anbieter/modell-name", text: $manualModel)
-                                        .font(EH.mono)
-                                        .textFieldStyle(.plain)
-                                        .autocorrectionDisabled()
-                                        .textInputAutocapitalization(.never)
-                                        .padding(.horizontal, 10).padding(.vertical, 8)
-                                        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(EH.surface))
-                                        .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                            .stroke(EH.hair, lineWidth: EH.hairWidth))
-                                }
-                            }
-                        }
-
-                        if !models.isEmpty {
-                            VStack(alignment: .leading, spacing: 10) {
-                                HStack {
-                                    EH.label("\(models.count) Modelle · \(picked.count) gewählt")
-                                    Spacer()
-                                    if !picked.isEmpty {
-                                        Button("Auswahl leeren") { picked = [] }
-                                            .font(.eh(11, .caption)).foregroundStyle(EH.muted)
-                                    }
-                                }
-                                TextField("Suchen", text: $search)
-                                    .font(EH.bodySmall)
+                            VStack(alignment: .leading, spacing: 8) {
+                                EH.label("API-Key")
+                                SecureField("sk-…", text: $key)
+                                    .textContentType(.oneTimeCode)
+                                    .font(EH.mono)
                                     .textFieldStyle(.plain)
                                     .autocorrectionDisabled()
-                                    .padding(.horizontal, 12).padding(.vertical, 8)
+                                    .textInputAutocapitalization(.never)
+                                    .padding(.horizontal, 12).padding(.vertical, 10)
                                     .background(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
                                         .fill(EH.surface))
                                     .overlay(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
                                         .stroke(EH.hair, lineWidth: EH.hairWidth))
+                                Text("Wird einmal im Schlüsselbund abgelegt und von allen Modellen dieses Anbieters genutzt.")
+                                    .font(.eh(12, .caption)).foregroundStyle(EH.muted)
+                            }
 
-                                ForEach(shown) { m in
-                                    Button {
-                                        if picked.contains(m.id) { picked.remove(m.id) } else { picked.insert(m.id) }
-                                    } label: {
-                                        HairlineCard(padding: 12,
-                                                     fill: picked.contains(m.id) ? EH.surfaceSunk : EH.surface) {
-                                            HStack(spacing: 10) {
-                                                Image(systemName: picked.contains(m.id)
-                                                      ? "checkmark.circle.fill" : "circle")
-                                                    .font(.eh(14, .footnote))
-                                                    .foregroundStyle(picked.contains(m.id) ? EH.navy : EH.hairStrong)
-                                                VStack(alignment: .leading, spacing: 2) {
-                                                    Text(m.title).font(EH.mono).foregroundStyle(EH.navy)
-                                                        .lineLimit(1).truncationMode(.middle)
-                                                    if !m.stats.isEmpty {
-                                                        Text(m.stats).font(.eh(11, .caption))
-                                                            .foregroundStyle(EH.muted)
-                                                    }
-                                                }
-                                                Spacer(minLength: 0)
-                                            }
-                                        }
-                                    }
-                                    .buttonStyle(EHTap())
+                            Button {
+                                loadModels()
+                            } label: {
+                                HStack(spacing: 8) {
+                                    if loading { ProgressView().controlSize(.mini).tint(.white) }
+                                    Text(models.isEmpty ? "Modelle laden" : "Liste neu laden")
                                 }
                             }
+                            .buttonStyle(EHButtonStyle(prominent: true))
+                            .disabled(!canLoad || loading)
+
+                            if let error {
+                                HairlineCard(padding: 13) {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        HStack(alignment: .top, spacing: 7) {
+                                            Image(systemName: "exclamationmark.circle")
+                                                .font(.eh(12, .caption)).foregroundStyle(EH.bad)
+                                            Text(error).font(.eh(12, .caption)).foregroundStyle(EH.slate)
+                                        }
+                                        Text("Der Modellname lässt sich auch von Hand eintragen:")
+                                            .font(.eh(12, .caption)).foregroundStyle(EH.muted)
+                                        TextField("anbieter/modell-name", text: $manualModel)
+                                            .font(EH.mono)
+                                            .textFieldStyle(.plain)
+                                            .autocorrectionDisabled()
+                                            .textInputAutocapitalization(.never)
+                                            .padding(.horizontal, 10).padding(.vertical, 8)
+                                            .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(EH.surface))
+                                            .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                                .stroke(EH.hair, lineWidth: EH.hairWidth))
+                                    }
+                                }
+                            }
+
+                            if !models.isEmpty {
+                                VStack(alignment: .leading, spacing: 10) {
+                                    HStack {
+                                        EH.label("\(models.count) Modelle · \(picked.count) gewählt")
+                                        Spacer()
+                                        if !picked.isEmpty {
+                                            Button("Auswahl leeren") { picked = [] }
+                                                .font(.eh(11, .caption)).foregroundStyle(EH.muted)
+                                        }
+                                    }
+                                    TextField("Suchen", text: $search)
+                                        .font(EH.bodySmall)
+                                        .textFieldStyle(.plain)
+                                        .autocorrectionDisabled()
+                                        .padding(.horizontal, 12).padding(.vertical, 8)
+                                        .background(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
+                                            .fill(EH.surface))
+                                        .overlay(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
+                                            .stroke(EH.hair, lineWidth: EH.hairWidth))
+
+                                    ForEach(shown) { m in
+                                        Button {
+                                            if picked.contains(m.id) { picked.remove(m.id) } else { picked.insert(m.id) }
+                                        } label: {
+                                            HairlineCard(padding: 12,
+                                                         fill: picked.contains(m.id) ? EH.surfaceSunk : EH.surface) {
+                                                HStack(spacing: 10) {
+                                                    Image(systemName: picked.contains(m.id)
+                                                          ? "checkmark.circle.fill" : "circle")
+                                                        .font(.eh(14, .footnote))
+                                                        .foregroundStyle(picked.contains(m.id) ? EH.navy : EH.hairStrong)
+                                                    VStack(alignment: .leading, spacing: 2) {
+                                                        Text(m.title).font(EH.mono).foregroundStyle(EH.navy)
+                                                            .lineLimit(1).truncationMode(.middle)
+                                                        if !m.stats.isEmpty {
+                                                            Text(m.stats).font(.eh(11, .caption))
+                                                                .foregroundStyle(EH.muted)
+                                                        }
+                                                    }
+                                                    Spacer(minLength: 0)
+                                                }
+                                            }
+                                        }
+                                        .buttonStyle(EHTap())
+                                    }
+                                }
+                            }
+                        } else {
+                            appleSetup
                         }
                     }
                     .padding(EH.gutter)
@@ -171,7 +175,43 @@ struct ProviderSetupView: View {
         }
     }
 
+    /// Die Ersteinrichtung ohne Einrichtung.
+    ///
+    /// Für jemanden, der keinen Endpoint hat, ist das hier der einzige Weg, die App
+    /// überhaupt zu benutzen — und gleichzeitig der ehrlichste Moment, ihm zu sagen,
+    /// was ihm damit fehlt. Beides steht deshalb auf derselben Seite.
+    private var appleSetup: some View {
+        let status = AppleModel.status
+        return VStack(alignment: .leading, spacing: 18) {
+            HStack(alignment: .top, spacing: 8) {
+                Image(systemName: status.isUsable ? "checkmark.circle" : "exclamationmark.circle")
+                    .font(.eh(13, .caption))
+                    .foregroundStyle(status.isUsable ? EH.good : EH.warn)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(status.headline).font(EH.bodySmall.weight(.medium)).foregroundStyle(EH.navy)
+                    Text(status.detail).font(.eh(12, .caption)).foregroundStyle(EH.slate)
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                EH.label("Was es nicht kann")
+                ForEach(AppleModel.limitations, id: \.self) { line in
+                    HStack(alignment: .top, spacing: 7) {
+                        Text("—").font(.eh(12, .caption)).foregroundStyle(EH.muted)
+                        Text(line).font(.eh(12, .caption)).foregroundStyle(EH.slate)
+                    }
+                }
+            }
+
+            Text("Ein Endpoint lässt sich jederzeit daneben einrichten. Dann steht "
+                 + "beides zur Wahl, und diese Unterhaltung hier bleibt auf dem Gerät.")
+                .font(.eh(12, .caption)).foregroundStyle(EH.muted)
+        }
+    }
+
     private var canApply: Bool {
+        // Apples Modell braucht nichts ausgefuellt — nur, dass das System es hergibt.
+        guard wireFormat.needsEndpoint else { return AppleModel.status.isUsable }
         guard canLoad else { return false }
         return !picked.isEmpty || !manualModel.trimmingCharacters(in: .whitespaces).isEmpty
     }
@@ -196,6 +236,8 @@ struct ProviderSetupView: View {
     }
 
     private func apply() {
+        guard wireFormat.needsEndpoint else { return applyApple() }
+
         // One keychain item for the whole provider — every model added here points at it.
         let account = "provider.\(UUID().uuidString)"
         if !key.isEmpty { Keychain.set(key, account: account) }
@@ -227,6 +269,26 @@ struct ProviderSetupView: View {
         }
         // Make the first addition active when nothing was set up before.
         if model.settings.activeLLMID == nil { model.settings.activeLLMID = firstID }
+        model.persist()
+        model.recomputeUsage()
+        dismiss()
+    }
+
+    /// Apples Modell eintragen: kein Schluessel, keine Adresse, kein Modellname.
+    ///
+    /// Das Kontextfenster klein gesetzt und nicht auf den ueblichen Vorgabewert: das
+    /// Systemmodell hat wenige tausend Token, und ein Balken, der 200 000 verspricht,
+    /// wuerde beim ersten laengeren Gespraech luegen statt zu warnen.
+    private func applyApple() {
+        var c = LLMConfig()
+        c.name = "Apple · auf dem Gerät"
+        c.wireFormat = .appleOnDevice
+        c.model = "apple-system"
+        c.contextWindow = 4_000
+        c.maxOutputTokens = 1_500
+        c.supportsVision = false
+        model.settings.llms.append(c)
+        if model.settings.activeLLMID == nil { model.settings.activeLLMID = c.id }
         model.persist()
         model.recomputeUsage()
         dismiss()
