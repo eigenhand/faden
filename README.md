@@ -1,4 +1,4 @@
-# PerBu
+# Faden
 
 Ein Chatbot fürs iPhone, der nichts mitbringt außer der Oberfläche. Modell, Endpoint,
 API-Key und Suchanbieter kommen von dir. Keine Zwischenserver, keine Konten, keine
@@ -15,7 +15,7 @@ Werkzeugaufrufe und Gedankengang (`reasoning_content` bzw. `thinking`) inklusive
 
 **Eigene Websuche.** Fertige Rezepte für Brave, Tavily, Serper, SearXNG und Exa.
 Für alles andere gibt es die automatische Einrichtung: Schlägt der Test fehl — oder
-sehen die Treffer falsch aus — klopft PerBu den Endpoint selbst ab, bis eine gültige
+sehen die Treffer falsch aus — klopft Faden den Endpoint selbst ab, bis eine gültige
 Antwort mit HTTP 200 zurückkommt, zeigt deren Struktur einem deiner Modelle und lässt
 sich daraus einen Parser schreiben. Der Parser ist reine Konfiguration
 (`SearchRecipe`), wird lokal gegen dieselbe Antwort geprüft, bevor er gespeichert
@@ -50,11 +50,11 @@ Antwortlänge stellst du mit logarithmischen Reglern ein.
 sprechen, loslassen. Der Text kommt entweder von Apples Spracherkennung — wo möglich
 auf dem Gerät, dann verlässt nichts das iPhone — oder von deinem eigenen
 Whisper-Endpoint (`/v1/audio/transcriptions`, mit `faster-whisper` getestet).
-Antworten liest PerBu auf Wunsch vor, über einen eigenen Sprachdienst
+Antworten liest Faden auf Wunsch vor, über einen eigenen Sprachdienst
 (`/v1/audio/speech`) oder die im iPhone eingebaute Stimme. Fällt der eigene Dienst
 aus, springt die Apple-Stimme ein, statt die Antwort verstummen zu lassen.
 
-**Gedächtnis (nach cognee).** PerBu baut aus euren Gesprächen einen Wissensgraphen —
+**Gedächtnis (nach cognee).** Faden baut aus euren Gesprächen einen Wissensgraphen —
 nicht eine Liste von Notizen. Das System ist [cognee](https://github.com/topoteretes/cognee)
 (Apache-2.0) portiert, nicht nachempfunden:
 
@@ -125,7 +125,7 @@ und Modell-Liste sind Schritte *innerhalb* der Einstellungen, keine zweite Ebene
 tatsächlich nutzen (NN/g), zeigen zwei Muster: Sie lassen Antworten wiederholt kürzen
 oder ausweiten („accordion editing"), und sie beziehen sich auf einzelne Stellen einer
 früheren Antwort („apple picking") — wofür sie sonst hochscrollen, markieren und
-kopieren müssen. PerBu hat dafür Aktionen direkt an der Antwort: Kopieren, neu holen,
+kopieren müssen. Faden hat dafür Aktionen direkt an der Antwort: Kopieren, neu holen,
 kürzer, ausführlicher. Ein langer Druck auf einen Absatz zitiert genau diesen in die
 Eingabe. Eine missverstandene Frage lässt sich bearbeiten und neu stellen, statt sie
 weiter unten noch einmal zu formulieren — was sie sonst im Verlauf stehen ließe, wo sie
@@ -139,7 +139,7 @@ Versuch — außer bei solchen, die Warten nicht behebt, etwa einem falschen Sch
 
 **Lesbar in jeder Textgröße.** Alle Schriftgrößen wachsen mit der Systemeinstellung —
 vorher waren 112 Stellen auf feste Punktgrößen verdrahtet, sodass eine größere Systemschrift
-in PerBu schlicht wirkungslos blieb. Der Inhalt skaliert bis zur größten
+in Faden schlicht wirkungslos blieb. Der Inhalt skaliert bis zur größten
 Barrierefreiheits-Stufe durch; Kopfzeile, Eingabe und Kontextleiste sind begrenzt, weil
 dort sonst Symbole übereinanderlaufen. Die Aktionen unter einer Antwort lassen ihre
 Beschriftungen fallen und stehen als Symbole in Tap-Größe, sobald der Platz nicht mehr
@@ -155,7 +155,7 @@ Element im Verlauf, das mit Sprecher, Werkzeugen und Text vorgelesen wird.
 Fensters belegt ist. Die Schätzung korrigiert sich selbst, sobald der Anbieter echte
 Verbrauchszahlen meldet.
 
-**Automatisches Verdichten.** Ab 75 % (einstellbar) fasst PerBu den älteren Verlauf
+**Automatisches Verdichten.** Ab 75 % (einstellbar) fasst Faden den älteren Verlauf
 im Hintergrund zusammen — gegliedert nach Auftrag, Stand, Entscheidungen und Offenem,
 mit Zahlen, Namen und Quellen wörtlich übernommen. Die letzten Turns bleiben
 unangetastet, `remember`-Notizen überleben vollständig. Der Schnitt liegt immer vor
@@ -169,6 +169,12 @@ open PerBu.xcodeproj
 ```
 
 Braucht Xcode 16+ und zielt auf iOS 17. Keine externen Abhängigkeiten.
+
+Das Xcode-Projekt, der Quellordner und die Bundle-ID heißen weiterhin `PerBu` — das
+war der Arbeitsname. Umbenannt wurde nur, was Nutzer sehen. Die Bundle-ID ist die
+Identität der App in App Store Connect: eine neue wäre eine neue App, mit neuem
+TestFlight und neu einzuladenden Testern. Der Datenordner trägt denselben Namen, und
+ein anderer würde jede gespeicherte Unterhaltung verwaisen lassen.
 
 ## Auf ein Gerät bringen
 
