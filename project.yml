@@ -28,6 +28,17 @@ targets:
         TARGETED_DEVICE_FAMILY: "1"
         GENERATE_INFOPLIST_FILE: NO
         CODE_SIGN_ENTITLEMENTS: PerBu/PerBu.entitlements
+      # Nur das Archiv signiert von Hand. Der Grund steht nicht in Xcode, also hier:
+      # auf diesem Rechner ist kein Apple-Konto in Xcode hinterlegt, weshalb die
+      # automatische Signierung kein Profil erneuern kann. Seit die App Group in den
+      # Berechtigungen steht, reicht das alte zwischengespeicherte Profil nicht mehr.
+      # Das benannte Profil wurde über die App-Store-Connect-API ausgestellt und liegt
+      # lokal. Debug bleibt automatisch, damit Simulator und Tests unberührt laufen.
+      configs:
+        Release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: "Apple Distribution"
+          PROVISIONING_PROFILE_SPECIFIER: "Faden App Store (API)"
   PerBuUITests:
     type: bundle.ui-testing
     platform: iOS

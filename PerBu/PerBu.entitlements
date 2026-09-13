@@ -2,9 +2,20 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+  <!-- Der gemeinsame Container der eigenhand-Apps: Spind, Faden, Fundus.
+       Neutral benannt, nicht nach einer der Apps — sonst waere der Name schon
+       falsch, wenn die vierte dazukommt. -->
+  <key>com.apple.security.application-groups</key>
+  <array>
+    <string>group.dev.eigenhand.shared</string>
+  </array>
+  <!-- Additiv, nicht ersetzend: die eigene Gruppe bleibt stehen, damit die
+       Schluessel, die heute auf Geraeten liegen, erreichbar bleiben. Ein Austausch
+       haette sie unsichtbar gemacht. -->
   <key>keychain-access-groups</key>
   <array>
     <string>$(AppIdentifierPrefix)dev.eigenhand.perbu</string>
+    <string>$(AppIdentifierPrefix)dev.eigenhand.shared</string>
   </array>
 </dict>
 </plist>
