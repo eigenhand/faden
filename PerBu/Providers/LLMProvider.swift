@@ -28,11 +28,76 @@ enum LLMError: LocalizedError {
         switch self {
         case .notConfigured:          return "Kein Modell konfiguriert. Endpoint, Key und Modellname fehlen."
         case .missingKey:             return "Kein API-Key im Schlüsselbund hinterlegt."
+        case .http(let s, _) where Backoff.isBusy(s):
+            // Nach den Wartepausen. „HTTP 429" plus JSON wäre richtig und nutzlos.
+            return "Der Anbieter drosselt gerade (HTTP \(s)) — auch nach zwei "
+                + "Wartepausen noch."
         case .http(let s, let b):
             let snippet = b.count > 400 ? String(b.prefix(400)) + "…" : b
             return "HTTP \(s)\n\(snippet)"
         case .transport(let m):       return "Verbindungsfehler: \(m)"
         case .decoding(let m):        return "Antwort nicht lesbar: \(m)"
+        }
+    }
+}
+
+/// Warten, wenn der Anbieter drosselt.
+///
+/// Ein 429 heißt „zu viele Anfragen", 503 und 529 heißen „gerade überlastet". Das
+/// sind Wartezeiten, keine Defekte — und die richtige Antwort darauf ist, kurz zu
+/// warten und dasselbe Modell noch einmal zu fragen.
+///
+/// Faden hat stattdessen sofort auf das Ausweichmodell geschaltet. Das ist die
+/// teuerste mögliche Reaktion: nach der eigenen Messung in `BundledSetup` kostet
+/// `qwen/qwen3.8-flash-next` 72 Sekunden gegen 12 — aus zwei Sekunden Warten wurde
+/// eine Minute, und der Nutzer bekam die schlechtere Antwort obendrein. Das
+/// Ausweichmodell bleibt, aber als letzter Schritt und nicht als erster.
+enum Backoff {
+
+    static func isBusy(_ status: Int) -> Bool { status == 429 || status == 503 || status == 529 }
+
+    /// Höchstens zwei Pausen. Sechs Sekunden sind die Grenze dessen, was man
+    /// stillschweigend aussitzen darf; danach ist das Ausweichmodell an der Reihe.
+    static let maxWaits = 2
+
+    /// `Retry-After` zuerst, weil der Anbieter es besser weiß als jede Formel —
+    /// gedeckelt, damit ein Kopf mit „3600" nicht die App für eine Stunde anhält.
+    /// Sonst 2, dann 4 Sekunden.
+    static func pause(retryAfter header: String?, attempt: Int) -> Double {
+        if let header, let seconds = Double(header.trimmingCharacters(in: .whitespaces)),
+           seconds > 0 {
+            return Swift.min(seconds, 30)
+        }
+        return Double(1 << (attempt + 1))
+    }
+
+    /// Öffnet die Verbindung — und wartet, statt bei einer Drosselung aufzugeben.
+    ///
+    /// Gemeinsam für beide Anbieter, weil beide dieselben sechs Zeilen hatten und ein
+    /// Wartemechanismus an zwei Stellen einer ist, der an einer Stelle vergessen wird.
+    ///
+    /// Ein zweiter Versuch ist hier gefahrlos: es ist noch kein Zeichen beim Leser
+    /// angekommen. Nach den ersten Zeichen wäre er es nicht mehr.
+    static func open(_ build: () throws -> URLRequest) async throws -> URLSession.AsyncBytes {
+        var attempt = 0
+        while true {
+            let (bytes, response) = try await Net.session.bytes(for: try build())
+            guard let http = response as? HTTPURLResponse else {
+                throw LLMError.transport("Keine HTTP-Antwort")
+            }
+            if (200 ... 299).contains(http.statusCode) { return bytes }
+
+            var errorBody = ""
+            for try await line in bytes.lines {
+                errorBody += line
+                if errorBody.count > 2_000 { break }
+            }
+            guard isBusy(http.statusCode), attempt < maxWaits else {
+                throw LLMError.http(status: http.statusCode, body: errorBody)
+            }
+            try await Task.sleep(for: .seconds(
+                pause(retryAfter: http.value(forHTTPHeaderField: "Retry-After"), attempt: attempt)))
+            attempt += 1
         }
     }
 }

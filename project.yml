@@ -39,6 +39,26 @@ targets:
           CODE_SIGN_STYLE: Manual
           CODE_SIGN_IDENTITY: "Apple Distribution"
           PROVISIONING_PROFILE_SPECIFIER: "Faden App Store (API)"
+  # Fadens erste Unittests.
+  #
+  # Bisher gab es nur ein UI-Testziel, und das ist der Grund, warum eine Entscheidung
+  # wie „bei einer Drosselung sofort auf das langsamere Modell ausweichen" jahrelang
+  # unbemerkt danebenliegen konnte: sie stand nirgends geschrieben, wo sie jemand
+  # nachlesen musste.
+  PerBuTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: PerBuTests
+    dependencies:
+      - target: PerBu
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.eigenhand.perbu.tests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/PerBu.app/PerBu"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+
   PerBuUITests:
     type: bundle.ui-testing
     platform: iOS
@@ -57,12 +77,14 @@ schemes:
     build:
       targets:
         PerBu: all
+        PerBuTests: [test]
         PerBuUITests: [test]
     run:
       config: Debug
     test:
       config: Debug
       targets:
+        - PerBuTests
         - PerBuUITests
     archive:
       config: Release

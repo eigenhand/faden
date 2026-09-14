@@ -113,16 +113,11 @@ struct OpenAIProvider: LLMProvider {
             let task = Task {
                 do {
                     guard let url = config.endpointURL else { throw LLMError.notConfigured }
-                    let req = try request(config, apiKey: apiKey, url: url,
-                                          body: body(messages: messages, system: system, tools: tools,
-                                                     config: config, stream: true,
-                                                     maxTokens: config.maxOutputTokens))
-                    let (bytes, response) = try await Net.session.bytes(for: req)
-                    guard let http = response as? HTTPURLResponse else { throw LLMError.transport("Keine HTTP-Antwort") }
-                    guard (200...299).contains(http.statusCode) else {
-                        var errBody = ""
-                        for try await line in bytes.lines { errBody += line; if errBody.count > 2000 { break } }
-                        throw LLMError.http(status: http.statusCode, body: errBody)
+                    let bytes = try await Backoff.open {
+                        try request(config, apiKey: apiKey, url: url,
+                                    body: body(messages: messages, system: system, tools: tools,
+                                               config: config, stream: true,
+                                               maxTokens: config.maxOutputTokens))
                     }
 
                     // tool_calls arrive as indexed fragments that must be stitched together.
