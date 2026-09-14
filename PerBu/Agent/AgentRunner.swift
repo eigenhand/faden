@@ -33,6 +33,44 @@ struct AgentRunner {
     /// Deliberately free of anything that changes between requests — no clock, no
     /// recalled memories. Those are appended to the last user message instead, so
     /// this whole prompt stays byte-identical and cacheable.
+    /// Der kurze Prompt für Apples Modell auf dem Geraet.
+    ///
+    /// Der grosse Prompt beschreibt Websuche, `fetch_page`, Gedaechtnisabruf und einen
+    /// Block in eckigen Klammern am Ende der Nutzernachricht. Nichts davon hat dieses
+    /// Modell — und es hat sich prompt daran gehalten, indem es ankuendigte, im
+    /// Gedaechtnis nachzusehen, statt zu antworten. Ein kleines Modell erzaehlt, was
+    /// im Prompt steht, und nicht, was es kann.
+    ///
+    /// Das Datum steht hier drin statt am Ende der Nachricht: dort hat es das Modell in
+    /// die Antwort hineinkopiert, trotz gegenteiliger Anweisung. Der Cache-Grund, aus
+    /// dem es bei den Netz-Anbietern hinten steht, gilt hier ohnehin nicht.
+    static func compactSystemPrompt(settings: AppSettings, at date: Date = Date()) -> String {
+        let persona = settings.persona
+        let df = DateFormatter()
+        df.locale = Locale(identifier: "de_DE")
+        df.timeZone = .current
+        df.dateFormat = "EEEE, d. MMMM yyyy, HH:mm"
+        var s = """
+        Du bist \(persona.displayName), ein Assistent auf dem iPhone deines Nutzers. Du \
+        antwortest auf Deutsch, ausser der Nutzer schreibt in einer anderen Sprache.
+
+        Jetzt ist \(df.string(from: date)) Uhr.
+
+        So schreibst du:
+        - Direkt zur Sache, ohne Einleitung und ohne Rueckblick am Ende.
+        - Kurz. Zwei bis vier Saetze, ausser es wird ausdruecklich mehr verlangt.
+        - Was du nicht weisst, sagst du. Du erfindest keine Zahlen, Namen und Quellen.
+        - Du kuendigst nichts an, was du tun wirst. Du antwortest.
+
+        Du hast keine Werkzeuge: keine Websuche, keinen Zugriff auf Dateien und keinen \
+        auf ein Gedaechtnis. Braeuchte eine Frage das, sagst du es in einem Satz.
+        """
+        if !persona.instructions.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            s += "\n\n" + persona.instructions
+        }
+        return s
+    }
+
     static func systemPrompt(settings: AppSettings, searchAvailable: Bool,
                              providerName: String?) -> String {
         let persona = settings.persona
@@ -351,12 +389,18 @@ struct AgentRunner {
         history: inout [Message],
         onEvent: @MainActor @escaping (TurnEvent) -> Void
     ) async {
-        let tools = Tools.available(searchEnabled: settings.searchEnabled && settings.activeRecipe != nil,
-                                        memoryEnabled: settings.memory.isReady)
-        let system = Self.systemPrompt(
-            settings: settings,
-            searchAvailable: settings.searchEnabled && settings.activeRecipe != nil,
-            providerName: settings.activeRecipe?.name)
+        // Apples Modell kann keine Werkzeuge, und ein Prompt, der welche beschreibt,
+        // laesst es davon erzaehlen statt zu antworten.
+        let onDevice = config.wireFormat == .appleOnDevice
+        let tools = onDevice ? [] : Tools.available(
+            searchEnabled: settings.searchEnabled && settings.activeRecipe != nil,
+            memoryEnabled: settings.memory.isReady)
+        let system = onDevice
+            ? Self.compactSystemPrompt(settings: settings)
+            : Self.systemPrompt(
+                settings: settings,
+                searchAvailable: settings.searchEnabled && settings.activeRecipe != nil,
+                providerName: settings.activeRecipe?.name)
         let provider = ProviderFactory.make(for: config.wireFormat)
 
         // Veränderbar, weil bei einem Fehlschlag das Modell gewechselt wird. Die
@@ -378,7 +422,11 @@ struct AgentRunner {
                 // Stamped here rather than stored: the conversation on disk stays
                 // free of timestamps, and each request carries a fresh one at the end.
                 for try await event in provider.stream(
-                    messages: TurnContext.applied(to: history, memories: recalled),
+                    // Ohne Gedaechtnisblock und ohne Zeitstempel: beide standen am Ende
+                    // der Nutzernachricht, und das kleine Modell hat den einen befolgt
+                    // wie eine Frage und den anderen in die Antwort kopiert.
+                    messages: onDevice ? history
+                                       : TurnContext.applied(to: history, memories: recalled),
                     system: system, tools: tools,
                     config: activeConfig, apiKey: apiKey
                 ) {

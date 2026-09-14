@@ -840,12 +840,20 @@ final class AppModel {
         }()
         guard let config = settings.activeLLM else { state.usage.used = 0; return }
         state.usage.window = config.contextWindow
-        let tools = Tools.available(searchEnabled: settings.searchEnabled && settings.activeRecipe != nil,
-                                        memoryEnabled: settings.memory.isReady)
-        let system = AgentRunner.systemPrompt(
-            settings: settings,
-            searchAvailable: settings.searchEnabled && settings.activeRecipe != nil,
-            providerName: settings.activeRecipe?.name)
+        // Dieselben Angaben, die der Zug wirklich schickt. Sonst zeigt der Balken bei
+        // Apples Modell rund 2 500 Zeichen Prompt und eine Handvoll Werkzeuge an, die
+        // gar nicht mitgehen — bei einem Kontextfenster von 4 000 Token ist das der
+        // Unterschied zwischen „halb voll" und „fast leer".
+        let onDevice = config.wireFormat == .appleOnDevice
+        let tools = onDevice ? [] : Tools.available(
+            searchEnabled: settings.searchEnabled && settings.activeRecipe != nil,
+            memoryEnabled: settings.memory.isReady)
+        let system = onDevice
+            ? AgentRunner.compactSystemPrompt(settings: settings)
+            : AgentRunner.systemPrompt(
+                settings: settings,
+                searchAvailable: settings.searchEnabled && settings.activeRecipe != nil,
+                providerName: settings.activeRecipe?.name)
         let estimate = TokenCounter.projectedInput(
             messages: conversation.messages, system: system, tools: tools)
 
