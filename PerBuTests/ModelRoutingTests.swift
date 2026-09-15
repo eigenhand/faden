@@ -100,6 +100,32 @@ final class ModelRoutingTests: XCTestCase {
         XCTAssertTrue(c.acceptsImages, "Ein eigenes Modell fuer Bilder reicht auch.")
     }
 
+    // MARK: Welche Modelle zur Auswahl stehen
+
+    /// Die Auswahl fuer Bilder zeigt alles ausser dem, was nachweislich blind ist.
+    ///
+    /// Bewusst nicht „nur was nachweislich sieht": die meisten Anbieter schweigen zu
+    /// Bildern, und eine Auswahl, die deshalb leer bliebe, hilft niemandem. Der
+    /// Unterschied ist genau der zwischen `nil` und `false`, und er ist heute Vormittag
+    /// teuer gewesen — `z-ai/glm-5.3` hat gar kein Feld fuer Bilder, `z-ai/glm-5-turbo`
+    /// hat eines und es steht auf falsch.
+    func testTheImagePickerHidesOnlyWhatIsProvablyBlind() {
+        var c = LLMConfig()
+        c.knownModels = [
+            RemoteModel(id: "schweigt"),
+            RemoteModel(id: "sieht", capabilities: Capabilities(vision: true)),
+            RemoteModel(id: "blind", capabilities: Capabilities(vision: false)),
+        ]
+        let offered = c.imageCapableModels.map(\.id)
+        XCTAssertEqual(offered, ["schweigt", "sieht"])
+        XCTAssertFalse(offered.contains("blind"), "Ein Vorschlag, der ein blindes Modell nennt, waere schlimmer als keiner.")
+    }
+
+    /// Ohne geladene Liste steht nichts zur Auswahl — dann bleibt das Feld ein Feld.
+    func testWithoutAListThereIsNothingToChooseFrom() {
+        XCTAssertTrue(LLMConfig().imageCapableModels.isEmpty)
+    }
+
     // MARK: Woran ein Bild erkannt wird
 
     /// Ueber die ganze Historie und nicht nur die letzte Nachricht: bei jeder Anfrage

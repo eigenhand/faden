@@ -83,8 +83,17 @@ final class ScrollBehaviourTests: XCTestCase {
 
     /// The composer controls, same rule.
     func testComposerTargetsAreLargeEnough() throws {
-        let send = app.buttons["Senden"]
-        XCTAssertTrue(send.exists)
+        // Aus dem Fenster der App und nicht aus `app.buttons`.
+        //
+        // Die Tastatur ist ein eigenes Fenster und bringt eigene Knoepfe mit,
+        // darunter eine Taste namens „Senden". `app.buttons` findet die zuerst, und
+        // gemessen wuerde dann eine Tastaturtaste statt des Absendeknopfes. Der Test
+        // lief nur deshalb jahrelang durch, weil er auf einer Ablage ohne Anbieter
+        // lief — dort steht kein leerer Chat und damit keine Tastatur. Sobald jemand
+        // die Suite auf einem eingerichteten Geraet laufen liess, fiel er durch, und
+        // zwar mit einer Meldung ueber Automatisierungstypen statt ueber Groessen.
+        let send = app.windows.element(boundBy: 0).buttons["Senden"]
+        XCTAssertTrue(send.waitForExistence(timeout: 3))
         assertTarget(send, "Senden")
     }
 

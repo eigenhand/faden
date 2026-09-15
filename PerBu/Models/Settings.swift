@@ -73,6 +73,14 @@ struct LLMConfig: Codable, Equatable, Identifiable {
     /// Worauf ein Bild-Zug ausweicht. Muss selbst Bilder sehen, sonst wäre das
     /// Ausweichen nur ein zweiter Fehlschlag.
     var visionFallbackModel: String = ""
+    /// Die Modellliste dieses Anbieters, so wie er sie zuletzt herausgegeben hat.
+    ///
+    /// Aufbewahrt und nicht jedes Mal neu geholt: aus dieser Liste werden die vier
+    /// Rollen besetzt, und eine Auswahl, die erst nach einer Netzanfrage aufgeht,
+    /// ist im Zug oder im Keller keine. Sie trägt ausserdem die Fähigkeiten mit sich
+    /// — deshalb kann die Auswahl für Bilder die Modelle anbieten, von denen bekannt
+    /// ist, dass sie welche sehen, statt alle.
+    var knownModels: [RemoteModel] = []
     /// Nominal context window in tokens. Drives the bar and the compaction trigger.
     var contextWindow: Int = 200_000
     /// Largest prompt this endpoint has actually accepted. Some providers publish no
@@ -122,6 +130,7 @@ struct LLMConfig: Codable, Equatable, Identifiable {
         fallbackModel         = try c.decodeIfPresent(String.self, forKey: .fallbackModel) ?? d.fallbackModel
         visionModel           = try c.decodeIfPresent(String.self, forKey: .visionModel) ?? d.visionModel
         visionFallbackModel   = try c.decodeIfPresent(String.self, forKey: .visionFallbackModel) ?? d.visionFallbackModel
+        knownModels           = try c.decodeIfPresent([RemoteModel].self, forKey: .knownModels) ?? []
         contextWindow         = try c.decodeIfPresent(Int.self, forKey: .contextWindow) ?? d.contextWindow
         observedMaxPromptTokens = try c.decodeIfPresent(Int.self, forKey: .observedMaxPromptTokens) ?? 0
         reportedContextLimit  = try c.decodeIfPresent(Int.self, forKey: .reportedContextLimit)
@@ -138,6 +147,16 @@ struct LLMConfig: Codable, Equatable, Identifiable {
     }
 
     init() {}
+
+    /// Die Modelle, die für Bilder in Frage kommen.
+    ///
+    /// Alles ausser dem, was nachweislich blind ist. Bewusst nicht „nur was
+    /// nachweislich sieht": die meisten Anbieter schweigen zu Bildern, und eine
+    /// Auswahl, die deshalb leer bleibt, hilft niemandem. Was dasteht, ist also
+    /// „kommt in Frage" und nicht „ist geprüft" — geprüft wird beim Verbindungstest.
+    var imageCapableModels: [RemoteModel] {
+        knownModels.filter { $0.capabilities.vision != false }
+    }
 
     /// Ob überhaupt ein Bild angehängt werden darf.
     ///

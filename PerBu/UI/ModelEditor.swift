@@ -69,9 +69,12 @@ struct ModelEditor: View {
                                     NavigationLink {
                                         ModelPickerSheet(
                                             config: model.settings.llms[i],
-                                            apiKey: Keychain.get(account: model.settings.llms[i].keychainAccount) ?? "") { picked in
-                                                apply(picked, at: i)
-                                            }
+                                            apiKey: Keychain.get(account: model.settings.llms[i].keychainAccount) ?? "",
+                                            onPick: { picked in apply(picked, at: i) },
+                                            onLoad: { list in
+                                                model.settings.llms[i].knownModels = list
+                                                model.persist()
+                                            })
                                     } label: {
                                         HStack(spacing: 4) {
                                             Image(systemName: "list.bullet")
@@ -102,7 +105,7 @@ struct ModelEditor: View {
                                 EH.label("Ausweichmodell")
                                 modelField("leer: gar nicht ausweichen",
                                            text: $model.settings.llms[i].fallbackModel,
-                                           candidates: siblingModels(model.settings.llms[i]))
+                                           candidates: allModels(model.settings.llms[i]))
                                 Text("Wenn das Hauptmodell nicht antwortet, geht der Zug einmal "
                                      + "hierher — nach den Wartepausen und nur, solange noch nichts "
                                      + "angekommen ist.")
@@ -295,7 +298,7 @@ struct ModelEditor: View {
                 }
             }
         }
-        .navigationTitle("Modell")
+        .navigationTitle("Anbieter")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             guard let i = index else { return }
@@ -509,9 +512,22 @@ struct ModelEditor: View {
     /// falsch und sucht den Fehler dann beim Schlüssel. Was hier steht, ist bereits
     /// eingerichtet, gehört zu diesem Anbieter, und beim Vision-Feld ist obendrein
     /// gemessen, dass es Bilder sieht.
+    /// Wie ein Modell im Auswahlmenü heisst: Name, und was es kann.
+    ///
+    /// Eine Zeile und nicht zwei, weil ein Systemmenü die zweite abschneidet. Was
+    /// dasteht, entscheidet die Wahl — „sieht es Bilder" ist beim Vision-Feld die
+    /// ganze Frage.
+    private func menuLabel(_ m: RemoteModel) -> String {
+        var marks: [String] = []
+        if m.capabilities.vision == true { marks.append("Vision") }
+        if m.capabilities.tools == true { marks.append("Functions") }
+        if m.capabilities.reasoning == true { marks.append("Reasoning") }
+        return marks.isEmpty ? m.id : m.id + "  ·  " + marks.joined(separator: ", ")
+    }
+
     @ViewBuilder
     private func modelField(_ placeholder: String, text: Binding<String>,
-                            candidates: [String]) -> some View {
+                            candidates: [RemoteModel]) -> some View {
         HStack(spacing: 8) {
             TextField(placeholder, text: text)
                 .font(EH.mono)
@@ -527,8 +543,8 @@ struct ModelEditor: View {
 
             if !candidates.isEmpty {
                 Menu {
-                    ForEach(candidates, id: \.self) { name in
-                        Button(name) { text.wrappedValue = name }
+                    ForEach(candidates) { m in
+                        Button(menuLabel(m)) { text.wrappedValue = m.id }
                     }
                     if !text.wrappedValue.isEmpty {
                         Divider()
@@ -547,29 +563,16 @@ struct ModelEditor: View {
         }
     }
 
-    /// Die anderen Modelle desselben Anbieters.
-    private func siblingModels(_ config: LLMConfig) -> [String] {
-        let base = config.baseURL.trimmingCharacters(in: CharacterSet(charactersIn: "/ "))
-        var seen: Set<String> = [config.model]
-        return model.settings.llms
-            .filter { $0.baseURL.trimmingCharacters(in: CharacterSet(charactersIn: "/ ")) == base }
-            .map(\.model)
-            .filter { !$0.isEmpty && seen.insert($0).inserted }
-    }
-
-    /// Davon die, von denen bekannt ist, dass sie Bilder sehen.
+    /// Die Liste des Anbieters — die Quelle, aus der die Rollen besetzt werden.
     ///
-    /// „Bekannt" heisst hier gemessen oder vom Anbieter genannt — der Schalter, den
-    /// der Verbindungstest setzt. Ein Vorschlag, der ein blindes Modell nennt, wäre
-    /// schlimmer als keiner.
-    private func visionCandidates(_ config: LLMConfig) -> [String] {
-        let base = config.baseURL.trimmingCharacters(in: CharacterSet(charactersIn: "/ "))
-        var seen: Set<String> = []
-        return model.settings.llms
-            .filter { $0.baseURL.trimmingCharacters(in: CharacterSet(charactersIn: "/ ")) == base }
-            .filter { $0.supportsVision }
-            .map(\.model)
-            .filter { !$0.isEmpty && seen.insert($0).inserted }
+    /// Sie kommt aus dem Eintrag und nicht aus dem Netz. Wer im Keller steht und das
+    /// Vision-Modell umstellen will, soll nicht auf eine Abfrage warten, die dort
+    /// ohnehin nicht durchkommt. Aktualisiert wird sie über „vom Endpoint laden".
+    private func allModels(_ config: LLMConfig) -> [RemoteModel] { config.knownModels }
+
+    /// Davon die, die für Bilder in Frage kommen.
+    private func visionCandidates(_ config: LLMConfig) -> [RemoteModel] {
+        config.imageCapableModels
     }
 
     // MARK: Field helpers

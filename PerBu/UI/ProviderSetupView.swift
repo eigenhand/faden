@@ -1,11 +1,17 @@
 import SwiftUI
 
-/// Sets up a provider once and takes several of its models in one go.
+/// Richtet einen Anbieter ein: Adresse, Schlüssel, und welches Modell zuerst
+/// antwortet.
 ///
-/// Adding models one at a time meant retyping the same endpoint and key for every
-/// one. Here the endpoint is entered once, its catalogue is fetched, and every model
-/// you pick becomes an entry sharing that endpoint — and the same keychain item, so
-/// the key is stored once and stays in step everywhere.
+/// Hier entsteht **ein** Eintrag und nicht einer je Modell. Das ist der Unterschied
+/// zur früheren Fassung, und er hat einen Grund: ein Anbieter ist eine Adresse mit
+/// einem Schlüssel, und die Modelle darin sind Rollen — welches antwortet, welches
+/// einspringt, welches die Bilder ansieht. Als flache Liste nebeneinander liessen
+/// sie sich nur einzeln bearbeiten, und wer ein zweites Modell desselben Anbieters
+/// wollte, tippte Adresse und Schlüssel noch einmal ab.
+///
+/// Die geladene Liste wandert mit in den Eintrag. Die Rollen werden danach im
+/// Anbieter besetzt, ohne dass der Endpoint dafür noch einmal gefragt werden muss.
 struct ProviderSetupView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
@@ -17,7 +23,8 @@ struct ProviderSetupView: View {
     @State private var key = ""
 
     @State private var models: [RemoteModel] = []
-    @State private var picked: Set<String> = []
+    /// Welches Modell zuerst antwortet. Die übrigen Rollen kommen danach im Anbieter.
+    @State private var picked: String?
     @State private var loading = false
     @State private var error: String?
     @State private var search = ""
@@ -52,7 +59,7 @@ struct ProviderSetupView: View {
         path = provider.path
         presetNote = provider.note
         models = []
-        picked = []
+        picked = nil
         error = nil
     }
 
@@ -104,7 +111,7 @@ struct ProviderSetupView: View {
                             .onChange(of: wireFormat) { _, new in
                                 guard !applyingPreset else { applyingPreset = false; return }
                                 path = LLMConfig.defaultPath(for: new)
-                                models = []; picked = []
+                                models = []; picked = nil
                             }
                             Text(wireFormat.hint).font(.eh(12, .caption)).foregroundStyle(EH.muted)
                         }
@@ -168,10 +175,10 @@ struct ProviderSetupView: View {
                             if !models.isEmpty {
                                 VStack(alignment: .leading, spacing: 10) {
                                     HStack {
-                                        EH.label("\(models.count) Modelle · \(picked.count) gewählt")
+                                        EH.label("\(models.count) Modelle · Hauptmodell wählen")
                                         Spacer()
-                                        if !picked.isEmpty {
-                                            Button("Auswahl leeren") { picked = [] }
+                                        if picked != nil {
+                                            Button("Auswahl leeren") { picked = nil }
                                                 .font(.eh(11, .caption)).foregroundStyle(EH.muted)
                                         }
                                     }
@@ -187,15 +194,15 @@ struct ProviderSetupView: View {
 
                                     ForEach(shown) { m in
                                         Button {
-                                            if picked.contains(m.id) { picked.remove(m.id) } else { picked.insert(m.id) }
+                                            picked = picked == m.id ? nil : m.id
                                         } label: {
                                             HairlineCard(padding: 12,
-                                                         fill: picked.contains(m.id) ? EH.surfaceSunk : EH.surface) {
+                                                         fill: picked == m.id ? EH.surfaceSunk : EH.surface) {
                                                 HStack(spacing: 10) {
-                                                    Image(systemName: picked.contains(m.id)
+                                                    Image(systemName: picked == m.id
                                                           ? "checkmark.circle.fill" : "circle")
                                                         .font(.eh(14, .footnote))
-                                                        .foregroundStyle(picked.contains(m.id) ? EH.navy : EH.hairStrong)
+                                                        .foregroundStyle(picked == m.id ? EH.navy : EH.hairStrong)
                                                     VStack(alignment: .leading, spacing: 4) {
                                                         Text(m.title).font(EH.mono).foregroundStyle(EH.navy)
                                                             .lineLimit(1).truncationMode(.middle)
@@ -270,7 +277,7 @@ struct ProviderSetupView: View {
         // Apples Modell braucht nichts ausgefuellt — nur, dass das System es hergibt.
         guard wireFormat.needsEndpoint else { return AppleModel.status.isUsable }
         guard canLoad else { return false }
-        return !picked.isEmpty || !manualModel.trimmingCharacters(in: .whitespaces).isEmpty
+        return picked != nil || !manualModel.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
     private func loadModels() {
@@ -300,37 +307,38 @@ struct ProviderSetupView: View {
         if !key.isEmpty { Keychain.set(key, account: account) }
 
         let providerName = name.trimmingCharacters(in: .whitespaces)
-        var chosen = models.filter { picked.contains($0.id) }
         let manual = manualModel.trimmingCharacters(in: .whitespaces)
-        if chosen.isEmpty, !manual.isEmpty { chosen = [RemoteModel(id: manual)] }
+        let main = models.first { $0.id == picked }
+            ?? (manual.isEmpty ? nil : RemoteModel(id: manual))
+        guard let main else { return }
 
-        var firstID: UUID?
-        for m in chosen {
-            var c = LLMConfig()
-            c.name = providerName.isEmpty ? m.id : "\(providerName) · \(shortName(m.id))"
-            c.wireFormat = wireFormat
-            c.baseURL = baseURL
-            c.path = path
-            c.model = m.id
-            c.keychainAccount = account
-            // Was die Liste sagt, zieht mit ein. Geprüft wird es erst beim
-            // Verbindungstest — dort gewinnt die Messung.
-            c.supportsVision = m.capabilities.vision == true
-            c.supportsTools = m.capabilities.tools
-            c.supportsReasoning = m.capabilities.reasoning
-            if let ctx = m.contextLength {
-                c.reportedContextLimit = ctx
-                c.contextWindow = ctx
-            }
-            if let out = m.maxOutput {
-                c.reportedOutputLimit = out
-                c.maxOutputTokens = min(c.maxOutputTokens, out)
-            }
-            model.settings.llms.append(c)
-            if firstID == nil { firstID = c.id }
+        var c = LLMConfig()
+        c.name = providerName.isEmpty ? main.id : providerName
+        c.wireFormat = wireFormat
+        c.baseURL = baseURL
+        c.path = path
+        c.model = main.id
+        c.keychainAccount = account
+        // Die ganze Liste zieht mit ein, nicht nur das gewählte Modell: aus ihr
+        // werden gleich die übrigen Rollen besetzt, und dafür soll niemand noch
+        // einmal auf das Netz warten müssen.
+        c.knownModels = models
+        // Was die Liste über das Hauptmodell sagt, zieht mit ein. Geprüft wird es
+        // erst beim Verbindungstest — dort gewinnt die Messung.
+        c.supportsVision = main.capabilities.vision == true
+        c.supportsTools = main.capabilities.tools
+        c.supportsReasoning = main.capabilities.reasoning
+        if let ctx = main.contextLength {
+            c.reportedContextLimit = ctx
+            c.contextWindow = ctx
         }
-        // Make the first addition active when nothing was set up before.
-        if model.settings.activeLLMID == nil { model.settings.activeLLMID = firstID }
+        if let out = main.maxOutput {
+            c.reportedOutputLimit = out
+            c.maxOutputTokens = min(c.maxOutputTokens, out)
+        }
+        model.settings.llms.append(c)
+        // Der erste eingerichtete Anbieter wird der aktive.
+        if model.settings.activeLLMID == nil { model.settings.activeLLMID = c.id }
         model.persist()
         model.recomputeUsage()
         dismiss()

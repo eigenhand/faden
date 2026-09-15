@@ -7,6 +7,9 @@ struct ModelPickerSheet: View {
     let apiKey: String
     /// Called with the chosen model and the limits the endpoint reported for it.
     var onPick: (RemoteModel) -> Void
+    /// Die ganze geladene Liste, damit der Anbieter sie behalten kann. Aus ihr werden
+    /// die übrigen Rollen besetzt — ohne sie müsste jede Auswahl wieder ans Netz.
+    var onLoad: ([RemoteModel]) -> Void = { _ in }
 
     @State private var models: [RemoteModel] = []
     @State private var loading = true
@@ -87,6 +90,7 @@ struct ModelPickerSheet: View {
         .task {
             do {
                 models = try await ModelCatalog.fetch(config: config, apiKey: apiKey)
+                onLoad(models)
             } catch {
                 self.error = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
             }

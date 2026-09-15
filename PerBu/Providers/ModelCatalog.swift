@@ -1,7 +1,12 @@
 import Foundation
 
 /// One model as an endpoint describes it.
-struct RemoteModel: Identifiable, Equatable, Hashable {
+/// Ein Modell, wie ein Endpoint es beschreibt.
+///
+/// `Codable`, seit die Liste eines Anbieters aufbewahrt wird: die Rollen — Haupt,
+/// Ausweich, Vision, Vision-Ausweich — werden daraus gewählt, und dafür jedes Mal
+/// den Endpoint zu fragen hiesse, dass die Auswahl ohne Netz nicht aufgeht.
+struct RemoteModel: Identifiable, Codable, Equatable, Hashable {
     var id: String
     var displayName: String?
     var contextLength: Int?

@@ -13,7 +13,7 @@ import SwiftUI
 /// dieses Anbieters gar kein Feld für Bilder — weder wahr noch falsch —, und auf ein
 /// Bild antwortet es „Model only supports text input". Dasselbe Modell mit `-flash`
 /// am Namen sieht das Bild. Auf die Liste allein ist also kein Verlass.
-struct Capabilities: Equatable, Hashable, Sendable {
+struct Capabilities: Codable, Equatable, Hashable, Sendable {
     var vision: Bool?
     var tools: Bool?
     var reasoning: Bool?

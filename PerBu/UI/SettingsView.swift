@@ -28,16 +28,16 @@ struct SettingsView: View {
                         // Einrichtung kaputtzumachen. Seit Apples Modell im System
                         // danebensteht, gibt es etwas zu waehlen — und ein Tester, der
                         // genau das ausprobieren soll, kam nicht heran.
-                        section("Modell") {
+                        section("Anbieter") {
                             if model.settings.llms.isEmpty {
-                                emptyRow("Noch kein Modell hinterlegt.")
+                                emptyRow("Noch kein Anbieter hinterlegt.")
                             }
                             ForEach(model.settings.llms) { llm in
                                 NavigationLink {
                                     ModelEditor(configID: llm.id)
                                 } label: {
                                     row(title: llm.name,
-                                        subtitle: llm.model.isEmpty ? "unvollständig" : llm.model,
+                                        subtitle: roles(of: llm),
                                         active: model.settings.activeLLMID == llm.id
                                              || (model.settings.activeLLMID == nil && model.settings.llms.first?.id == llm.id))
                                 }
@@ -296,6 +296,18 @@ struct SettingsView: View {
     }
 
     @ViewBuilder
+    /// Was in diesem Anbieter welche Rolle hat, in einer Zeile.
+    ///
+    /// Das Hauptmodell immer, das Bild-Modell nur, wenn es eines gibt — es ist die
+    /// Rolle, deren Fehlen man sonst erst merkt, wenn ein Bild abgewiesen wird. Das
+    /// Ausweichmodell bleibt draussen: es ist der Fall, der hoffentlich nie eintritt,
+    /// und eine Zeile fasst nicht alles.
+    private func roles(of c: LLMConfig) -> String {
+        guard !c.model.isEmpty else { return "unvollständig" }
+        let vision = c.visionModel.trimmingCharacters(in: .whitespaces)
+        return vision.isEmpty ? c.model : "\(c.model) · Bilder: \(vision)"
+    }
+
     private func section<C: View>(_ title: String, @ViewBuilder content: () -> C) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             EH.label(title)
