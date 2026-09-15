@@ -88,6 +88,7 @@ struct ModelEditor: View {
                                         .fill(EH.surface))
                                     .overlay(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
                                         .stroke(EH.hair, lineWidth: EH.hairWidth))
+                                CapabilityBadges(capabilities: model.settings.llms[i].capabilities)
                             }
 
                             VStack(alignment: .leading, spacing: 8) {

@@ -161,6 +161,25 @@ indirect enum JSONValue: Codable, Equatable, Hashable {
         default:             return nil
         }
     }
+    /// Ein Wahrheitswert, auch wenn er als Wort oder Zahl dasteht.
+    ///
+    /// Modelllisten schreiben Fähigkeiten mal als `true`, mal als `"true"`, mal als
+    /// `1` — und wer nur den echten Boolean liest, hält die anderen beiden für
+    /// „nicht angegeben". Das ist der Unterschied zwischen einer Marke, die
+    /// erscheint, und einer, die fehlt.
+    var boolValue: Bool? {
+        switch self {
+        case .bool(let b):   return b
+        case .number(let d): return d != 0
+        case .string(let s):
+            switch s.lowercased() {
+            case "true", "yes", "1":  return true
+            case "false", "no", "0":  return false
+            default:                  return nil
+            }
+        default: return nil
+        }
+    }
     var arrayValue: [JSONValue]? { if case .array(let a) = self { return a }; return nil }
     var objectValue: [String: JSONValue]? { if case .object(let o) = self { return o }; return nil }
 

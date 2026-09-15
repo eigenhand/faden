@@ -196,13 +196,14 @@ struct ProviderSetupView: View {
                                                           ? "checkmark.circle.fill" : "circle")
                                                         .font(.eh(14, .footnote))
                                                         .foregroundStyle(picked.contains(m.id) ? EH.navy : EH.hairStrong)
-                                                    VStack(alignment: .leading, spacing: 2) {
+                                                    VStack(alignment: .leading, spacing: 4) {
                                                         Text(m.title).font(EH.mono).foregroundStyle(EH.navy)
                                                             .lineLimit(1).truncationMode(.middle)
                                                         if !m.stats.isEmpty {
                                                             Text(m.stats).font(.eh(11, .caption))
                                                                 .foregroundStyle(EH.muted)
                                                         }
+                                                        CapabilityBadges(capabilities: m.capabilities)
                                                     }
                                                     Spacer(minLength: 0)
                                                 }
@@ -312,6 +313,11 @@ struct ProviderSetupView: View {
             c.path = path
             c.model = m.id
             c.keychainAccount = account
+            // Was die Liste sagt, zieht mit ein. Geprüft wird es erst beim
+            // Verbindungstest — dort gewinnt die Messung.
+            c.supportsVision = m.capabilities.vision == true
+            c.supportsTools = m.capabilities.tools
+            c.supportsReasoning = m.capabilities.reasoning
             if let ctx = m.contextLength {
                 c.reportedContextLimit = ctx
                 c.contextWindow = ctx

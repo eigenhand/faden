@@ -9,6 +9,8 @@ struct RemoteModel: Identifiable, Equatable, Hashable {
     var owner: String?
     /// Formatted price per million input/output tokens, when the endpoint says.
     var pricing: String?
+    /// Was die Liste über die Fähigkeiten sagt — oft nichts. Siehe `Capabilities`.
+    var capabilities = Capabilities()
 
     var title: String { displayName ?? id }
 
@@ -80,6 +82,7 @@ enum ModelCatalog {
         var m = RemoteModel(id: id)
         m.displayName = v["display_name"]?.stringValue
         m.owner = v["owned_by"]?.stringValue ?? v["organization"]?.stringValue
+        m.capabilities = capabilities(from: v)
 
         for key in ["context_length", "max_input_tokens", "context_window", "max_context_length"] {
             if let n = int(v[key]) { m.contextLength = n; break }
@@ -102,6 +105,50 @@ enum ModelCatalog {
             }
         }
         return m
+    }
+
+    /// Die Fähigkeiten, wie sie in den drei gängigen Schreibweisen dastehen.
+    ///
+    /// Es gibt keinen Standard dafür, und das ist der ganze Aufwand hier. LiteLLM und
+    /// die Häuser, die es einsetzen, schreiben `supports_vision` als Boolean.
+    /// OpenRouter beschreibt stattdessen, was hineingeht (`architecture`
+    /// `input_modalities` mit „image") und welche Parameter die Anfrage annimmt
+    /// (`supported_parameters` mit „tools" oder „reasoning"). Andere hängen alles
+    /// unter `capabilities`.
+    ///
+    /// Fehlt ein Feld, bleibt die Antwort **nil** und nicht `false`. Ein Anbieter,
+    /// der zu Bildern schweigt, hat nicht gesagt, dass sein Modell keine sieht.
+    static func capabilities(from v: JSONValue) -> Capabilities {
+        var caps = Capabilities()
+
+        func flag(_ keys: [String]) -> Bool? {
+            for key in keys {
+                if let b = v[key]?.boolValue { return b }
+                if let b = v["capabilities"]?[key]?.boolValue { return b }
+            }
+            return nil
+        }
+        caps.vision = flag(["supports_vision", "vision"])
+        caps.tools = flag(["supports_function_calling", "supports_tools", "tools",
+                           "function_calling"])
+        caps.reasoning = flag(["supports_reasoning", "reasoning"])
+
+        // OpenRouter: was hineingeht, und welche Parameter die Anfrage annimmt.
+        let modalities = (v["architecture"]?["input_modalities"]?.arrayValue ?? [])
+            .compactMap { $0.stringValue?.lowercased() }
+        if caps.vision == nil, !modalities.isEmpty {
+            caps.vision = modalities.contains("image")
+        }
+        let parameters = (v["supported_parameters"]?.arrayValue ?? [])
+            .compactMap { $0.stringValue?.lowercased() }
+        if !parameters.isEmpty {
+            if caps.tools == nil { caps.tools = parameters.contains("tools") }
+            if caps.reasoning == nil {
+                caps.reasoning = parameters.contains("reasoning")
+                    || parameters.contains("include_reasoning")
+            }
+        }
+        return caps
     }
 
     private static func int(_ v: JSONValue?) -> Int? {

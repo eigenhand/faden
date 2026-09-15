@@ -77,6 +77,15 @@ struct LLMConfig: Codable, Equatable, Identifiable {
     /// to ask an arbitrary endpoint, and sending an image to a text-only model is a
     /// hard error rather than a graceful degradation.
     var supportsVision: Bool = false
+    /// Ob dieses Modell Werkzeuge annimmt. **nil heisst ungeprüft.**
+    ///
+    /// Der Unterschied trägt hier Gewicht: `false` schaltet die Werkzeuge in jedem
+    /// Zug ab, `nil` lässt es beim bisherigen Verhalten — die App schickt sie mit,
+    /// wie sie es immer getan hat. Ein Endpoint, der den Parameter nicht kennt,
+    /// weist die Anfrage mit HTTP 400 ab; das ist die Messung, die hier landet.
+    var supportsTools: Bool?
+    /// Ob das Modell seinen Gedankengang mitschickt. **nil heisst ungeprüft.**
+    var supportsReasoning: Bool?
     /// Anthropic only: ask for adaptive thinking and stream a summary of it.
     var requestThinking: Bool = false
     /// Anthropic only: mark the system prompt cacheable. Harmless on the first-party
@@ -106,12 +115,25 @@ struct LLMConfig: Codable, Equatable, Identifiable {
         temperature           = try c.decodeIfPresent(Double.self, forKey: .temperature) ?? d.temperature
         extraHeaders          = try c.decodeIfPresent([String: String].self, forKey: .extraHeaders) ?? [:]
         supportsVision        = try c.decodeIfPresent(Bool.self, forKey: .supportsVision) ?? false
+        supportsTools         = try c.decodeIfPresent(Bool.self, forKey: .supportsTools)
+        supportsReasoning     = try c.decodeIfPresent(Bool.self, forKey: .supportsReasoning)
         requestThinking       = try c.decodeIfPresent(Bool.self, forKey: .requestThinking) ?? false
         useCacheControl       = try c.decodeIfPresent(Bool.self, forKey: .useCacheControl) ?? true
         keychainAccount       = try c.decodeIfPresent(String.self, forKey: .keychainAccount) ?? d.keychainAccount
     }
 
     init() {}
+
+    /// Die Marken, die unter diesem Modell stehen.
+    ///
+    /// `supportsVision` ist hier die Ausnahme: es ist ein Schalter und keine
+    /// Feststellung — aus steht für „biete keine Bilder an", gleich ob geprüft oder
+    /// nicht. Als Marke zählt deshalb nur das Ja.
+    var capabilities: Capabilities {
+        Capabilities(vision: supportsVision ? true : nil,
+                     tools: supportsTools,
+                     reasoning: supportsReasoning)
+    }
 
     var endpointURL: URL? {
         let base = baseURL.trimmingCharacters(in: .whitespaces)
