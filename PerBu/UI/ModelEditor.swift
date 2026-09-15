@@ -22,6 +22,11 @@ struct ModelEditor: View {
     @State private var visionNote: (text: String, good: Bool)?
     /// Dasselbe für Werkzeuge und Gedankengang.
     @State private var toolNote: (text: String, good: Bool)?
+    /// Ob die beiden Bild-Felder ausgeklappt sind.
+    ///
+    /// Eigener Zustand und nicht `!visionModel.isEmpty`: wer den Haken setzt, sieht
+    /// sonst ein leeres Feld, das sich selbst sofort wieder zuklappt.
+    @State private var separateVisionModel = false
     @State private var limitNote: String?
 
     private var index: Int? { model.settings.llms.firstIndex { $0.id == configID } }
@@ -94,6 +99,17 @@ struct ModelEditor: View {
                             }
 
                             VStack(alignment: .leading, spacing: 8) {
+                                EH.label("Ausweichmodell")
+                                modelField("leer: gar nicht ausweichen",
+                                           text: $model.settings.llms[i].fallbackModel,
+                                           candidates: siblingModels(model.settings.llms[i]))
+                                Text("Wenn das Hauptmodell nicht antwortet, geht der Zug einmal "
+                                     + "hierher — nach den Wartepausen und nur, solange noch nichts "
+                                     + "angekommen ist.")
+                                    .font(.eh(12, .caption)).foregroundStyle(EH.muted)
+                            }
+
+                            VStack(alignment: .leading, spacing: 8) {
                                 EH.label("API-Key")
                                 SecureField(keyStored ? "gespeichert — zum Ersetzen tippen" : "sk-…", text: $draftKey)
                                     .textContentType(.oneTimeCode)
@@ -131,6 +147,42 @@ struct ModelEditor: View {
                                 } else {
                                     Text("Der Verbindungstest probiert es selbst aus und setzt den Schalter entsprechend.")
                                         .font(.eh(12, .caption)).foregroundStyle(EH.muted)
+                                }
+
+                                Toggle(isOn: Binding(
+                                    get: { separateVisionModel },
+                                    set: { on in
+                                        separateVisionModel = on
+                                        // Ausgeschaltet heisst ausgeschaltet: ein Modellname,
+                                        // der unsichtbar stehen bleibt und weiter Züge umleitet,
+                                        // waere die schlimmere Art von Einstellung.
+                                        if !on {
+                                            model.settings.llms[i].visionModel = ""
+                                            model.settings.llms[i].visionFallbackModel = ""
+                                            model.persist()
+                                        }
+                                    })) {
+                                    Text("Eigenes Modell für Bilder").font(EH.body).foregroundStyle(EH.navy)
+                                }
+                                .tint(EH.navy)
+
+                                if separateVisionModel {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        EH.label("Vision-Modell")
+                                        modelField("z. B. anbieter/modell-name",
+                                                   text: $model.settings.llms[i].visionModel,
+                                                   candidates: visionCandidates(model.settings.llms[i]))
+                                        EH.label("Vision-Ausweichmodell")
+                                        modelField("leer: gar nicht ausweichen",
+                                                   text: $model.settings.llms[i].visionFallbackModel,
+                                                   candidates: visionCandidates(model.settings.llms[i]))
+                                        Text("Hängt an einem Zug ein Bild, geht genau dieser Zug an "
+                                             + "das Vision-Modell — alle anderen bleiben beim "
+                                             + "Hauptmodell. Für Modelle, die alles besser können "
+                                             + "ausser sehen.")
+                                            .font(.eh(12, .caption)).foregroundStyle(EH.muted)
+                                    }
+                                    .padding(.leading, 2)
                                 }
                             }
 
@@ -248,6 +300,8 @@ struct ModelEditor: View {
         .onAppear {
             guard let i = index else { return }
             keyStored = Keychain.has(account: model.settings.llms[i].keychainAccount)
+            separateVisionModel = !model.settings.llms[i].visionModel
+                .trimmingCharacters(in: .whitespaces).isEmpty
         }
         .onDisappear { model.persist(); model.recomputeUsage() }
     }
@@ -448,6 +502,75 @@ struct ModelEditor: View {
         }
     }
 
+
+    /// Ein Feld für einen Modellnamen, mit den bekannten Namen als Vorschlag daneben.
+    ///
+    /// Der Vorschlag ist der halbe Punkt: „anbieter/modell-name" tippt man einmal
+    /// falsch und sucht den Fehler dann beim Schlüssel. Was hier steht, ist bereits
+    /// eingerichtet, gehört zu diesem Anbieter, und beim Vision-Feld ist obendrein
+    /// gemessen, dass es Bilder sieht.
+    @ViewBuilder
+    private func modelField(_ placeholder: String, text: Binding<String>,
+                            candidates: [String]) -> some View {
+        HStack(spacing: 8) {
+            TextField(placeholder, text: text)
+                .font(EH.mono)
+                .foregroundStyle(EH.navy)
+                .textFieldStyle(.plain)
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+                .padding(.horizontal, 12).padding(.vertical, 10)
+                .background(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
+                    .fill(EH.surface))
+                .overlay(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
+                    .stroke(EH.hair, lineWidth: EH.hairWidth))
+
+            if !candidates.isEmpty {
+                Menu {
+                    ForEach(candidates, id: \.self) { name in
+                        Button(name) { text.wrappedValue = name }
+                    }
+                    if !text.wrappedValue.isEmpty {
+                        Divider()
+                        Button("Leeren", role: .destructive) { text.wrappedValue = "" }
+                    }
+                } label: {
+                    Image(systemName: "list.bullet")
+                        .font(.eh(12, .caption, weight: .medium))
+                        .foregroundStyle(EH.slate)
+                        .frame(width: 38, height: 38)
+                        .background(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
+                            .fill(EH.surfaceSunk))
+                }
+                .accessibilityLabel("Eingerichtete Modelle")
+            }
+        }
+    }
+
+    /// Die anderen Modelle desselben Anbieters.
+    private func siblingModels(_ config: LLMConfig) -> [String] {
+        let base = config.baseURL.trimmingCharacters(in: CharacterSet(charactersIn: "/ "))
+        var seen: Set<String> = [config.model]
+        return model.settings.llms
+            .filter { $0.baseURL.trimmingCharacters(in: CharacterSet(charactersIn: "/ ")) == base }
+            .map(\.model)
+            .filter { !$0.isEmpty && seen.insert($0).inserted }
+    }
+
+    /// Davon die, von denen bekannt ist, dass sie Bilder sehen.
+    ///
+    /// „Bekannt" heisst hier gemessen oder vom Anbieter genannt — der Schalter, den
+    /// der Verbindungstest setzt. Ein Vorschlag, der ein blindes Modell nennt, wäre
+    /// schlimmer als keiner.
+    private func visionCandidates(_ config: LLMConfig) -> [String] {
+        let base = config.baseURL.trimmingCharacters(in: CharacterSet(charactersIn: "/ "))
+        var seen: Set<String> = []
+        return model.settings.llms
+            .filter { $0.baseURL.trimmingCharacters(in: CharacterSet(charactersIn: "/ ")) == base }
+            .filter { $0.supportsVision }
+            .map(\.model)
+            .filter { !$0.isEmpty && seen.insert($0).inserted }
+    }
 
     // MARK: Field helpers
 

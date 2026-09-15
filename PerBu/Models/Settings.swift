@@ -60,6 +60,19 @@ struct LLMConfig: Codable, Equatable, Identifiable {
     /// zweiter Fehlschlag statt einer Rettung. Was der Nutzer selbst einträgt, liegt
     /// bei seinem Anbieter.
     var fallbackModel: String = ""
+    /// Das Modell für Züge, an denen ein Bild hängt. Leer heisst: das Hauptmodell
+    /// macht das mit.
+    ///
+    /// Es gibt Modelle, die alles besser können ausser sehen. `z-ai/glm-5.3` ist so
+    /// eines — dieselbe Familie, dieselbe Geschwindigkeit, und auf ein Bild antwortet
+    /// es „Model only supports text input", während `-flash` daneben das Bild
+    /// beschreibt. Ohne diese Zeile müsste man sich entscheiden: entweder das bessere
+    /// Modell oder Bilder. Mit ihr wandert der eine Zug, an dem ein Bild hängt, zu
+    /// dem Modell, das hinsehen kann, und alle anderen bleiben, wo sie sind.
+    var visionModel: String = ""
+    /// Worauf ein Bild-Zug ausweicht. Muss selbst Bilder sehen, sonst wäre das
+    /// Ausweichen nur ein zweiter Fehlschlag.
+    var visionFallbackModel: String = ""
     /// Nominal context window in tokens. Drives the bar and the compaction trigger.
     var contextWindow: Int = 200_000
     /// Largest prompt this endpoint has actually accepted. Some providers publish no
@@ -107,6 +120,8 @@ struct LLMConfig: Codable, Equatable, Identifiable {
         path                  = try c.decodeIfPresent(String.self, forKey: .path) ?? d.path
         model                 = try c.decodeIfPresent(String.self, forKey: .model) ?? d.model
         fallbackModel         = try c.decodeIfPresent(String.self, forKey: .fallbackModel) ?? d.fallbackModel
+        visionModel           = try c.decodeIfPresent(String.self, forKey: .visionModel) ?? d.visionModel
+        visionFallbackModel   = try c.decodeIfPresent(String.self, forKey: .visionFallbackModel) ?? d.visionFallbackModel
         contextWindow         = try c.decodeIfPresent(Int.self, forKey: .contextWindow) ?? d.contextWindow
         observedMaxPromptTokens = try c.decodeIfPresent(Int.self, forKey: .observedMaxPromptTokens) ?? 0
         reportedContextLimit  = try c.decodeIfPresent(Int.self, forKey: .reportedContextLimit)
@@ -123,6 +138,41 @@ struct LLMConfig: Codable, Equatable, Identifiable {
     }
 
     init() {}
+
+    /// Ob überhaupt ein Bild angehängt werden darf.
+    ///
+    /// Zwei Wege führen dahin, und der zweite ist der neue: entweder das Hauptmodell
+    /// sieht Bilder, oder es gibt ein eigenes Modell dafür. Ohne diese Frage an einer
+    /// Stelle hinge das Pluszeichen weiter allein am Hauptmodell — und wer gerade ein
+    /// Vision-Modell eingetragen hat, sähe es trotzdem nicht.
+    var acceptsImages: Bool {
+        supportsVision || !visionModel.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+
+    /// Welches Modell diesen Zug bearbeitet.
+    ///
+    /// Statisch wäre hier falsch: die Antwort hängt an dieser Konfiguration. Prüfbar
+    /// ist sie trotzdem, denn sie fragt nichts ausser sich selbst.
+    func model(forImages: Bool) -> String {
+        let vision = visionModel.trimmingCharacters(in: .whitespaces)
+        return forImages && !vision.isEmpty ? vision : model
+    }
+
+    /// Worauf dieser Zug ausweicht, oder nil.
+    ///
+    /// `active` ist das Modell, das gerade gescheitert ist — auf dasselbe noch einmal
+    /// auszuweichen wäre keine zweite Chance, sondern derselbe Fehler.
+    ///
+    /// Hängt ein Bild am Zug, gilt zuerst das Bild-Ausweichmodell und erst dann das
+    /// allgemeine. Andersherum liefe man Gefahr, ein Bild an ein Modell zu schicken,
+    /// das nicht sehen kann — und der Rettungsversuch wäre der zweite Fehlschlag.
+    func fallback(forImages: Bool, after active: String) -> String? {
+        func clean(_ s: String) -> String { s.trimmingCharacters(in: .whitespaces) }
+        let candidates = forImages
+            ? [clean(visionFallbackModel), clean(fallbackModel)]
+            : [clean(fallbackModel)]
+        return candidates.first { !$0.isEmpty && $0 != active }
+    }
 
     /// Die Marken, die unter diesem Modell stehen.
     ///

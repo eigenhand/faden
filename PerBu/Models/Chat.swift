@@ -54,6 +54,15 @@ struct Message: Codable, Identifiable, Equatable, Hashable, Sendable {
 
     var text: String { blocks.map(\.plainText).joined(separator: "\n") }
 
+    /// Ob an dieser Nachricht ein Bild haengt.
+    ///
+    /// Steht hier und nicht dreimal als `if case .image = $0` im Code verteilt: an
+    /// dieser Frage haengt jetzt, welches Modell den Zug bearbeitet, und eine
+    /// Formulierung an einer Stelle kann nicht an der zweiten anders ausfallen.
+    var hasImage: Bool {
+        blocks.contains { if case .image = $0 { return true }; return false }
+    }
+
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id                   = try c.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()

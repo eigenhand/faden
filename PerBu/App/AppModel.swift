@@ -206,7 +206,7 @@ final class AppModel {
 
     var isConfigured: Bool { settings.activeLLM?.isComplete == true }
     /// Whether the composer offers the attach button.
-    var visionAvailable: Bool { settings.activeLLM?.supportsVision == true }
+    var visionAvailable: Bool { settings.activeLLM?.acceptsImages == true }
 
     /// Whether a microphone button makes sense at all. Either route qualifies —
     /// choosing "own endpoint" and not finishing the setup should not silently

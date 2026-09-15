@@ -350,22 +350,10 @@ struct AgentRunner {
 
     // MARK: Ausweichen
 
-    /// Das Ausweichmodell für diesen Zug, oder nil.
-    ///
-    /// Kommt aus den Einstellungen und nicht mehr aus dem Build. Die alte Fassung
-    /// musste prüfen, ob der Endpoint überhaupt der mitgelieferte ist — ein fremder
-    /// Anbieter hätte sonst einen Modellnamen vorgesetzt bekommen, den er nicht
-    /// kennt, und aus einer Rettung wäre ein zweiter Fehlschlag geworden. Diese
-    /// Sorge entfällt: was hier steht, hat der Nutzer für genau diesen Endpoint
-    /// eingetragen.
-    ///
-    /// `active` ist das Modell, das gerade gescheitert ist. Auf dasselbe noch einmal
-    /// auszuweichen wäre keine zweite Chance, sondern derselbe Fehler.
-    static func fallbackModel(for config: LLMConfig, active: String) -> String? {
-        let candidate = config.fallbackModel.trimmingCharacters(in: .whitespaces)
-        guard !candidate.isEmpty, candidate != active else { return nil }
-        return candidate
-    }
+    // Welches Modell einen Zug bearbeitet und worauf er ausweicht, steht jetzt in
+    // `LLMConfig` — `model(forImages:)` und `fallback(forImages:after:)`. Dort, weil
+    // es vier Felder derselben Konfiguration gegeneinander abwägt und nichts sonst
+    // braucht; hier stand es nur, solange die Antwort aus dem Build kam.
 
     /// Ob ein anderes Modell diesen Fehler überhaupt beheben könnte.
     ///
@@ -411,9 +399,16 @@ struct AgentRunner {
                 providerName: settings.activeRecipe?.name)
         let provider = ProviderFactory.make(for: config.wireFormat)
 
+        // Hängt an diesem Zug ein Bild? Über die ganze Historie gefragt und nicht nur
+        // über die letzte Nachricht: bei jeder Anfrage geht die ganze Unterhaltung
+        // mit, also auch das Bild von vor zehn Zügen. Wer nur die letzte Nachricht
+        // prüft, schickt es an ein Modell, das nicht sehen kann.
+        let hasImages = history.contains(where: \.hasImage)
+
         // Veränderbar, weil bei einem Fehlschlag das Modell gewechselt wird. Die
         // Einstellungen des Nutzers bleiben unberührt — das gilt für diesen Zug.
         var activeConfig = config
+        activeConfig.model = config.model(forImages: hasImages)
         var didFallBack = false
 
         var iteration = 0
@@ -482,7 +477,8 @@ struct AgentRunner {
                 if !didFallBack,
                    text.isEmpty, thinking.isEmpty, pendingCalls.isEmpty,
                    let error = caught, Self.isWorthRetrying(error),
-                   let fallback = Self.fallbackModel(for: config, active: activeConfig.model) {
+                   let fallback = config.fallback(forImages: hasImages,
+                                                  after: activeConfig.model) {
                     didFallBack = true
                     activeConfig.model = fallback
                     iteration -= 1          // dieselbe Runde noch einmal
