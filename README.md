@@ -199,3 +199,11 @@ und `ASC_ISSUER_ID` setzen (App Store Connect › Users and Access › Integrati
 | `UI/` | Chat, Kontextleiste, Einstellungen, Einrichtungsassistent |
 
 Keys liegen im Schlüsselbund des Geräts, alles andere als JSON in Application Support.
+
+## Lizenz
+
+Apache-2.0. Siehe [LICENSE](LICENSE). Copyright 2026 eigenhand.
+
+Permissiv und nicht Copyleft: Faden läuft auf einem Telefon und spricht mit Endpoints,
+die dem Nutzer gehören — es gibt hier nichts, was jemand als Dienst übernehmen und
+schliessen könnte. Apache-2.0 statt MIT wegen der ausdrücklichen Patentlizenz.
