@@ -202,7 +202,7 @@ Keys liegen im Schlüsselbund des Geräts, alles andere als JSON in Application 
 
 ## Lizenz
 
-Apache-2.0. Siehe [LICENSE](LICENSE). Copyright 2026 eigenhand.
+Apache-2.0. Siehe [LICENSE](LICENSE). Copyright 2026 Christoph Lindl-Guk.
 
 Permissiv und nicht Copyleft: Faden läuft auf einem Telefon und spricht mit Endpoints,
 die dem Nutzer gehören — es gibt hier nichts, was jemand als Dienst übernehmen und
