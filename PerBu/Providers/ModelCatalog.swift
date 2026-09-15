@@ -156,48 +156,14 @@ enum ModelCatalog {
         return Int(d)
     }
 
-    // MARK: Probing limits the endpoint does not publish
+    // MARK: Grenzen, die der Anbieter nicht nennt
 
-    /// Asks for an absurd `max_tokens` and reads the ceiling out of the rejection.
-    ///
-    /// Most endpoints answer such a request with a message naming their real limit
-    /// ("max_tokens must be <= 8192", "maximum context length is 131072 tokens").
-    /// The request is refused before any tokens are generated, so this costs nothing
-    /// but a round trip — and it is the only way to learn the limits of a provider
-    /// whose model list carries no numbers at all.
-    static func probeLimits(config: LLMConfig, apiKey: String, model: String) async -> (context: Int?, output: Int?) {
-        var cfg = config
-        cfg.model = model
-        cfg.maxOutputTokens = 99_999_999
-        cfg.requestThinking = false
-
-        guard cfg.wireFormat.needsEndpoint, let url = cfg.endpointURL else { return (nil, nil) }
-        var body: [String: Any]
-        var req = URLRequest(url: url)
-        req.httpMethod = "POST"
-        req.timeoutInterval = 30
-        req.setValue("application/json", forHTTPHeaderField: "content-type")
-
-        switch cfg.wireFormat {
-        case .anthropic:
-            req.setValue(apiKey, forHTTPHeaderField: "x-api-key")
-            req.setValue(AnthropicProvider.version, forHTTPHeaderField: "anthropic-version")
-            body = ["model": model, "max_tokens": 99_999_999,
-                    "messages": [["role": "user", "content": "hi"]]]
-        case .openai:
-            if !apiKey.isEmpty { req.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization") }
-            body = ["model": model, "max_tokens": 99_999_999,
-                    "messages": [["role": "user", "content": "hi"]]]
-        case .appleOnDevice:
-            return (nil, nil)  // kein Endpoint, den man nach Grenzen fragen koennte
-        }
-        for (k, v) in cfg.extraHeaders { req.setValue(v, forHTTPHeaderField: k) }
-        req.httpBody = try? JSONSerialization.data(withJSONObject: body)
-
-        guard let (data, _) = try? await Net.session.data(for: req),
-              let text = String(data: data, encoding: .utf8) else { return (nil, nil) }
-        return extractLimits(from: text)
-    }
+    // Hier stand ein Test, der eine absurde Obergrenze schickte und die echte aus der
+    // Absage las. Er funktionierte — und ist trotzdem weg. Die App erfindet keine
+    // Zahlen, um Grenzen auszuloten; sie nimmt, was in der Modellliste steht, und
+    // lernt den Rest aus echten Anfragen. `extractLimits` bleibt deshalb, nur der
+    // Aufrufer ist ein anderer: nicht mehr ein Test beim Einrichten, sondern die
+    // Absage, die ein Nutzer tatsaechlich kassiert hat.
 
     /// Pulls plausible token ceilings out of an error message.
     static func extractLimits(from text: String) -> (context: Int?, output: Int?) {

@@ -20,6 +20,8 @@ struct ModelEditor: View {
 
     /// Result of the image check, shown next to the vision switch.
     @State private var visionNote: (text: String, good: Bool)?
+    /// Dasselbe für Werkzeuge und Gedankengang.
+    @State private var toolNote: (text: String, good: Bool)?
     @State private var limitNote: String?
 
     private var index: Int? { model.settings.llms.firstIndex { $0.id == configID } }
@@ -128,6 +130,22 @@ struct ModelEditor: View {
                                     }
                                 } else {
                                     Text("Der Verbindungstest probiert es selbst aus und setzt den Schalter entsprechend.")
+                                        .font(.eh(12, .caption)).foregroundStyle(EH.muted)
+                                }
+                            }
+
+                            VStack(alignment: .leading, spacing: 8) {
+                                EH.label("Werkzeuge und Gedankengang")
+                                if let note = toolNote {
+                                    HStack(alignment: .top, spacing: 7) {
+                                        Image(systemName: note.good ? "checkmark.circle" : "minus.circle")
+                                            .font(.eh(12, .caption))
+                                            .foregroundStyle(note.good ? EH.good : EH.muted)
+                                        Text(note.text).font(.eh(12, .caption)).foregroundStyle(EH.slate)
+                                    }
+                                } else {
+                                    Text("Der Verbindungstest ruft ein Werkzeug auf, das nichts tut. "
+                                         + "Kommt dabei ein Gedankengang mit, steht auch das fest.")
                                         .font(.eh(12, .caption)).foregroundStyle(EH.muted)
                                 }
                             }
@@ -359,24 +377,26 @@ struct ModelEditor: View {
                 return
             }
 
-            // Ask what this model's ceilings are while we are here.
-            testState = .running("Grenzen …")
-            let limits = await ModelCatalog.probeLimits(config: config, apiKey: key, model: config.model)
+            // Was der Anbieter selbst nennt, steht schon in der Konfiguration — es
+            // kam mit der Modellliste. Hier wird nur gesagt, woran man ist.
+            //
+            // Frueher stand an dieser Stelle ein Test, der eine absurde Obergrenze
+            // schickte und die echte aus der Absage las. Der ist weg: die App
+            // erfindet keine Zahlen, um Grenzen auszuloten. Was fehlt, lernt sie aus
+            // einer Absage, die wirklich jemand kassiert hat.
             if let i = index {
-                var learned: [String] = []
-                if let c = limits.context {
-                    model.settings.llms[i].reportedContextLimit = c
-                    model.settings.llms[i].contextWindow = min(model.settings.llms[i].contextWindow, c)
-                    learned.append("Kontext \(RemoteModel.compact(c))")
+                var known: [String] = []
+                if let c = model.settings.llms[i].reportedContextLimit {
+                    known.append("Kontext \(RemoteModel.compact(c))")
                 }
-                if let o = limits.output {
-                    model.settings.llms[i].reportedOutputLimit = o
-                    model.settings.llms[i].maxOutputTokens = min(model.settings.llms[i].maxOutputTokens, o)
-                    learned.append("Ausgabe \(RemoteModel.compact(o))")
+                if let o = model.settings.llms[i].reportedOutputLimit {
+                    known.append("Ausgabe \(RemoteModel.compact(o))")
                 }
-                limitNote = learned.isEmpty
-                    ? "Der Anbieter nennt keine Token-Grenzen. Die Regler bleiben deine Schätzung; die App merkt sich, was tatsächlich durchging."
-                    : "Vom Anbieter ermittelt: " + learned.joined(separator: ", ") + "."
+                limitNote = known.isEmpty
+                    ? "Der Anbieter nennt keine Token-Grenzen. Die Regler bleiben deine "
+                    + "Schätzung — stösst eine Antwort wirklich an eine Grenze, trägt die "
+                    + "App sie hier ein."
+                    : "Vom Anbieter genannt: " + known.joined(separator: ", ") + "."
             }
 
             // Only worth asking once the endpoint answers at all.
@@ -398,6 +418,31 @@ struct ModelEditor: View {
             case .inconclusive(let why):
                 visionNote = ("Nicht feststellbar: \(why) Der Schalter bleibt, wie er ist.", false)
             }
+
+            // Werkzeuge und Gedankengang in einem Aufruf — beides steht in derselben
+            // Antwort, und eine zweite Anfrage würde nur ein zweites Mal kosten.
+            testState = .running("Werkzeuge …")
+            let reading = await CapabilityProbe.toolsAndReasoning(config: config, apiKey: key)
+            guard let i = index else { return }
+
+            switch reading.tools {
+            case .used:
+                model.settings.llms[i].supportsTools = true
+                toolNote = ("Werkzeuge laufen — das Modell hat das Prüfwerkzeug aufgerufen.", true)
+            case .acceptedButUnused:
+                model.settings.llms[i].supportsTools = true
+                toolNote = ("Werkzeuge wurden angenommen, das Modell hat aber lieber geantwortet. "
+                            + "Kein Fehler, nur kein Beweis.", true)
+            case .refused(let why):
+                model.settings.llms[i].supportsTools = false
+                toolNote = ("Keine Werkzeuge: \(why)", false)
+            case .inconclusive(let why):
+                toolNote = ("Werkzeuge nicht feststellbar: \(why)", false)
+            }
+            // Ein gesehener Gedankengang ist ein Ja. Keiner gesehen ist kein Nein —
+            // die meisten Anbieter halten ihn zurück, solange man nicht darum bittet.
+            if reading.reasoning == true { model.settings.llms[i].supportsReasoning = true }
+
             model.persist()
             testState = .ok(connectionLine)
         }

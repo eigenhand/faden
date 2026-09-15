@@ -511,6 +511,26 @@ final class AppModel {
                     settings.llms[i].observedMaxPromptTokens = input
                 }
             }
+        case .learnedLimits(let context, let output):
+            // Der Anbieter hat gerade selbst gesagt, wo seine Grenze liegt. Das ist
+            // belastbarer als jede Schätzung — und es ist der Weg, auf dem die App
+            // Grenzen erfährt, seit sie keine mehr ausprobiert.
+            //
+            // Nach unten wird nur der Regler gezogen, nie nach oben: wer bewusst
+            // weniger eingestellt hat, wollte weniger. Die genannte Obergrenze steht
+            // trotzdem daneben, denn sie bestimmt, wie weit der Regler reicht.
+            if let id = settings.activeLLM?.id,
+               let i = settings.llms.firstIndex(where: { $0.id == id }) {
+                if let context {
+                    settings.llms[i].reportedContextLimit = context
+                    settings.llms[i].contextWindow = min(settings.llms[i].contextWindow, context)
+                }
+                if let output {
+                    settings.llms[i].reportedOutputLimit = output
+                    settings.llms[i].maxOutputTokens = min(settings.llms[i].maxOutputTokens, output)
+                }
+                persist()
+            }
         case .finished:
             break
         case .failed(let message):

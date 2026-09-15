@@ -7,6 +7,12 @@ enum TurnEvent {
     case toolStarted(id: String, name: String, summary: String)
     case toolFinished(id: String, ok: Bool, summary: String)
     case usage(input: Int?, output: Int?)
+    /// Der Anbieter hat in einer Absage seine eigenen Grenzen genannt.
+    ///
+    /// Die einzige ehrliche Quelle für einen Endpoint, der keine veröffentlicht.
+    /// Früher hat die App danach gefragt, indem sie eine absurde Obergrenze schickte;
+    /// das ist weg. Was hier ankommt, hat ein echter Zug ausgelöst.
+    case learnedLimits(context: Int?, output: Int?)
     case finished
     case failed(String)
 }
@@ -458,6 +464,17 @@ struct AgentRunner {
             }
 
             if let failure {
+                // Eine Absage, die eine Zahl nennt, ist die einzige Gelegenheit, die
+                // Grenzen eines Anbieters zu erfahren, der keine veröffentlicht.
+                // Sie kommt hier vorbei, ob ausgewichen wird oder nicht.
+                if let llm = caught as? LLMError, case .http(_, let body) = llm {
+                    let limits = ModelCatalog.extractLimits(from: body)
+                    if limits.context != nil || limits.output != nil {
+                        await onEvent(.learnedLimits(context: limits.context,
+                                                     output: limits.output))
+                    }
+                }
+
                 // Einmal auf das Ausweichmodell, und nur solange nichts angekommen
                 // ist. Nach den ersten Zeichen wäre es kein zweiter Versuch mehr,
                 // sondern eine zweite Antwort hinter der halben ersten — der Leser
