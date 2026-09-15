@@ -120,6 +120,8 @@ struct AgentRunner {
             - Du nennst deine Quellen im Fließtext mit dem Namen der Seite und der URL. \
             Bei widersprüchlichen Quellen sagst du, dass sie sich widersprechen.
             - Findest du nichts Belastbares, sagst du das, statt zu raten.
+
+            \(UntrustedContent.rule)
             """
         } else {
             s += """
@@ -174,7 +176,13 @@ struct AgentRunner {
             do {
                 let outcome = try await RecipeEngine.search(
                     recipe, query: query, key: key, count: settings.resultsPerSearch)
-                return (Self.render(outcome), true, "\(outcome.results.count) Treffer")
+                // Eingefasst: Treffertexte sind fremder Inhalt wie jede Seite auch.
+                // Ein Suchergebnis ist sogar die bequemere Stelle für einen Angriff —
+                // wer eine Seite auf ein Stichwort optimiert, bekommt seinen Text vor
+                // das Modell, ohne dass ihn jemand aufrufen muss.
+                let fenced = UntrustedContent.wrap(Self.render(outcome),
+                                                   source: "Websuche „\(query)“")
+                return (fenced, true, "\(outcome.results.count) Treffer")
             } catch {
                 let msg = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
                 return ("Die Suche schlug fehl: \(msg)", false, "fehlgeschlagen")
@@ -186,7 +194,10 @@ struct AgentRunner {
             }
             let text = await PageFetcher.fetch(url)
             let ok = !text.hasPrefix("Fehler")
-            return (text, ok, ok ? "\(text.count) Zeichen" : "nicht ladbar")
+            // Eine Fehlermeldung kommt von uns und bleibt unverpackt; alles andere
+            // ist der Text einer fremden Seite.
+            return (ok ? UntrustedContent.wrap(text, source: url) : text,
+                    ok, ok ? "\(text.count) Zeichen" : "nicht ladbar")
 
         case "memory":
             guard settings.memory.isReady else {
