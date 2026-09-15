@@ -1,0 +1,71 @@
+name: Tests
+
+# Warum es das gibt: 50 Unittests, die bisher nur lief, wer daran dachte. Ein Test,
+# den niemand automatisch ausführt, ist eine Behauptung über die Vergangenheit.
+#
+# Warum nur die Unittests und nicht die UI-Tests: Letztere brauchen einen Zustand auf
+# dem Gerät — eine Ablage mit oder ohne Anbieter, eine eingespielte Unterhaltung —,
+# und sie überspringen sich selbst, wenn er fehlt. Auf einem frischen Läufer wären
+# das zwölf Übersprungene und drei Minuten Rechenzeit für nichts. Sie bleiben, wo sie
+# hingehören: von Hand, vor einem Release.
+#
+# macOS-Minuten zählen bei privaten Repos zehnfach. Deshalb keine Läufe für
+# Änderungen, die den Code nicht anfassen, und ein abgebrochener Vorlauf, sobald ein
+# neuer Commit kommt.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["**/*.md", "**/Info.plist", "LICENSE"]
+  pull_request:
+    paths-ignore: ["**/*.md", "**/Info.plist", "LICENSE"]
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    name: Unittests
+    runs-on: macos-26
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v5
+
+      # Steht im Protokoll, damit ein Fehlschlag, der an der Werkzeugkette liegt,
+      # nicht wie einer im Code aussieht. Das Abbild bringt mehrere Xcodes mit; die
+      # Voreinstellung ist 26.6, und genau damit ist dieser Lauf hier geprüft worden.
+      - name: Werkzeugkette melden
+        run: |
+          xcodebuild -version
+          xcrun simctl list runtimes | grep iOS || true
+
+      - name: xcodegen einrichten
+        run: brew install --quiet xcodegen
+
+      - name: Projekt erzeugen
+        run: xcodegen generate
+
+      # `OS=latest` und keine feste Zahl: das Abbild führt drei Laufzeiten mit, und
+      # ohne Angabe bricht xcodebuild mit einem irreführenden „My Mac"-Fehler ab,
+      # weil der Gerätename mehrdeutig ist. Eine feste Version wäre dasselbe Problem
+      # in ein paar Monaten, nur andersherum.
+      - name: Unittests
+        run: |
+          xcodebuild test \
+            -project PerBu.xcodeproj \
+            -scheme PerBu \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' \
+            -derivedDataPath build/dd \
+            -only-testing:PerBuTests \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Testbericht aufheben
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcresult
+          path: build/dd/Logs/Test/*.xcresult
+          retention-days: 7
