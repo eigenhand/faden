@@ -176,9 +176,17 @@ enum PageFetcher {
         return result
     }
 
+    private static let redirectGuard = RedirectGuard()
+
     private static func fetchUncached(_ urlString: String, maxChars: Int) async -> String {
-        guard let url = URL(string: urlString), url.scheme?.hasPrefix("http") == true else {
-            return "Fehler: „\(urlString)“ ist keine gültige http(s)-URL."
+        guard let url = URL(string: urlString) else {
+            return "Fehler: „\(urlString)“ ist keine gültige Adresse."
+        }
+        // Die Adresse kommt vom Modell und damit mittelbar aus einer Quelle, die
+        // jemand anderes geschrieben hat. Was ins lokale Netz zeigt, wird nicht
+        // geladen — siehe `FetchTarget`.
+        if let refusal = FetchTarget.refusal(for: url) {
+            return "Fehler: \(refusal)"
         }
         var req = URLRequest(url: url)
         req.timeoutInterval = 25
@@ -189,8 +197,14 @@ enum PageFetcher {
                      forHTTPHeaderField: "Accept")
 
         do {
-            let (data, response) = try await Net.session.data(for: req)
+            let (data, response) = try await Net.session.data(for: req, delegate: redirectGuard)
             let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+            // Eine abgebrochene Weiterleitung kommt als 3xx zurueck. Ohne diesen Satz
+            // stuende dort nur der Status, und das Modell versuchte es wieder — es
+            // laege ja scheinbar an der Seite.
+            if (300...399).contains(status) {
+                return "Fehler: Die Seite leitet in ein lokales Netz weiter. Nicht gefolgt."
+            }
             guard (200...299).contains(status) else { return "Fehler: Die Seite antwortete mit HTTP \(status)." }
             guard let html = String(data: data, encoding: .utf8)
                 ?? String(data: data, encoding: .isoLatin1) else {
