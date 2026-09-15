@@ -253,6 +253,10 @@ final class AppModel {
         // older build had recorded the model as having no vision, the plus is drawn
         // only when it has, and the switch to change it was no longer on screen.
         //
+        // Seit dem Wechsel auf `z-ai/glm-5.3` läuft dieselbe Korrektur andersherum:
+        // Geräte, die das Pluszeichen vom Vorgängermodell her kennen, verlieren es
+        // wieder, weil dieses Modell keine Bilder annimmt.
+        //
         // A configuration of the tester's own — a different endpoint — is left alone.
         var llm = settings.llms.first { $0.baseURL == BundledSetup.baseURL } ?? LLMConfig()
         llm.name = BundledSetup.providerName
@@ -264,7 +268,7 @@ final class AppModel {
         llm.reportedContextLimit = BundledSetup.contextWindow
         llm.maxOutputTokens = BundledSetup.maxOutputTokens
         llm.reportedOutputLimit = BundledSetup.maxOutputTokens
-        llm.supportsVision = true
+        llm.supportsVision = BundledSetup.chatModelSeesImages
         llm.useCacheControl = true
         llm.keychainAccount = BundledSetup.keychainAccount
 

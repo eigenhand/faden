@@ -38,14 +38,18 @@ enum BundledSetup {
     static let chatPath = "/v1/chat/completions"
     static let providerName = "TensorX"
 
-    /// Verified against `/v1/model/info`: 1 048 576 in, 64 000 out, vision, reasoning,
-    /// tool calling and prompt caching all supported.
+    /// Verified against `/v1/model/info`: 1 048 576 in, 64 000 out, reasoning, tool
+    /// calling and prompt caching supported — **Bilder nicht**.
     ///
-    /// Chosen over `qwen/qwen3.8-flash-next` for latency. Measured on the same
-    /// one-word question, glm answered in 12 s and qwen in 72 s — six times longer,
-    /// and multiplied again by every tool round. At that point it does not read as
-    /// slow, it reads as broken.
-    static let chatModel = "z-ai/glm-5.3-flash"
+    /// Das ist der Preis dieser Wahl und er ist gemessen, nicht vermutet. Dasselbe
+    /// Bild an beide Modelle geschickt: `-flash` antwortet „Orange, Violett",
+    /// `glm-5.3` weist es mit HTTP 400 ab, „Model only supports text input". Die
+    /// Geschwindigkeit ist dabei kein Argument mehr in eine der beiden Richtungen —
+    /// auf dieselbe Ein-Wort-Frage 2,4 s gegen 2,5 s.
+    ///
+    /// Wer Bilder anhängen will, stellt in den Einstellungen ein Modell ein, das sie
+    /// sieht; `z-ai/glm-5.3-flash` steht beim selben Anbieter.
+    static let chatModel = "z-ai/glm-5.3"
 
     /// Woraufhin ausgewichen wird, wenn das Hauptmodell nicht antwortet.
     ///
@@ -54,6 +58,16 @@ enum BundledSetup {
     /// die richtige Wahl: langsam schlägt kaputt. Ein Anbieter nimmt selten zwei
     /// Modelle gleichzeitig vom Netz.
     static let fallbackChatModel = "qwen/qwen3.8-flash-next"
+
+    /// Ob das mitgelieferte Modell Bilder annimmt.
+    ///
+    /// Steht hier und nicht als `true` im `AppModel`, weil es eine Eigenschaft des
+    /// Modells ist und mit ihm zusammen wandern muss. Genau daran hing der Fehler
+    /// schon einmal andersherum: ein Gerät behielt die Einschätzung eines älteren
+    /// Baus, das Pluszeichen blieb weg, und in der App war es nicht mehr zu
+    /// korrigieren. Eine Behauptung, die neben dem Modellnamen steht, kann nicht
+    /// mit ihm auseinanderlaufen.
+    static let chatModelSeesImages = false
     static let contextWindow = 1_048_576
     static let maxOutputTokens = 64_000
 
