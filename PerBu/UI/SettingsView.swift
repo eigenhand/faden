@@ -80,7 +80,6 @@ struct SettingsView: View {
                             .tint(EH.navy)
                             .onChange(of: model.settings.searchEnabled) { _, _ in model.persist() }
 
-                            if !BundledSetup.hasSearch {
                             if model.settings.recipes.isEmpty {
                                 emptyRow("Noch kein Anbieter hinterlegt.")
                             }
@@ -117,7 +116,6 @@ struct SettingsView: View {
                                         .fill(EH.surface))
                                     .overlay(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
                                         .stroke(EH.hair, lineWidth: EH.hairWidth))
-                            }
                             }
 
                             stepperRow(
@@ -262,7 +260,7 @@ struct SettingsView: View {
             }
             .navigationDestination(isPresented: $goStraightToProvider) { ProviderSetupView() }
             .onAppear {
-                if model.settings.llms.isEmpty, !BundledSetup.isManaged {
+                if model.settings.llms.isEmpty {
                     goStraightToProvider = true
                 }
             }

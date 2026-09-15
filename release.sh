@@ -30,54 +30,6 @@ if xcode-select -p | grep -qi "beta" && [ -d /Applications/Xcode.app ]; then
   echo "==> Baue mit $(defaults read /Applications/Xcode.app/Contents/Info.plist CFBundleShortVersionString) statt der Beta"
 fi
 
-# Schluessel fuer den Testflight-Build einsetzen.
-#
-# Sie landen im Binary und sind fuer jeden lesbar, der es hat — das ist die bewusste
-# Abwaegung fuer einen Build an namentlich bekannte Tester, damit die die App
-# benutzen koennen statt ein Einrichtungsformular. Genommen wird bevorzugt ein
-# eigener Beta-Schluessel aus .release.env; TensorX weist Kosten und Token pro
-# Schluessel aus, so bleibt der Verbrauch der Testrunde getrennt und widerrufbar.
-BUNDLED="PerBu/App/BundledSetup.swift"
-
-restore_bundled() {
-  python3 - "$BUNDLED" <<'RESET'
-import pathlib, re, sys
-p = pathlib.Path(sys.argv[1]); s = p.read_text()
-s = re.sub(r'^    static let apiKey = .*$', '    static let apiKey = ""', s, flags=re.M)
-s = re.sub(r'^    static let searchKey = .*$', '    static let searchKey = ""', s, flags=re.M)
-p.write_text(s)
-RESET
-}
-trap restore_bundled EXIT
-
-BETA_MODEL_KEY="${BETA_MODEL_KEY:-}"
-BETA_SEARCH_KEY="${BETA_SEARCH_KEY:-}"
-if [ -f test.env ]; then
-  [ -z "$BETA_MODEL_KEY" ]  && BETA_MODEL_KEY=$(grep -E "^MODEL_API_KEY="  test.env | cut -d= -f2- || true)
-  [ -z "$BETA_SEARCH_KEY" ] && BETA_SEARCH_KEY=$(grep -E "^SEARCH_API_KEY=" test.env | cut -d= -f2- || true)
-fi
-
-if [ -n "$BETA_MODEL_KEY" ]; then
-  MODEL_KEY="$BETA_MODEL_KEY" SEARCH_KEY="$BETA_SEARCH_KEY" python3 - "$BUNDLED" <<'INJECT'
-import json, os, pathlib, re, sys
-p = pathlib.Path(sys.argv[1]); s = p.read_text()
-def lit(v): return json.dumps(v or "")
-s = re.sub(r'^    static let apiKey = .*$',
-           '    static let apiKey = ' + lit(os.environ.get("MODEL_KEY")), s, flags=re.M)
-s = re.sub(r'^    static let searchKey = .*$',
-           '    static let searchKey = ' + lit(os.environ.get("SEARCH_KEY")), s, flags=re.M)
-p.write_text(s)
-INJECT
-  echo "==> Modell-Schluessel eingesetzt (${#BETA_MODEL_KEY} Zeichen)"
-  if [ -n "$BETA_SEARCH_KEY" ]; then
-    echo "    Such-Schluessel eingesetzt (${#BETA_SEARCH_KEY} Zeichen)"
-  else
-    echo "    Kein Such-Schluessel — die Websuche bleibt in diesem Build unkonfiguriert."
-  fi
-else
-  echo "==> Kein Beta-Schluessel gefunden — Build ohne Selbsteinrichtung (reines BYOK)."
-fi
-
 echo "==> Projekt erzeugen"
 xcodegen generate
 

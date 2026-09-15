@@ -4,8 +4,8 @@ import XCTest
 /// Was passiert, wenn der Anbieter drosselt.
 ///
 /// Fadens erste Unittests, und es ist kein Zufall, dass sie hier anfangen. Bis eben
-/// hat die App bei einem 429 sofort auf das Ausweichmodell geschaltet — nach der
-/// eigenen Messung in `BundledSetup` 72 Sekunden gegen 12. Aus zwei Sekunden Warten
+/// hat die App bei einem 429 sofort auf das Ausweichmodell geschaltet — auf
+/// derselben Frage gemessen 72 Sekunden gegen 12. Aus zwei Sekunden Warten
 /// wurde eine Minute, und der Nutzer bekam die schlechtere Antwort obendrein.
 ///
 /// Diese Entscheidung stand nirgends geschrieben, wo jemand sie nachlesen musste.

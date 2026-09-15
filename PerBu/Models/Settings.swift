@@ -50,6 +50,16 @@ struct LLMConfig: Codable, Equatable, Identifiable {
     /// Path appended to the base URL. Pre-filled per wire format, editable.
     var path: String = "/v1/messages"
     var model: String = ""
+    /// Worauf ausgewichen wird, wenn das Hauptmodell nicht antwortet. Leer heisst:
+    /// gar nicht ausweichen.
+    ///
+    /// Aus den Einstellungen und nicht aus dem Build. Solange die App einen Anbieter
+    /// mitbrachte, stand hier dessen zweites Modell, gebunden an dessen Adresse —
+    /// wer seinen eigenen Endpoint eintrug, hätte sonst bei einem Fehlschlag einen
+    /// Modellnamen vorgesetzt bekommen, den sein Anbieter nicht kennt. Das war ein
+    /// zweiter Fehlschlag statt einer Rettung. Was der Nutzer selbst einträgt, liegt
+    /// bei seinem Anbieter.
+    var fallbackModel: String = ""
     /// Nominal context window in tokens. Drives the bar and the compaction trigger.
     var contextWindow: Int = 200_000
     /// Largest prompt this endpoint has actually accepted. Some providers publish no
@@ -87,6 +97,7 @@ struct LLMConfig: Codable, Equatable, Identifiable {
         baseURL               = try c.decodeIfPresent(String.self, forKey: .baseURL) ?? d.baseURL
         path                  = try c.decodeIfPresent(String.self, forKey: .path) ?? d.path
         model                 = try c.decodeIfPresent(String.self, forKey: .model) ?? d.model
+        fallbackModel         = try c.decodeIfPresent(String.self, forKey: .fallbackModel) ?? d.fallbackModel
         contextWindow         = try c.decodeIfPresent(Int.self, forKey: .contextWindow) ?? d.contextWindow
         observedMaxPromptTokens = try c.decodeIfPresent(Int.self, forKey: .observedMaxPromptTokens) ?? 0
         reportedContextLimit  = try c.decodeIfPresent(Int.self, forKey: .reportedContextLimit)

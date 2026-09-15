@@ -36,7 +36,7 @@ struct MemorySettingsView: View {
                         VStack(alignment: .leading, spacing: 12) {
                             sourceSection
 
-                            if !BundledSetup.isManaged, model.settings.memory.source == .endpoint {
+                            if model.settings.memory.source == .endpoint {
                             EH.label("Endpoint")
                             Text("Der Endpoint spricht dasselbe Format wie dein Modell — oft derselbe Anbieter.")
                                 .font(.eh(12, .caption)).foregroundStyle(EH.muted)

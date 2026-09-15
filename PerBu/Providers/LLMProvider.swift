@@ -48,8 +48,8 @@ enum LLMError: LocalizedError {
 /// warten und dasselbe Modell noch einmal zu fragen.
 ///
 /// Faden hat stattdessen sofort auf das Ausweichmodell geschaltet. Das ist die
-/// teuerste mögliche Reaktion: nach der eigenen Messung in `BundledSetup` kostet
-/// `qwen/qwen3.8-flash-next` 72 Sekunden gegen 12 — aus zwei Sekunden Warten wurde
+/// teuerste mögliche Reaktion: zwei Modelle desselben Anbieters, auf derselben
+/// Frage gemessen, lagen 72 Sekunden gegen 12 — aus zwei Sekunden Warten wurde
 /// eine Minute, und der Nutzer bekam die schlechtere Antwort obendrein. Das
 /// Ausweichmodell bleibt, aber als letzter Schritt und nicht als erster.
 enum Backoff {

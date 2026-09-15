@@ -344,19 +344,21 @@ struct AgentRunner {
 
     // MARK: Ausweichen
 
-    /// Das Ausweichmodell für diesen Endpoint, oder nil.
+    /// Das Ausweichmodell für diesen Zug, oder nil.
     ///
-    /// Gebunden an die Basis-URL, nicht an „dies ist ein Testflight-Build": das
-    /// Ausweichmodell liegt bei einem bestimmten Anbieter, und wer in derselben App
-    /// seinen eigenen Endpoint einträgt, bekäme sonst einen Modellnamen vorgesetzt,
-    /// den sein Anbieter nicht kennt — ein zweiter Fehlschlag statt einer Rettung.
-    static func fallbackModel(for config: LLMConfig) -> String? {
-        let base = config.baseURL.trimmingCharacters(in: CharacterSet(charactersIn: "/ "))
-        guard base == BundledSetup.baseURL.trimmingCharacters(in: CharacterSet(charactersIn: "/ ")),
-              !BundledSetup.fallbackChatModel.isEmpty,
-              config.model != BundledSetup.fallbackChatModel
-        else { return nil }
-        return BundledSetup.fallbackChatModel
+    /// Kommt aus den Einstellungen und nicht mehr aus dem Build. Die alte Fassung
+    /// musste prüfen, ob der Endpoint überhaupt der mitgelieferte ist — ein fremder
+    /// Anbieter hätte sonst einen Modellnamen vorgesetzt bekommen, den er nicht
+    /// kennt, und aus einer Rettung wäre ein zweiter Fehlschlag geworden. Diese
+    /// Sorge entfällt: was hier steht, hat der Nutzer für genau diesen Endpoint
+    /// eingetragen.
+    ///
+    /// `active` ist das Modell, das gerade gescheitert ist. Auf dasselbe noch einmal
+    /// auszuweichen wäre keine zweite Chance, sondern derselbe Fehler.
+    static func fallbackModel(for config: LLMConfig, active: String) -> String? {
+        let candidate = config.fallbackModel.trimmingCharacters(in: .whitespaces)
+        guard !candidate.isEmpty, candidate != active else { return nil }
+        return candidate
     }
 
     /// Ob ein anderes Modell diesen Fehler überhaupt beheben könnte.
@@ -463,7 +465,7 @@ struct AgentRunner {
                 if !didFallBack,
                    text.isEmpty, thinking.isEmpty, pendingCalls.isEmpty,
                    let error = caught, Self.isWorthRetrying(error),
-                   let fallback = Self.fallbackModel(for: activeConfig) {
+                   let fallback = Self.fallbackModel(for: config, active: activeConfig.model) {
                     didFallBack = true
                     activeConfig.model = fallback
                     iteration -= 1          // dieselbe Runde noch einmal

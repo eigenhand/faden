@@ -228,78 +228,10 @@ final class AppModel {
         guard !isLoaded else { return }
         settings = await Store.shared.loadSettings()
         conversations = await Store.shared.loadConversations()
-        applyBundledSetupIfNeeded()
         openOnLaunch()
         isLoaded = true
         // Anything that could not be embedded last time is picked up now.
         runBackfill()
-    }
-
-    /// Configures a build that carries its own provider.
-    ///
-    /// Only ever fills gaps: an existing model or embedding endpoint is left alone,
-    /// so someone who has set up their own is not overwritten by an update. Runs
-    /// after the store is read, before the first screen is chosen, so the app is
-    /// already usable when it appears.
-    private func applyBundledSetupIfNeeded() {
-        guard BundledSetup.isManaged else { return }
-        _ = Keychain.set(BundledSetup.apiKey, account: BundledSetup.keychainAccount)
-
-        // Brings the bundled provider up to date rather than only filling a gap.
-        //
-        // A phone set up by an earlier build keeps that build's idea of what the
-        // model can do, and with the model screens hidden there is no way to correct
-        // it from inside the app. That is exactly what stranded the image button: an
-        // older build had recorded the model as having no vision, the plus is drawn
-        // only when it has, and the switch to change it was no longer on screen.
-        //
-        // Seit dem Wechsel auf `z-ai/glm-5.3` läuft dieselbe Korrektur andersherum:
-        // Geräte, die das Pluszeichen vom Vorgängermodell her kennen, verlieren es
-        // wieder, weil dieses Modell keine Bilder annimmt.
-        //
-        // A configuration of the tester's own — a different endpoint — is left alone.
-        var llm = settings.llms.first { $0.baseURL == BundledSetup.baseURL } ?? LLMConfig()
-        llm.name = BundledSetup.providerName
-        llm.wireFormat = .openai
-        llm.baseURL = BundledSetup.baseURL
-        llm.path = BundledSetup.chatPath
-        llm.model = BundledSetup.chatModel
-        llm.contextWindow = BundledSetup.contextWindow
-        llm.reportedContextLimit = BundledSetup.contextWindow
-        llm.maxOutputTokens = BundledSetup.maxOutputTokens
-        llm.reportedOutputLimit = BundledSetup.maxOutputTokens
-        llm.supportsVision = BundledSetup.chatModelSeesImages
-        llm.useCacheControl = true
-        llm.keychainAccount = BundledSetup.keychainAccount
-
-        if let i = settings.llms.firstIndex(where: { $0.id == llm.id }) {
-            settings.llms[i] = llm
-        } else {
-            settings.llms.insert(llm, at: 0)
-        }
-        settings.activeLLMID = llm.id
-
-        // The same key serves embeddings — same provider, same account. Switched on
-        // the first time only: shipping an embedding model and leaving the feature
-        // off would mean nobody in the test round ever sees it, but a tester who
-        // turns it off again should stay turned off.
-        let memoryWasUnconfigured = settings.memory.embeddingBaseURL.isEmpty
-        if memoryWasUnconfigured || settings.memory.embeddingBaseURL == BundledSetup.baseURL {
-            settings.memory.embeddingBaseURL = BundledSetup.baseURL
-            settings.memory.embeddingPath = BundledSetup.embeddingPath
-            settings.memory.embeddingModel = BundledSetup.embeddingModel
-            settings.memory.embeddingKeychainAccount = BundledSetup.keychainAccount
-            if memoryWasUnconfigured { settings.memory.enabled = true }
-        }
-
-        if BundledSetup.hasSearch, settings.recipes.isEmpty {
-            _ = Keychain.set(BundledSetup.searchKey, account: BundledSetup.searchKeychainAccount)
-            var recipe = BuiltinRecipes.brave
-            recipe.keychainAccount = BundledSetup.searchKeychainAccount
-            settings.recipes = [recipe]
-            settings.activeRecipeID = recipe.id
-        }
-        persist()
     }
 
     /// Takes in a conversation someone passed along.
