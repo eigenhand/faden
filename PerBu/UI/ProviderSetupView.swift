@@ -23,10 +23,37 @@ struct ProviderSetupView: View {
     @State private var search = ""
     /// Typed manually when the endpoint publishes no list.
     @State private var manualModel = ""
+    /// Der Satz zur gewählten Vorlage, solange einer dabeisteht.
+    @State private var presetNote = ""
+    /// Hält den Zurücksetzer am Formatwechsel an, während eine Vorlage greift.
+    ///
+    /// Der Wechsel des Formats setzt sonst den Pfad auf den Standard zurück — was
+    /// richtig ist, wenn der Nutzer den Schalter umlegt, und falsch, wenn die
+    /// Vorlage gerade beides zusammen gesetzt hat. Heute stimmt bei jeder Vorlage
+    /// der Pfad zufällig mit dem Standard überein; auf dieses Zufall darf sich der
+    /// nächste Eintrag in der Liste nicht verlassen.
+    @State private var applyingPreset = false
 
     private var shown: [RemoteModel] {
         guard !search.isEmpty else { return models }
         return models.filter { $0.id.localizedCaseInsensitiveContains(search) }
+    }
+
+    /// Eine Vorlage in die Felder schreiben.
+    ///
+    /// „Eigener Endpoint" trägt bewusst nichts ein: der Name der Vorlage wäre dort
+    /// als Anbietername gelogen, und ein leeres Feld sagt deutlicher, dass jetzt der
+    /// Nutzer dran ist.
+    private func apply(_ provider: ModelProvider) {
+        applyingPreset = provider.wireFormat != wireFormat
+        wireFormat = provider.wireFormat
+        name = provider.baseURL.isEmpty ? "" : provider.name
+        baseURL = provider.baseURL
+        path = provider.path
+        presetNote = provider.note
+        models = []
+        picked = []
+        error = nil
     }
 
     private var canLoad: Bool {
@@ -41,12 +68,41 @@ struct ProviderSetupView: View {
                     VStack(alignment: .leading, spacing: 22) {
 
                         VStack(alignment: .leading, spacing: 8) {
+                            EH.label("Anbieter")
+                            Menu {
+                                ForEach(Builtins.models) { provider in
+                                    Button(provider.name) { apply(provider) }
+                                }
+                            } label: {
+                                HStack(spacing: 6) {
+                                    Text(name.isEmpty ? "Vorlage wählen" : name)
+                                        .font(EH.body)
+                                        .foregroundStyle(name.isEmpty ? EH.muted : EH.navy)
+                                    Spacer(minLength: 0)
+                                    Image(systemName: "chevron.down")
+                                        .font(.eh(11, .caption, weight: .semibold))
+                                        .foregroundStyle(EH.muted)
+                                }
+                                .padding(.horizontal, 12).padding(.vertical, 10)
+                                .background(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
+                                    .fill(EH.surface))
+                                .overlay(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
+                                    .stroke(EH.hair, lineWidth: EH.hairWidth))
+                            }
+                            Text(presetNote.isEmpty
+                                 ? "Adresse und Format kommen aus der Vorlage. Den Schlüssel trägst du selbst ein — er liegt im Schlüsselbund des Geräts."
+                                 : presetNote)
+                                .font(.eh(12, .caption)).foregroundStyle(EH.muted)
+                        }
+
+                        VStack(alignment: .leading, spacing: 8) {
                             EH.label("Format")
                             Picker("", selection: $wireFormat) {
                                 ForEach(LLMWireFormat.allCases) { Text($0.shortLabel).tag($0) }
                             }
                             .pickerStyle(.segmented)
                             .onChange(of: wireFormat) { _, new in
+                                guard !applyingPreset else { applyingPreset = false; return }
                                 path = LLMConfig.defaultPath(for: new)
                                 models = []; picked = []
                             }
