@@ -1,217 +1,219 @@
 # Faden
 
+*English · [Deutsch](README.de.md)*
+
 [![Tests](https://github.com/eigenhand/faden/actions/workflows/tests.yml/badge.svg)](https://github.com/eigenhand/faden/actions/workflows/tests.yml)
 
-Ein Chatbot fürs iPhone, der nichts mitbringt außer der Oberfläche. Modell, Endpoint,
-API-Key und Suchanbieter kommen von dir. Keine Zwischenserver, keine Konten, keine
-Telemetrie — die App spricht ausschließlich mit den Adressen, die du einträgst.
+A chat client for the iPhone that brings nothing but the interface. The model, the
+endpoint, the API key and the search provider come from you. No servers in between,
+no accounts, no telemetry — the app speaks only to the addresses you enter.
 
-Design nach [eigenhand.dev](https://eigenhand.dev).
+Design after [eigenhand.dev](https://eigenhand.dev).
 
-Was die App schützt und was ausdrücklich nicht: [SECURITY.md](SECURITY.md). Ein
-Assistent mit Werkzeugen liest fremden Text und kann handeln — der Abschnitt
-„Bewusste Kompromisse" sagt, wo die Maßnahmen aufhören.
+What the app protects and what it expressly does not: [SECURITY.md](SECURITY.md). An
+assistant with tools reads foreign text and can act — the section “Deliberate
+compromises” says where the measures stop.
 
-## Was drin ist
+## What is in it
 
-**Eigenes Modell.** Zwei Wire-Formate: Anthropic Messages (`/v1/messages`) und
-OpenAI-kompatibel (`/v1/chat/completions`) — letzteres deckt Groq, Together,
-OpenRouter, Mistral, Ollama, vLLM, LM Studio und die meisten Proxys ab. Streaming,
-Werkzeugaufrufe und Gedankengang (`reasoning_content` bzw. `thinking`) inklusive.
+**Your own model.** Two wire formats: Anthropic Messages (`/v1/messages`) and
+OpenAI-compatible (`/v1/chat/completions`) — the latter covers Groq, Together,
+OpenRouter, Mistral, Ollama, vLLM, LM Studio and most proxies. Streaming, tool calls
+and reasoning (`reasoning_content` or `thinking`) included.
 
-**Eigene Websuche.** Fertige Rezepte für Brave, Tavily, Serper, SearXNG und Exa.
-Für alles andere gibt es die automatische Einrichtung: Schlägt der Test fehl — oder
-sehen die Treffer falsch aus — klopft Faden den Endpoint selbst ab, bis eine gültige
-Antwort mit HTTP 200 zurückkommt, zeigt deren Struktur einem deiner Modelle und lässt
-sich daraus einen Parser schreiben. Der Parser ist reine Konfiguration
-(`SearchRecipe`), wird lokal gegen dieselbe Antwort geprüft, bevor er gespeichert
-wird, und läuft danach vollständig auf dem Gerät — für Suchen wird kein Modell mehr
-gebraucht.
+**Your own web search.** Ready-made recipes for Brave, Tavily, Serper, SearXNG and
+Exa. For everything else there is automatic setup: if the test fails — or the results
+look wrong — Faden probes the endpoint itself until a valid answer comes back with
+HTTP 200, shows its structure to one of your models and has a parser written from it.
+The parser is pure configuration (`SearchRecipe`), is checked locally against that
+same answer before it is saved, and runs entirely on the device afterwards — searching
+no longer needs a model.
 
-**Agentisch.** Der Assistent sucht von sich aus, wenn eine Frage es verlangt, führt
-mehrere gezielte Suchen statt einer breiten, lädt Seiten nach (`fetch_page`) und hält
-Wichtiges mit `remember` fest. Er kennt Datum und Zeitzone des Geräts.
+**Agentic.** The assistant searches on its own when a question calls for it, runs
+several targeted searches rather than one broad one, loads pages (`fetch_page`) and
+holds on to what matters with `remember`. It knows the device's date and time zone.
 
-**Seiten lesen.** `fetch_page` führt kein JavaScript aus — deshalb kommt es darauf an,
-was danach übrig bleibt. Bevorzugt wird die vom Dokument markierte Inhaltsregion, dazu
-strukturierte Daten (JSON-LD), die auch client-seitig gerenderte Seiten meist noch
-mitliefern; Navigationsleisten, Zustimmungsbanner und unaufgelöste Templates fliegen
-zeilenweise raus. Bleibt nichts Lesbares, sagt das Werkzeug das ausdrücklich, statt
-Menüreste als Inhalt auszugeben — so wechselt das Modell sofort die Quelle, statt zwei
-Runden zu verlieren.
+**Reading pages.** `fetch_page` runs no JavaScript — so what is left afterwards
+decides everything. Preference goes to the content region the document itself marks,
+plus structured data (JSON-LD), which even client-rendered pages usually still carry;
+navigation bars, consent banners and unresolved templates are dropped line by line. If
+nothing readable remains, the tool says so plainly instead of returning menu debris as
+content — the model then switches source at once instead of losing two rounds.
 
-**Bilder.** Kann das Modell sie lesen, erscheint im Eingabefeld ein Plus zum Anhängen.
-Ob es das kann, findet der Verbindungstest selbst heraus: er schickt ein winziges
-Zweifarbenbild und fragt, was darauf ist. Ein abgelehnter Upload heißt nein, eine
-Antwort, die beide Farben nennt, heißt ja — geraten wird nichts. Fotos werden vor dem
-Senden verkleinert, damit ein Schnappschuss nicht den halben Kontext frisst.
+**Images.** If the model can read them, a plus appears in the input field. Whether it
+can is something the connection test finds out for itself: it sends a tiny two-colour
+picture and asks what is on it. A rejected upload means no, an answer that names both
+colours means yes — nothing is guessed. Photos are scaled down before sending so a
+snapshot does not eat half the context.
 
-**Modelle und Grenzen.** Der Editor lädt die Modellliste direkt vom Endpoint, mit dem,
-was der Anbieter über Kontext, Ausgabelänge und Preis verrät. Sagt er nichts, versucht
-die App die Grenzen aus einer bewusst überzogenen Anfrage herauszulesen — und merkt
-sich sonst, welche Prompt-Größe nachweislich durchging. Kontextfenster und maximale
-Antwortlänge stellst du mit logarithmischen Reglern ein.
+**Models and limits.** The editor loads the model list straight from the endpoint,
+with whatever the provider reveals about context, output length and price. If it says
+nothing, the app reads the limits out of a refusal that names them — and otherwise
+remembers which prompt size demonstrably got through. You set the context window and
+the maximum answer length with logarithmic sliders. As long as you have not set the
+answer length yourself, it grows out of use: if an answer is cut off before any text
+arrives, Faden doubles the budget and asks again.
 
-**Sprechen und Hören.** Im Eingabefeld sitzt eine Mikrofontaste: gedrückt halten,
-sprechen, loslassen. Der Text kommt entweder von Apples Spracherkennung — wo möglich
-auf dem Gerät, dann verlässt nichts das iPhone — oder von deinem eigenen
-Whisper-Endpoint (`/v1/audio/transcriptions`, mit `faster-whisper` getestet).
-Antworten liest Faden auf Wunsch vor, über einen eigenen Sprachdienst
-(`/v1/audio/speech`) oder die im iPhone eingebaute Stimme. Fällt der eigene Dienst
-aus, springt die Apple-Stimme ein, statt die Antwort verstummen zu lassen.
+**Speaking and listening.** The input field carries a microphone button: hold, speak,
+let go. The text comes either from Apple's speech recognition — on the device where
+possible, and then nothing leaves the iPhone — or from your own Whisper endpoint
+(`/v1/audio/transcriptions`, tested with `faster-whisper`). Faden reads answers aloud
+on request, through a speech service of your own (`/v1/audio/speech`) or the voice
+built into the iPhone. If your own service fails, the Apple voice steps in rather than
+letting the answer fall silent.
 
-**Gedächtnis (nach cognee).** Faden baut aus euren Gesprächen einen Wissensgraphen —
-nicht eine Liste von Notizen. Das System ist [cognee](https://github.com/topoteretes/cognee)
-(Apache-2.0) portiert, nicht nachempfunden:
+**Memory (after cognee).** Faden builds a knowledge graph out of your conversations —
+not a list of notes. The system is a port of [cognee](https://github.com/topoteretes/cognee)
+(Apache-2.0), not an imitation:
 
-- **Aufnahme** wie `cognify`: Text → Chunks → das Modell zieht `KnowledgeGraph{nodes, edges}`
-  daraus, mit cognees eigenem Extraktions-Prompt (übersetzt) — grundlegende Typen statt
-  „Mathematiker", lesbare IDs statt Zahlen, Referenzen auf einen Namen aufgelöst.
-- **Identität** wie `DataPoint.id_for`: `uuid5(NAMESPACE_OID, "Typ:wert")`. Dieselbe Person
-  in zwei Gesprächen bekommt dieselbe ID und verschmilzt zu einem Knoten, statt ein zweites
-  Mal angelegt zu werden. Die Swift-Implementierung erzeugt bitgenau dieselben IDs wie
-  cognees Python.
-- **Abruf** wie `GraphCompletionRetriever`: Vektorsuche über Knoten *und* Kanten, die Treffer
-  als Saatpunkte, von dort `neighborhoodDepth` Schritte durch den Graphen, Tripel bewertet
-  nach ihrem stärksten Teil abzüglich `triplet_distance_penalty` pro Schritt.
-- **Bi-temporal**: Ein überholter Fakt wird geschlossen (`validTo`), nicht gelöscht.
+- **Ingestion** like `cognify`: text → chunks → the model pulls
+  `KnowledgeGraph{nodes, edges}` out of them, with cognee's own extraction prompt
+  (translated) — basic types rather than “mathematician”, readable IDs rather than
+  numbers, references resolved to one name.
+- **Identity** like `DataPoint.id_for`: `uuid5(NAMESPACE_OID, "type:value")`. The same
+  person in two conversations gets the same ID and merges into one node instead of
+  being created a second time. The Swift implementation produces bit-for-bit the same
+  IDs as cognee's Python.
+- **Retrieval** like `GraphCompletionRetriever`: vector search across nodes *and*
+  edges, the hits as seed points, from there `neighborhoodDepth` steps through the
+  graph, triples scored by their strongest part minus `triplet_distance_penalty` per
+  step.
+- **Bi-temporal**: a superseded fact is closed (`validTo`), not deleted.
 
-**Ausfallsicher.** Einbettungs-Endpoints sind oft mengenbegrenzt, und das ist der
-Normalfall, nicht die Ausnahme. Deshalb blockiert die Aufnahme nie daran: extrahierte
-Fakten werden auch ohne Vektor gespeichert — der Modellaufruf, der sie gefunden hat, ist
-bezahlt und soll nicht verfallen. Fehlende Vektoren holt eine Nacharbeit später nach, im
-Minutentakt und automatisch beim nächsten Start. Bis dahin sind diese Fakten nur nicht per
-Ähnlichkeit auffindbar. Dauerhafte Fehler (falsches Modell, fehlende Berechtigung) werden
-davon unterschieden und nicht endlos wiederholt.
+**Resilient.** Embedding endpoints are often rate-limited, and that is the normal case,
+not the exception. Ingestion therefore never blocks on it: extracted facts are stored
+even without a vector — the model call that found them is paid for and should not go
+to waste. A catch-up run fetches the missing vectors later, every minute and
+automatically on the next start. Until then those facts are merely not findable by
+similarity. Permanent errors (wrong model, missing permission) are told apart from
+this and not retried endlessly.
 
-Weggelassen, weil es Serverbetrieb ist und auf einem Telefon nichts beiträgt: Neo4j/Kuzu
-und LanceDB (cognees eigener Standardweg ist ohnehin `brute_force_triplet_search`), FastAPI,
-Nutzerverwaltung, Alembic-Migrationen, Ontologie-Verankerung, das Eval-Framework. Der Graph
-liegt als eine Datei auf dem Gerät und ist im Chat einsehbar und einzeln löschbar.
+Left out because it is server operation and contributes nothing on a phone: Neo4j/Kuzu
+and LanceDB (cognee's own default path is `brute_force_triplet_search` anyway),
+FastAPI, user management, Alembic migrations, ontology anchoring, the eval framework.
+The graph is one file on the device, visible in the chat and deletable entry by entry.
 
-**Titel.** Unterhaltungen heißen zuerst nach ihrem ersten Satz und werden dann vom
-Modell umbenannt, sobald genug Inhalt da ist — und erneut, wenn der Verlauf sich
-verdoppelt hat und das Thema vermutlich weitergewandert ist.
+**Titles.** Conversations are first named after their first sentence and are then
+renamed by the model once there is enough content — and again when the history has
+doubled and the subject has probably moved on.
 
-**Zeit ohne Cache-Bruch.** Der Assistent kennt Datum und Uhrzeit — sie stehen aber
-nicht im System-Prompt, sondern am Ende der letzten Nutzernachricht. Prompt-Caching
-gleicht einen exakten Präfix ab, und die Reihenfolge ist Werkzeuge → System → Nachrichten:
-eine Uhr im System-Prompt ändert die ersten Bytes jeder Anfrage, womit nichts dahinter je
-wiederverwendbar ist. Dasselbe galt für die abgerufenen Erinnerungen — gemessen brach der
-gemeinsame Präfix dadurch schon nach 1965 von 2521 Zeichen. Beides sitzt jetzt hinter dem
-Cache-Punkt, auf Inhalt, der ohnehin neu ist.
+**Time without breaking the cache.** The assistant knows the date and time — but they
+do not sit in the system prompt; they sit at the end of the last user message. Prompt
+caching matches an exact prefix, and the order is tools → system → messages: a clock in
+the system prompt changes the first bytes of every request, which makes nothing behind
+it reusable. The same held for the recalled memories — measured, the shared prefix
+broke after 1,965 of 2,521 characters because of them. Both now sit behind the cache
+point, on content that is new anyway.
 
-**Unterhaltungen sind getrennt.** Jeder Chat hat seinen eigenen Laufzeitzustand —
-laufende Antwort, Streaming-Text, Werkzeugliste, angehängte Bilder, Kontextfüllstand,
-Fehlermeldung, Verdichtungslauf. Ein Zug wird der Unterhaltung zugeordnet, in der er
-begann, und schreibt sein Ergebnis dorthin zurück, auch wenn währenddessen ein anderer
-Chat geöffnet wurde. Nur das Gedächtnis ist bewusst gemeinsam.
+**Conversations are separate.** Every chat has its own runtime state — the running
+answer, streaming text, tool list, attached images, context usage, error message,
+compaction run. A turn belongs to the conversation it began in and writes its result
+back there, even if another chat was opened meanwhile. Only the memory is deliberately
+shared.
 
-**Die Stimme gehört dir.** In einer App ohne Anbieter gibt es keine fremde Marke, die
-den Ton vorgibt. Untersuchungen zu Markenidentität in Dialogsystemen finden, dass
-Engagement mit der Passung zwischen Person und Stimme steigt — also wird sie eingestellt,
-nicht vorgegeben: Anrede, Ausführlichkeit, Ton, dazu ein Freitextfeld. Der Einstellungs-
-bildschirm zeigt wörtlich, was dem Modell gesagt wird, und lässt eine Probe hören, bevor
-die Stimme in einem echten Gespräch landet. Weil sie sich nur ändert, wenn du sie
-änderst, sitzt sie im stabilen Teil der Anweisungen und kostet pro Frage nichts.
+**The voice is yours.** In an app without a provider there is no foreign brand setting
+the tone. Research on brand identity in dialogue systems finds that engagement rises
+with the fit between person and voice — so it is set, not prescribed: form of address,
+length, tone, plus a free-text field. The settings screen shows verbatim what the model
+is told, and lets you hear a sample before the voice lands in a real conversation.
+Because it changes only when you change it, it sits in the stable part of the
+instructions and costs nothing per question.
 
-**Antworten sagen, wer sie geschrieben hat.** Sobald mehr als ein Modell eingerichtet ist,
-steht der Modellname an der Antwort. Dieselbe Forschung findet, dass visuelle Gestaltung
-*ohne* Transparenz die Bereitschaft senkt, ein System weiter zu nutzen — und bei mehreren
-Modellen ist eine Antwort ohne Absender genau das. Bei nur einem Modell entfällt die
-Angabe, weil sie dann nur Rauschen wäre.
+**Answers say who wrote them.** As soon as more than one model is set up, the model
+name stands on the answer. The same research finds that visual polish *without*
+transparency lowers the willingness to keep using a system — and with several models,
+an answer without a sender is exactly that. With only one model the note is dropped,
+because it would be noise.
 
-**Overlays nach Zweck.** Einstellungen sind eine längere Aufgabe und nehmen den ganzen
-Bildschirm. Verlauf und Gedächtnis sind kurze Nachschlagevorgänge und liegen als halbhohe
-Blätter über dem Chat, der dahinter sichtbar bleibt — man sieht, wovon man wegwechselt.
-Gestapelte Blätter, die NN/g ausdrücklich abrät, gibt es nicht mehr: Anbieter-Einrichtung
-und Modell-Liste sind Schritte *innerhalb* der Einstellungen, keine zweite Ebene darüber.
+**Overlays by purpose.** Settings are a longer task and take the whole screen. History
+and memory are short lookups and sit as half-height sheets over the chat, which stays
+visible behind them — you can see what you are stepping away from. Stacked sheets,
+which NN/g expressly advises against, are gone: provider setup and the model list are
+steps *inside* the settings, not a second layer above them.
 
-**Nachbessern statt neu tippen.** Untersuchungen dazu, wie Menschen generative KI
-tatsächlich nutzen (NN/g), zeigen zwei Muster: Sie lassen Antworten wiederholt kürzen
-oder ausweiten („accordion editing"), und sie beziehen sich auf einzelne Stellen einer
-früheren Antwort („apple picking") — wofür sie sonst hochscrollen, markieren und
-kopieren müssen. Faden hat dafür Aktionen direkt an der Antwort: Kopieren, neu holen,
-kürzer, ausführlicher. Ein langer Druck auf einen Absatz zitiert genau diesen in die
-Eingabe. Eine missverstandene Frage lässt sich bearbeiten und neu stellen, statt sie
-weiter unten noch einmal zu formulieren — was sie sonst im Verlauf stehen ließe, wo sie
-die folgenden Antworten weiter beeinflusst.
+**Revising rather than retyping.** Research into how people actually use generative AI
+(NN/g) shows two patterns: they have answers shortened or expanded repeatedly
+(“accordion editing”), and they refer to single passages of an earlier answer (“apple
+picking”) — for which they otherwise have to scroll up, select and copy. Faden has
+actions right at the answer for that: copy, fetch again, shorter, longer. A long press
+on a paragraph quotes exactly that one into the input. A misunderstood question can be
+edited and asked again instead of being reformulated further down — which would leave
+it standing in the history, where it keeps influencing the answers that follow.
 
-**Warten wird begründet.** Studien zu Antwortverzögerungen finden, dass eine Erklärung
-des Wartens Vertrauen und wahrgenommene Transparenz stärker hebt als das Verkürzen
-selbst. Der Punkt bleibt stumm, solange eine Antwort normal entsteht, und sagt erst nach
-einigen Sekunden, worauf gewartet wird. Fehler kommen mit einem Knopf zum erneuten
-Versuch — außer bei solchen, die Warten nicht behebt, etwa einem falschen Schlüssel.
+**Waiting is explained.** Studies on response delays find that explaining the wait
+raises trust and perceived transparency more than shortening it does. The indicator
+stays silent while an answer is coming along normally, and says what is being waited
+for only after a few seconds. Errors come with a button to try again — except for
+those that waiting does not fix, such as a wrong key.
 
-**Lesbar in jeder Textgröße.** Alle Schriftgrößen wachsen mit der Systemeinstellung —
-vorher waren 112 Stellen auf feste Punktgrößen verdrahtet, sodass eine größere Systemschrift
-in Faden schlicht wirkungslos blieb. Der Inhalt skaliert bis zur größten
-Barrierefreiheits-Stufe durch; Kopfzeile, Eingabe und Kontextleiste sind begrenzt, weil
-dort sonst Symbole übereinanderlaufen. Die Aktionen unter einer Antwort lassen ihre
-Beschriftungen fallen und stehen als Symbole in Tap-Größe, sobald der Platz nicht mehr
-reicht.
+**Readable at any text size.** Every font size grows with the system setting — before,
+112 places were wired to fixed point sizes, so a larger system font simply had no
+effect in Faden. The content scales through to the largest accessibility step; the
+header, the input and the context bar are capped, because symbols would otherwise
+overlap there. The actions under an answer drop their labels and stand as symbols at
+tap size as soon as the room runs out.
 
-**VoiceOver bekommt Sätze, keine Zeichen.** Während eine Antwort streamt, ist sie für
-den Screenreader ausgeblendet — jedes Token einzeln anzusagen ist die übliche Art, ein
-Chat-Interface unbenutzbar zu machen. Angesagt wird stattdessen, was gerade passiert
-(„sucht im Web", „Antwort wird geschrieben"); die fertige Nachricht steht danach als ein
-Element im Verlauf, das mit Sprecher, Werkzeugen und Text vorgelesen wird.
+**VoiceOver gets sentences, not characters.** While an answer streams it is hidden from
+the screen reader — announcing every token individually is the usual way to make a chat
+interface unusable. What is announced instead is what is happening (“searching the
+web”, “writing the answer”); the finished message then stands in the history as one
+element that is read out with speaker, tools and text.
 
-**Kontextanzeige.** Eine Haarlinie am unteren Rand zeigt laufend, wie viel des
-Fensters belegt ist. Die Schätzung korrigiert sich selbst, sobald der Anbieter echte
-Verbrauchszahlen meldet.
+**Context display.** A hairline at the bottom edge shows continuously how much of the
+window is taken. The estimate corrects itself as soon as the provider reports real
+usage figures.
 
-**Automatisches Verdichten.** Ab 75 % (einstellbar) fasst Faden den älteren Verlauf
-im Hintergrund zusammen — gegliedert nach Auftrag, Stand, Entscheidungen und Offenem,
-mit Zahlen, Namen und Quellen wörtlich übernommen. Die letzten Turns bleiben
-unangetastet, `remember`-Notizen überleben vollständig. Der Schnitt liegt immer vor
-einem frischen Turn, damit kein Werkzeugergebnis von seinem Aufruf getrennt wird.
+**Automatic compaction.** From 75 % (adjustable) Faden summarises the older history in
+the background — organised by task, state, decisions and open points, with numbers,
+names and sources carried over verbatim. The last turns stay untouched, `remember`
+notes survive in full. The cut always lies before a fresh turn, so that no tool result
+is separated from its call.
 
-## Bauen
+## Building
 
 ```bash
 xcodegen generate
 open Faden.xcodeproj
 ```
 
-Braucht Xcode 16+ und zielt auf iOS 17. Keine externen Abhängigkeiten.
+Needs Xcode 16+ and targets iOS 17. No external dependencies.
 
-Zwei Dinge heißen weiterhin `perbu` beziehungsweise `PerBu`, und beide mit Absicht.
-Die **Bundle-ID** `dev.eigenhand.perbu` ist die Identität der App in App Store
-Connect und auf jedem Gerät, auf dem sie liegt: eine neue wäre eine neue App, mit
-neuem TestFlight, neu einzuladenden Testern und einem zweiten Icon statt eines
-Updates. Der **Datenordner** in Application Support trägt denselben Namen; ein
-anderer würde jede gespeicherte Unterhaltung und den Wissensgraphen verwaisen
-lassen. Alles übrige — Projekt, Ziele, Quellordner, Typen — heißt Faden.
+Two things are still called `perbu` and `PerBu` respectively, and both on purpose. The
+**bundle ID** `dev.eigenhand.perbu` is the app's identity in App Store Connect and on
+every device that carries it: a new one would be a new app, with a new TestFlight,
+testers to invite again and a second icon instead of an update. The **data folder** in
+Application Support carries the same name; a different one would orphan every saved
+conversation and the knowledge graph. Everything else — project, targets, source
+folder, types — is called Faden.
 
-## Auf ein Gerät bringen
+## Getting it onto a device
 
-`./release.sh` archiviert und lädt zu TestFlight hoch. Vorher einmalig nötig:
-Bundle-ID `dev.eigenhand.perbu` registrieren, App-Eintrag in App Store Connect anlegen,
-und `ASC_ISSUER_ID` setzen (App Store Connect › Users and Access › Integrations).
+`./release.sh` archives and uploads to TestFlight. Needed once beforehand: register the
+bundle ID `dev.eigenhand.perbu`, create the app record in App Store Connect, and set
+`ASC_ISSUER_ID` (App Store Connect › Users and Access › Integrations).
 
-## Wo was liegt
+## Where things are
 
-| Ordner | Inhalt |
+| Folder | Contents |
 |---|---|
-| `Design/` | Farben, Typografie und Bausteine — die Tokens von eigenhand.dev |
-| `Models/` | Nachrichten, Blöcke, Einstellungen, ein dynamischer JSON-Typ |
-| `Providers/` | Die beiden Wire-Formate und der SSE-Leser |
-| `Search/` | Rezept-Format, lokale Ausführung, fertige Anbieter, Autokonfiguration |
-| `Agent/` | Werkzeuge und die Schleife, die sie ausführt |
-| `Context/` | Token-Schätzung und das Verdichten |
-| `Media/` | Bildaufbereitung und die Vision-Prüfung |
-| `Speech/` | Diktat, Aufnahme, eigene STT-/TTS-Endpoints, Sprachausgabe |
-| `Memory/` | Der Wissensgraph nach cognee: Identität, Extraktion, Einbettung, Tripel-Suche |
-| `Storage/` | Schlüsselbund und Dateipersistenz |
-| `UI/` | Chat, Kontextleiste, Einstellungen, Einrichtungsassistent |
+| `Design/` | Colours, typography and building blocks — the tokens from eigenhand.dev |
+| `Models/` | Messages, blocks, settings, a dynamic JSON type |
+| `Providers/` | The two wire formats and the SSE reader |
+| `Search/` | Recipe format, local execution, ready-made providers, auto-configuration |
+| `Agent/` | The tools and the loop that runs them |
+| `Context/` | Token estimation and compaction |
+| `Media/` | Image preparation and the vision check |
+| `Speech/` | Dictation, recording, your own STT/TTS endpoints, speech output |
+| `Memory/` | The knowledge graph after cognee: identity, extraction, embedding, triple search |
+| `Storage/` | Keychain and file persistence |
+| `UI/` | Chat, context bar, settings, setup assistant |
 
-Keys liegen im Schlüsselbund des Geräts, alles andere als JSON in Application Support.
+Keys live in the device's keychain, everything else as JSON in Application Support.
 
-## Lizenz
+## Licence
 
-Apache-2.0. Siehe [LICENSE](LICENSE). Copyright 2026 Christoph Lindl-Guk.
+Apache-2.0. See [LICENSE](LICENSE). Copyright 2026 Christoph Lindl-Guk.
 
-Permissiv und nicht Copyleft: Faden läuft auf einem Telefon und spricht mit Endpoints,
-die dem Nutzer gehören — es gibt hier nichts, was jemand als Dienst übernehmen und
-schliessen könnte. Apache-2.0 statt MIT wegen der ausdrücklichen Patentlizenz.
+Permissive and not copyleft: Faden runs on a phone and speaks to endpoints that belong
+to the user — there is nothing here that anyone could take over as a service and close.
+Apache-2.0 rather than MIT because of the express patent licence.

@@ -1,109 +1,106 @@
-# Sicherheit
+# Security
 
-## Lücken melden
+*English · [Deutsch](SECURITY.de.md)*
 
-Sicherheitsprobleme bitte **nicht** als öffentliches Issue, sondern per E-Mail an
-<christoph.lindl-guk@pm.me>. Ich antworte, so schnell ich kann – dies ist ein
-Freizeitprojekt ohne zugesagte Reaktionszeiten.
+## Reporting a vulnerability
 
-## Was das Gerät verlässt
+Please report security problems **not** as a public issue but by e-mail to
+<christoph.lindl-guk@pm.me>. I answer as fast as I can — this is a spare-time project
+with no promised response times.
 
-Faden bringt keine Infrastruktur mit. Es gibt keinen Server von mir, keine Telemetrie
-und kein Konto. Was hinausgeht, geht an Endpoints, die der Nutzer selbst eingetragen
-hat:
+## What leaves the device
 
-| Wohin | Was | Wann |
+Faden brings no infrastructure with it. There is no server of mine, no telemetry and no
+account. What goes out goes to endpoints the user entered:
+
+| Where | What | When |
 | --- | --- | --- |
-| Modell-Endpoint | Der ganze Gesprächsverlauf, Bilder, Werkzeugergebnisse | Bei jedem Zug |
-| Suchanbieter | Die Suchanfrage | Wenn das Modell sucht |
-| Beliebige Webseiten | Nichts ausser einem Seitenabruf | Wenn das Modell eine Seite lädt |
-| Einbettungs-Endpoint | Text, aus dem Erinnerungen werden | Wenn das Gedächtnis an ist |
+| Model endpoint | The whole conversation, images, tool results | On every turn |
+| Search provider | The search query | When the model searches |
+| Arbitrary web pages | Nothing but a page request | When the model loads a page |
+| Embedding endpoint | Text that becomes memories | When the memory is on |
 
-Alles andere – Verlauf, Einstellungen, Erinnerungen – liegt in Application Support auf
-dem Gerät.
+Everything else — history, settings, memories — lies in Application Support on the
+device.
 
-## Schlüssel
+## Keys
 
-API-Schlüssel liegen im **Schlüsselbund des Geräts**, nie in den Einstellungen und nie
-in einer Datei, die beim Teilen mitgeht. Ein Anbietereintrag verweist nur auf den
-Schlüsselbund-Eintrag.
+API keys live in the **device's keychain**, never in the settings and never in a file
+that travels when something is shared. A provider entry only refers to the keychain
+entry.
 
-Bis September 2026 trugen die TestFlight-Builds einen Schlüssel im Binary, damit
-Tester sofort loslegen konnten. Das war eine bewusste Abwägung und ist keine mehr:
-Ein Schlüssel im ausgelieferten Binary ist für jeden lesbar, der das Binary hat.
-Seitdem bringt die App keinen Anbieter mehr mit. Ein versionierter `pre-commit`-Haken
-schlägt an, wenn etwas, das nach einem Schlüssel aussieht, in einen Commit gerät.
+Until September 2026 the TestFlight builds carried a key in the binary so that testers
+could start right away. That was a deliberate trade-off and is no longer one: a key in
+a shipped binary is readable by anyone who has the binary. Since then the app brings no
+provider with it. A versioned `pre-commit` hook fires when something that looks like a
+key finds its way into a commit.
 
-## Die Bauart, um die es geht
+## The architecture this is about
 
-Ein Assistent mit Werkzeugen liest fremden Text und kann handeln. Für ein
-Sprachmodell ist beides erst einmal dasselbe: Text. Daraus folgt der grösste Teil
-dessen, was hier steht.
+An assistant with tools reads foreign text and can act. To a language model both are
+first of all the same thing: text. Most of what follows comes out of that.
 
-**Fremde Inhalte sind eingefasst.** Was `web_search` und `fetch_page` zurückgeben,
-steht zwischen Marken mit einer je Aufruf gewürfelten Kennung, und die
-Systemanweisung sagt, was darin gilt: Material, keine Anweisung. Ohne die Würfelung
-wäre es Dekoration – eine präparierte Seite schriebe die Schlussmarke hin und danach
-ihre Anweisungen, die dann scheinbar ausserhalb stünden. Was im Text selbst wie eine
-Marke aussieht, wird vorher entfernt.
+**Foreign content is fenced.** What `web_search` and `fetch_page` return stands between
+marks carrying an identifier rolled per call, and the system instruction says what
+holds inside them: material, not instruction. Without the roll it would be decoration —
+a prepared page would write the closing mark and then its instructions, which would
+then appear to stand outside. Anything in the text that itself looks like a mark is
+removed beforehand.
 
-Der Anlass ist konkret: Faden hat ein Werkzeug `remember`, dessen Notizen das
-Verdichten des Kontexts wörtlich überleben. Ohne Einfassung könnte eine Seite dem
-Modell einen dauerhaften Eintrag im Gedächtnis des Nutzers diktieren.
+The occasion is concrete: Faden has a tool called `remember` whose notes survive the
+compaction of the context verbatim. Without fencing, a page could dictate a permanent
+entry in the user's memory.
 
-**Werkzeuge laden nur öffentliche Seiten.** Die Adresse für `fetch_page` wählt das
-Modell, nach dem, was in einem Suchergebnis stand – das ist eine Eingabe von aussen.
-Geprüft werden die Adresse und **jede Weiterleitung**: draussen bleiben das Gerät
-selbst, die privaten Bereiche, link-local samt `169.254.169.254`, Carrier-NAT,
-Multicast, Reserviertes, die Namen `localhost`, `.local`, `.lan`, `.internal`,
-`.home`, und alles ausser http und https. Ohne die Prüfung der Weiterleitung wäre das
-ein Türsteher, der nur den ersten Gast anschaut.
+**Tools load public pages only.** The model picks the address for `fetch_page`,
+according to what stood in a search result — that is input from outside. Both the
+address **and every redirect** are checked: kept out are the device itself, the private
+ranges, link-local including `169.254.169.254`, carrier NAT, multicast, reserved space,
+the names `localhost`, `.local`, `.lan`, `.internal`, `.home`, and everything but http
+and https. Without the redirect check this would be a doorman who only looks at the
+first guest.
 
-**Geteilte Unterhaltungen werden entschärft.** Eine `.faden`-Datei wird beim
-Übernehmen zur eigenen Vorgeschichte und geht ab dann bei jedem Zug mit. Entfernt
-werden dabei: das Kennzeichen „Zusammenfassung" (die Systemanweisung erklärt
-Zusammenfassungen für massgeblich – eine fremde Datei darf das über ihren eigenen
-Inhalt nicht entscheiden), Gedankengänge (unsichtbar, wirkungslos wenn echt, und die
-überzeugendste Stimme im Verlauf wenn gefälscht) und unvollständige Werkzeugschritte.
-Dazu Obergrenzen für Dateigrösse und Nachrichtenzahl. Was entfernt wurde, wird
-gesagt.
+**Shared conversations are defused.** A `.faden` file becomes your own prehistory when
+you take it over, and from then on it travels with every turn. Removed in the process:
+the “summary” flag (the system instruction declares summaries authoritative — a foreign
+file may not decide that about its own content), reasoning (invisible, ineffective if
+genuine, and the most persuasive voice in the history if forged) and incomplete tool
+steps. Plus upper bounds on file size and message count. What was removed is said.
 
-## Bewusste Kompromisse
+## Deliberate compromises
 
-Diese Punkte sind keine Versehen, sondern Abwägungen.
+These points are not oversights but trade-offs.
 
-**Der eigene Endpoint ist vertrauenswürdig.** Wer eine Adresse und einen Schlüssel
-einträgt, sagt damit: dorthin darf mein ganzer Verlauf. Faden prüft nicht, was dort
-mit den Daten geschieht, und kann es nicht.
+**Your own endpoint is trusted.** Whoever enters an address and a key is saying: my
+whole history may go there. Faden does not check what happens to the data there, and
+cannot.
 
-**Der Suchanbieter darf im eigenen Netz liegen.** Für `fetch_page` ist das gesperrt,
-für die Suche nicht – ein selbst betriebenes SearXNG im Heimnetz ist ein legitimer
-Aufbau und einer der mitgelieferten Vorschläge. Der Unterschied ist, wer die Adresse
-wählt: bei der Suche der Nutzer, bei `fetch_page` das Modell.
+**The search provider may sit in your own network.** For `fetch_page` that is blocked,
+for search it is not — a self-hosted SearXNG in the home network is a legitimate setup
+and one of the shipped suggestions. The difference is who picks the address: for search
+the user, for `fetch_page` the model.
 
-**Ein Name, der auf eine private Adresse zeigt, kommt durch.** Geprüft wird die
-geschriebene Adresse. Ein öffentlich aussehender Name, den ein Angreifer auf
-`192.168.…` auflösen lässt, umgeht die Prüfung. Dagegen hülfe nur ein eigener
-Namensauflöser, der prüft und dann genau die geprüfte Adresse verwendet – sonst bleibt
-zwischen Prüfung und Verbindung ein Spalt. Das wäre eine eigene Netzwerkschicht.
+**A name that points at a private address gets through.** What is checked is the
+written address. A public-looking name that an attacker has resolve to `192.168.…`
+bypasses the check. Only a resolver of our own would help — one that checks and then
+uses exactly the address it checked — because otherwise a gap remains between the check
+and the connection. That would be a network layer of its own.
 
-**Die Einfassung ist eine Bitte, keine Schranke.** Ob das Modell sich daran hält,
-kann keine Zeile Code erzwingen. Gegen ein Modell, das sich überreden lässt, hilft am
-Ende nur, ihm keine gefährlichen Werkzeuge zu geben – und die gefährlichsten hat
-Faden nicht: es schreibt keine Dateien, verschickt nichts und kauft nichts. Das
-Schlimmste, was ein erfolgreicher Angriff erreicht, ist ein falscher Eintrag im
-Gedächtnis oder eine falsche Auskunft.
+**The fence is a request, not a barrier.** Whether the model holds to it cannot be
+enforced by any line of code. Against a model that lets itself be talked round, the
+only thing that helps in the end is giving it no dangerous tools — and the most
+dangerous ones Faden does not have: it writes no files, sends nothing and buys nothing.
+The worst a successful attack achieves is a wrong entry in the memory or a wrong
+answer.
 
-**Kein Schutz gegen ein bösartiges Modell.** Der Endpoint bekommt den ganzen Verlauf
-und antwortet frei. Wer einen Endpoint einträgt, dem er nicht traut, hat ein anderes
-Problem als diese App.
+**No protection against a malicious model.** The endpoint receives the whole history
+and answers freely. Whoever enters an endpoint they do not trust has a different problem
+than this app.
 
-## Was geprüft ist
+## What is tested
 
-Die Massnahmen oben haben Tests, und die Tests prüfen den mechanischen Teil: dass die
-Grenze steht, dass eine gefälschte Marke sie nicht öffnet und nicht schliesst, dass
-`192.168.example.com` als gewöhnliche Domain durchkommt und `::ffff:192.168.0.1`
-nicht, dass ein vollständiges Werkzeugpaar den Import unbeschadet übersteht. Sie
-laufen bei jedem Push.
+The measures above have tests, and the tests check the mechanical part: that the
+boundary holds, that a forged mark neither opens nor closes it, that
+`192.168.example.com` gets through as an ordinary domain and `::ffff:192.168.0.1` does
+not, that a complete tool pair survives the import unharmed. They run on every push.
 
-Was sie nicht prüfen, steht oben unter „Bewusste Kompromisse".
+What they do not check stands above under “Deliberate compromises”.
