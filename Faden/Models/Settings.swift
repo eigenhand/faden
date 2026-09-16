@@ -91,6 +91,17 @@ struct LLMConfig: Codable, Equatable, Identifiable {
     var reportedContextLimit: Int?
     var reportedOutputLimit: Int?
     var maxOutputTokens: Int = 4096
+
+    /// Ob die Antwortlänge von Hand gesetzt wurde.
+    ///
+    /// Ist sie das nicht, wächst sie aus der Nutzung: Wird eine Antwort
+    /// abgeschnitten, bevor Text kam, verdoppelt Faden den Vorrat und fragt noch
+    /// einmal. Ein Denkmodell an einer schweren Aufgabe braucht ein Vielfaches
+    /// dessen, was für eine Auskunft reicht, und 4096 ist für beides die falsche
+    /// Zahl — nur merkt man es erst, wenn der Gedankengang mitten im Satz aufhört.
+    ///
+    /// Wer die Zahl selbst einstellt, wollte sie so. Ab dann wächst nichts mehr.
+    var maxOutputTokensIsCustom: Bool = false
     var temperature: Double = 1.0
     /// Extra headers, e.g. `HTTP-Referer` for OpenRouter.
     var extraHeaders: [String: String] = [:]
@@ -136,6 +147,11 @@ struct LLMConfig: Codable, Equatable, Identifiable {
         reportedContextLimit  = try c.decodeIfPresent(Int.self, forKey: .reportedContextLimit)
         reportedOutputLimit   = try c.decodeIfPresent(Int.self, forKey: .reportedOutputLimit)
         maxOutputTokens       = try c.decodeIfPresent(Int.self, forKey: .maxOutputTokens) ?? d.maxOutputTokens
+        // Eine Einstellung von vor dieser Funktion weiß nicht, ob jemand die Zahl
+        // angefasst hat. Steht dort noch die Vorgabe, hat es niemand getan — und
+        // genau der Fall ist der, dem das Wachsen hilft.
+        maxOutputTokensIsCustom = try c.decodeIfPresent(Bool.self, forKey: .maxOutputTokensIsCustom)
+            ?? (maxOutputTokens != d.maxOutputTokens)
         temperature           = try c.decodeIfPresent(Double.self, forKey: .temperature) ?? d.temperature
         extraHeaders          = try c.decodeIfPresent([String: String].self, forKey: .extraHeaders) ?? [:]
         supportsVision        = try c.decodeIfPresent(Bool.self, forKey: .supportsVision) ?? false

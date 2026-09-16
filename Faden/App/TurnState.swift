@@ -24,6 +24,15 @@ final class TurnState {
     var liveThinking = ""
     var liveTools: [ToolActivity] = []
     var errorMessage: String?
+
+    /// Ein Hinweis, der kein Fehler ist.
+    ///
+    /// Bisher gab es nur `errorMessage`, und damit nur zwei Zustände: Es lief, oder
+    /// es ging schief. Ein Zug, der noch einmal beginnt, weil der Vorrat nicht
+    /// gereicht hat, ist beides nicht — er läuft weiter, aber was eben zu sehen war,
+    /// gilt nicht mehr, und das muss dastehen. Sonst verschwindet ein halber
+    /// Gedankengang wortlos.
+    var note: String?
     /// Images staged for the next message in *this* conversation.
     var attachments: [ImageAttachment] = []
     /// Context usage of this conversation, so the bar does not show another's.

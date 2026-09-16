@@ -846,6 +846,16 @@
         }
       }
     },
+    "Der Gedankengang war länger als der Vorrat. Antwortlänge auf %lld Token erhöht.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The reasoning ran longer than the budget. Answer length raised to %lld tokens."
+          }
+        }
+      }
+    },
     "Der Modellname lässt sich auch von Hand eintragen:": {
       "localizations": {
         "en": {
@@ -3059,12 +3069,32 @@
         }
       }
     },
+    "vom Anbieter: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "from the provider: %@"
+          }
+        }
+      }
+    },
     "vom Endpoint laden": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "load from the endpoint"
+          }
+        }
+      }
+    },
+    "wächst mit, wenn eine Antwort nicht hineinpasst": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "grows when an answer does not fit"
           }
         }
       }

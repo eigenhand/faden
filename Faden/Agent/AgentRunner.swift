@@ -13,6 +13,13 @@ enum TurnEvent {
     /// Früher hat die App danach gefragt, indem sie eine absurde Obergrenze schickte;
     /// das ist weg. Was hier ankommt, hat ein echter Zug ausgelöst.
     case learnedLimits(context: Int?, output: Int?)
+    /// Die Antwortlänge ist aus der Nutzung heraus gewachsen.
+    ///
+    /// Nicht geraten und nicht ausprobiert: Ein Zug ist an dieser Grenze
+    /// abgeschnitten worden, und das ist der Anlass.
+    case grewOutputBudget(Int)
+    /// Der Zug beginnt noch einmal. Was bisher zu sehen war, gilt nicht mehr.
+    case restarted(reason: String)
     case finished
     case failed(String)
 }
@@ -377,6 +384,69 @@ struct AgentRunner {
     /// „key not allowed to access model. This key can only access models=['public']".
     /// Das ist eine Absage an das *Modell*, nicht an den Schlüssel — also der Fall,
     /// für den das Ausweichen gebaut wurde, und er wäre still übersprungen worden.
+    // MARK: Antwortlänge
+
+    /// Ob dem Zug der Vorrat ausgegangen ist.
+    ///
+    /// Zwei Zeichen. Der Anbieter sagt es — „max_tokens", „length" —, oder er sagt
+    /// nichts und schickt einen Zug, der **nur** aus Gedankengang besteht: kein
+    /// Text, kein Werkzeugaufruf, und trotzdem zu Ende. Das zweite ist der Fall, den
+    /// die App bisher stillschweigend als fertige Antwort verbucht hat.
+    ///
+    /// Ein Zug mit Werkzeugaufruf zählt nicht, auch wenn kein Text dabei ist: Das
+    /// ist die normale Form einer Runde, in der das Modell erst etwas nachsehen will.
+    static func ranOutOfRoom(stopReason: String?, text: String,
+                             thinking: String, toolCalls: Int) -> Bool {
+        if stopReason == "max_tokens" || stopReason == "length" { return true }
+        return text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && !thinking.isEmpty && toolCalls == 0
+    }
+
+    /// Ob der Zug noch einmal beginnen darf.
+    ///
+    /// Nur, wenn nichts zu verlieren ist. Steht schon Text auf dem Schirm, wäre ein
+    /// neuer Anlauf kein zweiter Versuch, sondern ein Rückschritt: Der Leser sähe
+    /// seine halbe Antwort verschwinden und wartete von vorn. Die gewachsene Zahl
+    /// bleibt trotzdem stehen — der nächste Zug fängt oben an.
+    static func shouldAskAgain(text: String, toolCalls: Int, alreadyGrew: Int) -> Bool {
+        text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && toolCalls == 0
+            && alreadyGrew < maxGrowths
+    }
+
+    /// Wie oft ein Zug nachlegen darf.
+    ///
+    /// Drei Verdopplungen, also aus 4 096 höchstens 32 768 in einer Runde. Jede
+    /// kostet die ganze Anfrage noch einmal — der Verlauf geht jedes Mal mit —, und
+    /// deshalb ist hier eine Grenze und nicht „so lange, bis es passt". Was in
+    /// dieser Runde gelernt wurde, bleibt stehen: Der nächste Zug fängt oben an.
+    static let maxGrowths = 3
+
+    /// Die letzte Schranke, wenn der Anbieter keine nennt.
+    ///
+    /// Kein Modell schreibt heute mehr als das in einem Zug. Wer eines hat, stellt
+    /// die Zahl von Hand ein — und schaltet das Wachsen damit ohnehin ab.
+    static let outputCeiling = 128_000
+
+    /// Die nächste Antwortlänge, wenn die letzte nicht gereicht hat.
+    ///
+    /// Verdoppeln und nicht raten. Die App hat früher eine absurde Obergrenze
+    /// geschickt, um die echte zu erfahren; das ist weg und soll nicht
+    /// zurückkommen. Was hier passiert, ist die Antwort auf einen Zug, der
+    /// tatsächlich angestoßen ist.
+    ///
+    /// `nil` heißt: Hier ist Schluss. Entweder steht der Anbieter mit seiner
+    /// genannten Grenze davor, oder die letzte Schranke tut es.
+    static func nextOutputBudget(after current: Int, ceiling: Int?) -> Int? {
+        let doubled = current * 2
+        if let ceiling {
+            guard current < ceiling else { return nil }
+            return min(doubled, ceiling)
+        }
+        guard doubled <= outputCeiling else { return nil }
+        return doubled
+    }
+
     static func isWorthRetrying(_ error: Error) -> Bool {
         if let llm = error as? LLMError {
             switch llm {
@@ -421,6 +491,7 @@ struct AgentRunner {
         var activeConfig = config
         activeConfig.model = config.model(forImages: hasImages)
         var didFallBack = false
+        var grewTimes = 0
 
         var iteration = 0
         while iteration < maxIterations {
@@ -431,6 +502,7 @@ struct AgentRunner {
             var pendingCalls: [(id: String, name: String, input: JSONValue)] = []
             var failure: String?
             var caught: Error?
+            var stopReason: String?
 
             do {
                 // Stamped here rather than stored: the conversation on disk stays
@@ -458,8 +530,11 @@ struct AgentRunner {
                         pendingCalls.append((id, name, input))
                     case .usage(let i, let o):
                         await onEvent(.usage(input: i, output: o))
-                    case .stopped:
-                        break
+                    case .stopped(let reason):
+                        // Früher weggeworfen, und das war der Fehler: Ein Zug, der
+                        // seinen Vorrat im Nachdenken aufbraucht, sieht ohne diesen
+                        // Grund aus wie eine fertige Antwort.
+                        stopReason = reason
                     }
                 }
             } catch is CancellationError {
@@ -497,6 +572,36 @@ struct AgentRunner {
                 }
                 await onEvent(.failed(failure))
                 return
+            }
+
+            // Der Vorrat hat nicht gereicht.
+            //
+            // Zwei Zeichen dafür. Der Anbieter sagt es — „max_tokens", „length" —,
+            // oder er sagt nichts und schickt einen Zug, der nur aus Gedankengang
+            // besteht: kein Text, kein Werkzeugaufruf, und trotzdem zu Ende. Das
+            // zweite ist der Fall, der die App bisher stillschweigend als fertige
+            // Antwort verbucht hat, und für einen Nutzer sieht er aus, als hörte das
+            // Denken mitten im Satz auf.
+            let ranOut = Self.ranOutOfRoom(stopReason: stopReason, text: text,
+                                           thinking: thinking, toolCalls: pendingCalls.count)
+            if ranOut, !config.maxOutputTokensIsCustom,
+               let bigger = Self.nextOutputBudget(after: activeConfig.maxOutputTokens,
+                                                  ceiling: activeConfig.reportedOutputLimit) {
+                activeConfig.maxOutputTokens = bigger
+                await onEvent(.grewOutputBudget(bigger))
+
+                // Der Vorrat wächst immer, noch einmal gefragt wird nur, wenn nichts
+                // zu verlieren ist. Kam schon Text an, ist eine halbe Antwort mehr
+                // wert als eine ganze, die den Leser zweimal warten lässt — und die
+                // gewachsene Zahl steht ohnehin schon für den nächsten Zug bereit.
+                if Self.shouldAskAgain(text: text, toolCalls: pendingCalls.count,
+                                       alreadyGrew: grewTimes) {
+                    grewTimes += 1
+                    await onEvent(.restarted(reason: String(
+                        localized: "Der Gedankengang war länger als der Vorrat. Antwortlänge auf \(bigger) Token erhöht.")))
+                    iteration -= 1      // dieselbe Runde noch einmal, mit mehr Luft
+                    continue
+                }
             }
 
             // Record the assistant turn exactly as it came back.

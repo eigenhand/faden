@@ -217,12 +217,21 @@ struct ModelEditor: View {
                                 range: 4_000...contextCeiling(model.settings.llms[i]),
                                 footnote: contextFootnote(model.settings.llms[i]))
 
+                            // Eine eigene Bindung und kein `onChange` auf dem Wert:
+                            // Auch die App schreibt diese Zahl — beim Lernen einer
+                            // Grenze und beim Wachsen —, und ein `onChange` könnte
+                            // nicht unterscheiden, wer sie gerade gesetzt hat. Hier
+                            // kommt nur durch, was ein Finger bewegt hat.
                             TokenSlider(
                                 title: "Maximale Antwortlänge",
-                                value: $model.settings.llms[i].maxOutputTokens,
+                                value: Binding(
+                                    get: { model.settings.llms[i].maxOutputTokens },
+                                    set: {
+                                        model.settings.llms[i].maxOutputTokens = $0
+                                        model.settings.llms[i].maxOutputTokensIsCustom = true
+                                    }),
                                 range: 256...outputCeiling(model.settings.llms[i]),
-                                footnote: model.settings.llms[i].reportedOutputLimit
-                                    .map { "vom Anbieter: \(RemoteModel.compact($0))" })
+                                footnote: outputFootnote(model.settings.llms[i]))
 
                             if let limitNote {
                                 Text(limitNote).font(.eh(12, .caption)).foregroundStyle(EH.muted)
@@ -335,6 +344,20 @@ struct ModelEditor: View {
     private func contextCeiling(_ c: LLMConfig) -> Int {
         if let r = c.reportedContextLimit { return max(r, 8_000) }
         return max(c.observedMaxPromptTokens * 2, 1_000_000)
+    }
+
+    /// Was unter dem Regler steht.
+    ///
+    /// Solange niemand die Zahl angefasst hat, ist sie keine Einstellung, sondern
+    /// ein Stand — und das gehört dahin, sonst wundert sich jemand, warum sie sich
+    /// von selbst bewegt hat.
+    private func outputFootnote(_ c: LLMConfig) -> String? {
+        let reported = c.reportedOutputLimit.map {
+            String(localized: "vom Anbieter: \(RemoteModel.compact($0))")
+        }
+        guard !c.maxOutputTokensIsCustom else { return reported }
+        let grows = String(localized: "wächst mit, wenn eine Antwort nicht hineinpasst")
+        return [reported, grows].compactMap { $0 }.joined(separator: " · ")
     }
 
     private func outputCeiling(_ c: LLMConfig) -> Int {

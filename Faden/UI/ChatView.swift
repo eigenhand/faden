@@ -130,6 +130,18 @@ struct ChatView: View {
 
                         if model.isStreaming { liveTurn }
 
+                        if let note = model.note {
+                            // Kein Fehler: Der Zug läuft weiter, nur von vorn.
+                            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                Image(systemName: "arrow.clockwise")
+                                    .font(.eh(11, .caption2))
+                                Text(note).font(.eh(12, .caption))
+                                Spacer(minLength: 0)
+                            }
+                            .foregroundStyle(EH.muted)
+                            .padding(.horizontal, 2)
+                            .transition(.opacity)
+                        }
                         if let error = model.errorMessage {
                             ErrorNote(text: error,
                                       retry: { model.retryLastTurn() }) { model.errorMessage = nil }

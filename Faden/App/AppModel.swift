@@ -60,6 +60,11 @@ final class AppModel {
         get { turn.errorMessage }
         set { turn.errorMessage = newValue }
     }
+    /// Ein Hinweis, der kein Fehler ist — siehe `TurnState.note`.
+    var note: String? {
+        get { turn.note }
+        set { turn.note = newValue }
+    }
     var attachments: [ImageAttachment] {
         get { turn.attachments }
         set { turn.attachments = newValue }
@@ -107,6 +112,7 @@ final class AppModel {
     func retryLastTurn() {
         guard var conversation = current, !turn.isStreaming else { return }
         turn.errorMessage = nil
+        turn.note = nil
         guard let lastUser = conversation.messages.lastIndex(where: { m in
             m.role == .user && m.blocks.contains { if case .text = $0 { return true }; return false }
                 && !m.isCompactionSummary
@@ -399,6 +405,7 @@ final class AppModel {
         state.isStreaming = true
         state.clearLive()
         state.errorMessage = nil
+        state.note = nil
 
         let trimmed = question
         let key = apiKey(for: config)
@@ -540,8 +547,24 @@ final class AppModel {
                 }
                 persist()
             }
+        case .grewOutputBudget(let tokens):
+            // Bleibt stehen: Der nächste Zug fängt oben an, statt dieselbe Grenze
+            // noch einmal zu finden.
+            if let id = settings.activeLLM?.id,
+               let i = settings.llms.firstIndex(where: { $0.id == id }),
+               !settings.llms[i].maxOutputTokensIsCustom,
+               tokens > settings.llms[i].maxOutputTokens {
+                settings.llms[i].maxOutputTokens = tokens
+                persist()
+            }
+        case .restarted(let reason):
+            // Was zu sehen war, gehört zu einem Zug, den es nicht mehr gibt.
+            state.liveThinking = ""
+            state.pendingText = ""
+            state.liveTools.removeAll()
+            state.note = reason
         case .finished:
-            break
+            state.note = nil
         case .failed(let message):
             state.errorMessage = message
         }

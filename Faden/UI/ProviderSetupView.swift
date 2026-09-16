@@ -356,6 +356,9 @@ struct ProviderSetupView: View {
         c.model = "apple-system"
         c.contextWindow = 4_000
         c.maxOutputTokens = 1_500
+        // Fest und nicht wachsend: Apples Modell auf dem Gerät hat ein kleines
+        // Fenster, das sich nicht dadurch vergrößert, dass man mehr verlangt.
+        c.maxOutputTokensIsCustom = true
         c.supportsVision = false
         model.settings.llms.append(c)
         if model.settings.activeLLMID == nil { model.settings.activeLLMID = c.id }
