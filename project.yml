@@ -37,6 +37,11 @@ targets:
         ENABLE_USER_SCRIPT_SANDBOXING: NO
         SWIFT_STRICT_CONCURRENCY: minimal
         TARGETED_DEVICE_FAMILY: "1"
+        # Ohne das gibt der Compiler keine .stringsdata aus, und
+        # `-exportLocalizations` findet nichts, was nicht schon im Katalog steht.
+        # Genau daran lag es, dass die Fehlertexte nach dem Umstellen auf
+        # `String(localized:)` nicht auftauchten.
+        SWIFT_EMIT_LOC_STRINGS: YES
         GENERATE_INFOPLIST_FILE: NO
         CODE_SIGN_ENTITLEMENTS: Faden/Faden.entitlements
       # Nur das Archiv signiert von Hand. Der Grund steht nicht in Xcode, also hier:

@@ -87,12 +87,21 @@ final class BackoffTests: XCTestCase {
 
     // MARK: Die Meldung
 
+    /// Geprüft wird die Form und nicht der Wortlaut.
+    ///
+    /// Seit die Fehlertexte durch den Stringkatalog gehen, hängt der Satz an der
+    /// Sprache des Geräts — auf einem englischen Simulator stand hier „throttling"
+    /// und der Test war rot, obwohl der Code stimmte. Was dieser Test wirklich
+    /// behauptet, ist auch nicht der Wortlaut: Ein 429 wird zu einer Zeile, die ein
+    /// Mensch liest, und nicht zu dem JSON, das der Anbieter geschickt hat.
     func testThrottlingSaysSoInsteadOfShowingJSON() throws {
         let text = try XCTUnwrap(
             LLMError.http(status: 429, body: "{\"error\":{\"message\":\"rate limit exceeded\"}}")
                 .errorDescription)
-        XCTAssertTrue(text.contains("drosselt"), text)
         XCTAssertFalse(text.contains("{"), "Kein rohes JSON in der Zeile.")
+        XCTAssertFalse(text.contains("rate limit exceeded"),
+                       "Der Rumpf der Antwort gehört nicht in die Meldung.")
+        XCTAssertTrue(text.contains("429"), "Der Status darf dastehen: \(text)")
 
         let other = try XCTUnwrap(LLMError.http(status: 404, body: "nope").errorDescription)
         XCTAssertTrue(other.contains("404"), "Alles andere bleibt beim rohen Befund.")

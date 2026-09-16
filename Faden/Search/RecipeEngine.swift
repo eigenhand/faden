@@ -33,14 +33,14 @@ enum SearchError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .noRecipe:          return "Kein Suchanbieter eingerichtet."
-        case .badURL:            return "Die URL des Suchanbieters ist ungültig."
+        case .noRecipe:          return String(localized: "Kein Suchanbieter eingerichtet.")
+        case .badURL:            return String(localized: "Die URL des Suchanbieters ist ungültig.")
         case .http(let s, let b):
             let snippet = b.count > 300 ? String(b.prefix(300)) + "…" : b
-            return "Der Anbieter antwortete mit HTTP \(s).\n\(snippet)"
-        case .transport(let m):  return "Verbindungsfehler: \(m)"
+            return String(localized: "Der Anbieter antwortete mit HTTP \(s).\n\(snippet)")
+        case .transport(let m):  return String(localized: "Verbindungsfehler: \(m)")
         case .unparsable(let s, _, _):
-            return "Der Anbieter antwortete mit HTTP \(s), aber die Ergebnisse standen nicht dort, wo erwartet."
+            return String(localized: "Der Anbieter antwortete mit HTTP \(s), aber die Ergebnisse standen nicht dort, wo erwartet.")
         }
     }
 }

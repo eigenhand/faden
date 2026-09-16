@@ -14,7 +14,7 @@ struct HistoryView: View {
         let q = search.trimmingCharacters(in: .whitespaces)
         guard !q.isEmpty else { return model.conversations }
         return model.conversations.filter {
-            $0.title.localizedCaseInsensitiveContains(q)
+            $0.displayTitle.localizedCaseInsensitiveContains(q)
                 || $0.preview.localizedCaseInsensitiveContains(q)
         }
     }
@@ -82,7 +82,7 @@ struct HistoryView: View {
                                 HairlineCard(padding: 14,
                                              fill: conversation.id == model.currentID ? EH.surfaceSunk : EH.surface) {
                                     VStack(alignment: .leading, spacing: 4) {
-                                        Text(conversation.title)
+                                        Text(conversation.displayTitle)
                                             .font(EH.body).foregroundStyle(EH.navy).lineLimit(1)
                                         HStack(spacing: 8) {
                                             Text(conversation.updatedAt,
@@ -105,7 +105,7 @@ struct HistoryView: View {
                                 // Files — whatever the share sheet offers. Nothing
                                 // passes through a server on the way.
                                 ShareLink(item: conversation,
-                                          preview: SharePreview(conversation.title)) {
+                                          preview: SharePreview(conversation.displayTitle)) {
                                     Label("Weitergeben", systemImage: "square.and.arrow.up")
                                 }
                                 Button(role: .destructive) { model.delete(conversation) } label: {

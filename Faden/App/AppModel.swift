@@ -356,15 +356,15 @@ final class AppModel {
             // Ein laufender Zug kann acht Werkzeugrunden lang dauern — bei einer
             // Antwort mit mehreren Quellen ist das der Normalfall, nicht die
             // Ausnahme. Das ist die Erklärung, die vorher fehlte.
-            errorMessage = "Die Antwort läuft noch. Stoppe sie, wenn du etwas anderes fragen willst."
+            errorMessage = String(localized: "Die Antwort läuft noch. Stoppe sie, wenn du etwas anderes fragen willst.")
             return false
         }
         guard let config = settings.activeLLM, config.isComplete else {
-            errorMessage = "Richte zuerst ein Modell ein: Endpoint, Key und Modellname."
+            errorMessage = String(localized: "Richte zuerst ein Modell ein: Endpoint, Key und Modellname.")
             return false
         }
         guard var conversation = current else {
-            errorMessage = "Keine Unterhaltung offen — öffne eine neue und versuche es nochmal."
+            errorMessage = String(localized: "Keine Unterhaltung offen — öffne eine neue und versuche es nochmal.")
             return false
         }
 
@@ -377,7 +377,7 @@ final class AppModel {
 
         if conversation.title == "Neue Unterhaltung" {
             conversation.title = trimmed.isEmpty
-                ? "Bild vom \(Date().formatted(date: .abbreviated, time: .shortened))"
+                ? String(localized: "Bild vom \(Date().formatted(date: .abbreviated, time: .shortened))")
                 : String(trimmed.prefix(48))
         }
         conversation.updatedAt = Date()
@@ -630,7 +630,7 @@ final class AppModel {
                     voiceError = why
                     return nil
                 }
-                voiceError = "Der eigene Erkennungsdienst antwortete nicht, erkannt hat es Apple. \(why)"
+                voiceError = String(localized: "Der eigene Erkennungsdienst antwortete nicht, erkannt hat es Apple. \(why)")
                 return rescued
             }
         }
@@ -747,8 +747,8 @@ final class AppModel {
                     // A missing voice service should not swallow the answer: say it
                     // with the phone's own voice and mention why.
                     await MainActor.run {
-                        self?.voiceError = "Sprachausgabe über den Endpoint schlug fehl, es spricht die Apple-Stimme. "
-                            + ((error as? LocalizedError)?.errorDescription ?? error.localizedDescription)
+                        let why = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+                        self?.voiceError = String(localized: "Sprachausgabe über den Endpoint schlug fehl, es spricht die Apple-Stimme. \(why)")
                         self?.player.speakLocally(spoken, config: config)
                     }
                 }
@@ -1002,8 +1002,8 @@ final class AppModel {
             } catch {
                 await MainActor.run {
                     state.lastFailedCompactionAt = snapshot.count
-                    self?.errorMessage = "Der Verlauf ließ sich nicht verdichten: "
-                        + ((error as? LocalizedError)?.errorDescription ?? error.localizedDescription)
+                    let why = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+                    self?.errorMessage = String(localized: "Der Verlauf ließ sich nicht verdichten: \(why)")
                 }
                 return
             }
@@ -1052,13 +1052,13 @@ final class AppModel {
                 result = try await compactor.compact(snapshot, keepingRecent: 4)
             } catch {
                 await MainActor.run {
-                    state.errorMessage = "Der Verlauf ließ sich nicht verdichten: "
-                        + ((error as? LocalizedError)?.errorDescription ?? error.localizedDescription)
+                    let why = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+                    state.errorMessage = String(localized: "Der Verlauf ließ sich nicht verdichten: \(why)")
                 }
                 return
             }
             guard let result else {
-                await MainActor.run { state.errorMessage = "Es gab noch nichts zu verdichten." }
+                await MainActor.run { state.errorMessage = String(localized: "Es gab noch nichts zu verdichten.") }
                 return
             }
             await MainActor.run {

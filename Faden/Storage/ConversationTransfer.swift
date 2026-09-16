@@ -23,9 +23,12 @@ enum ConversationTransfer {
         var errorDescription: String? {
             switch self {
             case .tooLarge(let bytes):
+                // `String(localized:)` mit Interpolation statt `String(format:)`:
+                // Der Katalog sieht nur ganze Schlüssel, und ein Formatstring, der
+                // aus zwei Stücken entsteht, ist keiner.
                 let mb = Double(bytes) / 1_048_576
-                return String(format: "Die Datei ist %.1f MB groß. Übernommen werden "
-                              + "höchstens %d MB.", mb, ImportGuard.maxBytes / 1_048_576)
+                let cap = ImportGuard.maxBytes / 1_048_576
+                return String(localized: "Die Datei ist \(mb, specifier: "%.1f") MB groß. Übernommen werden höchstens \(cap) MB.")
             }
         }
     }

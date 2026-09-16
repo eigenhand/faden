@@ -90,7 +90,18 @@ struct Message: Codable, Identifiable, Equatable, Hashable, Sendable {
 
 struct Conversation: Codable, Identifiable, Equatable, Sendable {
     var id: UUID = UUID()
+    /// Der gespeicherte Titel. Die Vorgabe bleibt **deutsch**, auch wenn die App
+    /// englisch läuft: Sie steht in der Datei auf der Platte, `AppModel` vergleicht
+    /// gegen sie, um zu erkennen, dass noch niemand einen Titel vergeben hat, und
+    /// eine übersetzte Vorgabe hiesse, dass dieser Vergleich nach einem
+    /// Sprachwechsel nicht mehr zutrifft. Angezeigt wird `displayTitle`.
     var title: String = "Neue Unterhaltung"
+
+    /// Was in der Liste steht. Die unbenannte Unterhaltung heisst in der Sprache
+    /// des Nutzers; alles andere ist sein eigener Text und bleibt, wie er ist.
+    var displayTitle: String {
+        title == "Neue Unterhaltung" ? String(localized: "Neue Unterhaltung") : title
+    }
     var messages: [Message] = []
     var createdAt: Date = Date()
     var updatedAt: Date = Date()

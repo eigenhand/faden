@@ -26,17 +26,16 @@ enum LLMError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .notConfigured:          return "Kein Modell konfiguriert. Endpoint, Key und Modellname fehlen."
-        case .missingKey:             return "Kein API-Key im Schlüsselbund hinterlegt."
+        case .notConfigured:          return String(localized: "Kein Modell konfiguriert. Endpoint, Key und Modellname fehlen.")
+        case .missingKey:             return String(localized: "Kein API-Key im Schlüsselbund hinterlegt.")
         case .http(let s, _) where Backoff.isBusy(s):
             // Nach den Wartepausen. „HTTP 429" plus JSON wäre richtig und nutzlos.
-            return "Der Anbieter drosselt gerade (HTTP \(s)) — auch nach zwei "
-                + "Wartepausen noch."
+            return String(localized: "Der Anbieter drosselt gerade (HTTP \(s)) — auch nach zwei Wartepausen noch.")
         case .http(let s, let b):
             let snippet = b.count > 400 ? String(b.prefix(400)) + "…" : b
-            return "HTTP \(s)\n\(snippet)"
-        case .transport(let m):       return "Verbindungsfehler: \(m)"
-        case .decoding(let m):        return "Antwort nicht lesbar: \(m)"
+            return String(localized: "HTTP \(s)\n\(snippet)")
+        case .transport(let m):       return String(localized: "Verbindungsfehler: \(m)")
+        case .decoding(let m):        return String(localized: "Antwort nicht lesbar: \(m)")
         }
     }
 }
@@ -212,9 +211,8 @@ extension LLMProvider {
             // A reasoning model that spent its whole allowance thinking looks like a
             // silent success otherwise, which is worse than an error.
             if sawThinking || stopReason == "length" || stopReason == "max_tokens" {
-                throw LLMError.decoding(
-                    "Das Modell hat nur nachgedacht und keinen Text geliefert. "
-                    + "Eine höhere maximale Antwortlänge hilft.")
+                throw LLMError.decoding(String(
+                    localized: "Das Modell hat nur nachgedacht und keinen Text geliefert. Eine höhere maximale Antwortlänge hilft."))
             }
             throw LLMError.decoding("Das Modell hat keinen Text geliefert.")
         }

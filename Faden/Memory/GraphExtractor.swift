@@ -96,9 +96,9 @@ enum MemoryError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .notConfigured(let what): return "\(what) ist nicht eingerichtet."
-        case .extraction(let m):       return "Wissensgraph nicht ableitbar: \(m)"
-        case .embedding(let m):        return "Einbettung fehlgeschlagen: \(m)"
+        case .notConfigured(let what): return String(localized: "\(what) ist nicht eingerichtet.")
+        case .extraction(let m):       return String(localized: "Wissensgraph nicht ableitbar: \(m)")
+        case .embedding(let m):        return String(localized: "Einbettung fehlgeschlagen: \(m)")
         }
     }
 }

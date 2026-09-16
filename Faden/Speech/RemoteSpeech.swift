@@ -8,12 +8,12 @@ enum SpeechError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .notConfigured(let what): return "\(what) ist nicht eingerichtet."
+        case .notConfigured(let what): return String(localized: "\(what) ist nicht eingerichtet.")
         case .http(let s, let b):
             let snippet = b.count > 200 ? String(b.prefix(200)) + "…" : b
-            return "HTTP \(s)\n\(snippet)"
-        case .transport(let m):        return "Verbindungsfehler: \(m)"
-        case .empty:                   return "Die Antwort war leer."
+            return String(localized: "HTTP \(s)\n\(snippet)")
+        case .transport(let m):        return String(localized: "Verbindungsfehler: \(m)")
+        case .empty:                   return String(localized: "Die Antwort war leer.")
         }
     }
 }

@@ -32,8 +32,11 @@ final class LocalizationTests: XCTestCase {
     /// Ein Platzhalter muss die Uebersetzung ueberleben — faellt er weg, fehlt zur
     /// Laufzeit die Zahl, und faellt ein zweiter hinein, stuerzt das Formatieren ab.
     func testPlaceholdersSurviveTranslation() throws {
-        XCTAssertEqual(try text("%@ Treffer", in: "en"), "%@ results")
-        XCTAssertEqual(try text("%@ · %@ Dimensionen", in: "en"), "%@ · %@ dimensions")
+        // `%lld` und nicht `%@`: Der Schlüssel entsteht aus dem Format, das die
+        // Interpolation erzeugt, und eine Zahl wird zu `%lld`. Von Hand mit `%@`
+        // eingetragene Schlüssel sahen richtig aus und trafen nie.
+        XCTAssertEqual(try text("%lld Treffer", in: "en"), "%lld results")
+        XCTAssertEqual(try text("%@ · %lld Dimensionen", in: "en"), "%@ · %lld dimensions")
     }
 
     /// Ein unbekannter Schluessel gibt sich selbst zurueck. Das ist die Zusicherung,
