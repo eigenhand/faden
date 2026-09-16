@@ -10,6 +10,18 @@ struct FadenApp: App {
                 .environment(model)
                 .task { await model.load() }
                 .tint(EH.navy)
+                // Zwei Zeilen, und beide werden gebraucht.
+                //
+                // `apply` leitet das Nachschlagen auf die gewaehlte Sprache um — das
+                // ist die Umstellung selbst. Die Locale darunter macht nicht die
+                // Uebersetzung, sondern zweierlei anderes: Zahlen und Daten sehen
+                // aus wie in dieser Sprache, und ihre Aenderung ist der Anstoss, auf
+                // den SwiftUI die Ansichten neu baut. Ohne sie bliebe die alte
+                // Sprache stehen, bis der Nutzer irgendwohin tippt.
+                .onChange(of: model.settings.language, initial: true) { _, language in
+                    AppLanguage.apply(language)
+                }
+                .environment(\.locale, model.settings.language.locale ?? .autoupdatingCurrent)
         }
     }
 }

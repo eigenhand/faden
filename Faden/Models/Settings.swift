@@ -350,6 +350,7 @@ struct AppSettings: Codable, Equatable {
     var compactionThreshold: Double = 0.75
     var autoCompactEnabled: Bool = true
     var showThinking: Bool = true
+    var language: AppLanguage = .system
 
     init() {}
 
@@ -368,6 +369,7 @@ struct AppSettings: Codable, Equatable {
         compactionThreshold = try c.decodeIfPresent(Double.self, forKey: .compactionThreshold) ?? d.compactionThreshold
         autoCompactEnabled  = try c.decodeIfPresent(Bool.self, forKey: .autoCompactEnabled) ?? d.autoCompactEnabled
         showThinking        = try c.decodeIfPresent(Bool.self, forKey: .showThinking) ?? d.showThinking
+        language            = try c.decodeIfPresent(AppLanguage.self, forKey: .language) ?? d.language
     }
 
     var activeLLM: LLMConfig? {

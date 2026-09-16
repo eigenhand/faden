@@ -1,0 +1,57 @@
+{
+  "sourceLanguage": "de",
+  "strings": {
+    "NSCameraUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zum Fotografieren einer Vorlage, die du dem Modell zeigen möchtest. Das Bild geht nur an den Endpoint, den du eingerichtet hast."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To photograph something you want to show the model. The picture goes only to the endpoint you set up."
+          }
+        }
+      }
+    },
+    "NSMicrophoneUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zum Diktieren und für den Sprachmodus nimmt Faden auf, während du die Taste hältst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faden records while you hold the button, for dictation and for voice mode."
+          }
+        }
+      }
+    },
+    "NSSpeechRecognitionUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Für das Diktat wandelt Faden deine Aufnahme in Text um — mit Apples Spracherkennung auf dem Gerät, sofern verfügbar."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For dictation Faden turns your recording into text — with Apple's speech recognition on the device where available."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

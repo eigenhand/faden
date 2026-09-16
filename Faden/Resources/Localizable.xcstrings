@@ -1,0 +1,903 @@
+{
+  "sourceLanguage": "de",
+  "strings": {
+    "%@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        }
+      }
+    },
+    "%@ %%": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ %%"
+          }
+        }
+      }
+    },
+    "%@ Nachrichten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ messages"
+          }
+        }
+      }
+    },
+    "%@ Treffer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ results"
+          }
+        }
+      }
+    },
+    "%@ warten auf Einbettung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ waiting to be embedded"
+          }
+        }
+      }
+    },
+    "%@ · %@ Dimensionen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ · %2$@ Dimensionen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %@ dimensions"
+          }
+        }
+      }
+    },
+    "%@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@."
+          }
+        }
+      }
+    },
+    "%@× verdichtet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "compacted %@×"
+          }
+        }
+      }
+    },
+    "Alle Vektoren werden verworfen und über deinen Endpoint neu geholt. Das kostet %@ Einbettungen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every vector is discarded and fetched again through your endpoint. That costs %@ embeddings."
+          }
+        }
+      }
+    },
+    "Alles Gemerkte steht eine Ebene zurück unter „Gespeicherte Gedanken“ — dort einzeln nachlesen und löschen. Der Graph liegt als Datei auf diesem Gerät.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everything remembered sits one level back under “Saved thoughts” — read or delete them one by one there. The graph is a file on this device."
+          }
+        }
+      }
+    },
+    "Anbieter entfernen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove provider"
+          }
+        }
+      }
+    },
+    "Anbieter hinzufügen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add provider"
+          }
+        }
+      }
+    },
+    "Antworten vorlesen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read answers aloud"
+          }
+        }
+      }
+    },
+    "Antworten werden nur geschrieben.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Answers are written, not spoken."
+          }
+        }
+      }
+    },
+    "Apple lädt das Modell im Hintergrund. Einen Fortschritt meldet das System dabei nicht — du kannst die App in der Zwischenzeit benutzen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple downloads the model in the background. The system reports no progress while it does — you can keep using the app meanwhile."
+          }
+        }
+      }
+    },
+    "Auf dem Gerät": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On device"
+          }
+        }
+      }
+    },
+    "Aus anderer Herkunft: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From a different source: %@"
+          }
+        }
+      }
+    },
+    "Automatisch verdichten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compact automatically"
+          }
+        }
+      }
+    },
+    "Beenden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End"
+          }
+        }
+      }
+    },
+    "Bilder anhängen erlauben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow image attachments"
+          }
+        }
+      }
+    },
+    "Dafür verlässt kein Wort dieser Unterhaltung das Telefon.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not a word of this conversation leaves the phone for that."
+          }
+        }
+      }
+    },
+    "Dafür wird ein eingerichtetes Modell gebraucht. Trage zuerst unter Einstellungen › Modell einen Endpoint ein.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That needs a model that is set up. Enter an endpoint first under Settings › Model."
+          }
+        }
+      }
+    },
+    "Darauf beziehen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refer to this"
+          }
+        }
+      }
+    },
+    "Dein Endpoint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your endpoint"
+          }
+        }
+      }
+    },
+    "Der Endpoint spricht dasselbe Format wie dein Modell — oft derselbe Anbieter.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The endpoint speaks the same format as your model — often the same provider."
+          }
+        }
+      }
+    },
+    "Der Modellname lässt sich auch von Hand eintragen:": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The model name can also be typed by hand:"
+          }
+        }
+      }
+    },
+    "Der Modellname lässt sich weiterhin von Hand eintragen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The model name can still be typed by hand."
+          }
+        }
+      }
+    },
+    "Der Parser ist reine Konfiguration und läuft ab jetzt lokal auf diesem iPhone — für Suchen wird kein Modell mehr gebraucht.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The parser is pure configuration and runs locally on this iPhone from now on — searching no longer needs a model."
+          }
+        }
+      }
+    },
+    "Der Parser wurde von %@ aus einer echten Antwort dieses Endpoints abgeleitet und läuft seitdem lokal auf diesem Gerät.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ derived the parser from a real answer of this endpoint, and it has run locally on this device ever since."
+          }
+        }
+      }
+    },
+    "Der Verbindungstest probiert es selbst aus und setzt den Schalter entsprechend.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The connection test tries it out itself and sets the switch accordingly."
+          }
+        }
+      }
+    },
+    "Der gesamte Wissensgraph wird gelöscht. Die Unterhaltungen selbst bleiben.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The entire knowledge graph is deleted. The conversations themselves stay."
+          }
+        }
+      }
+    },
+    "Die Antwort darauf und alles danach wird verworfen und neu beantwortet.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The answer to this and everything after it is discarded and answered again."
+          }
+        }
+      }
+    },
+    "Die Fakten sind gespeichert, nur noch nicht durchsuchbar. Faden versucht es im Minutentakt weiter.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The facts are saved, only not searchable yet. Faden keeps trying every minute."
+          }
+        }
+      }
+    },
+    "Die Felder lassen sich unter „Details“ im Anbieter auch von Hand eintragen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The fields can also be typed by hand under “Details” in the provider."
+          }
+        }
+      }
+    },
+    "Die Stimme gehört zum festen Teil der Anweisungen und ändert sich nur, wenn du sie änderst — sie kostet daher keine zusätzlichen Token pro Frage.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The voice belongs to the fixed part of the instructions and changes only when you change it — so it costs no extra tokens per question."
+          }
+        }
+      }
+    },
+    "Die Vektoren werden entfernt, die Fakten bleiben.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The vectors are removed, the facts stay."
+          }
+        }
+      }
+    },
+    "Die im iPhone eingebaute Stimme. Braucht keinen Dienst und kein Netz.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The voice built into the iPhone. Needs no service and no network."
+          }
+        }
+      }
+    },
+    "Diese Vektoren zählen nicht mit — sie stammen aus einem anderen Raum. Beim nächsten Nachholen werden sie ersetzt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These vectors do not count — they come from a different space. They will be replaced the next time the backlog is filled."
+          }
+        }
+      }
+    },
+    "Dieses Gerät bringt das Modell nicht mit.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This device does not carry the model."
+          }
+        }
+      }
+    },
+    "Eigenes Modell für Bilder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Separate model for images"
+          }
+        }
+      }
+    },
+    "Einbettung testen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Test embedding"
+          }
+        }
+      }
+    },
+    "Einstellungen": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        }
+      }
+    },
+    "Erweitertes Denken anfordern": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Request extended thinking"
+          }
+        }
+      }
+    },
+    "Faden baut aus euren Gesprächen einen Wissensgraphen: Dinge und ihre Beziehungen, statt loser Notizen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faden builds a knowledge graph out of your conversations: things and their relationships, rather than loose notes."
+          }
+        }
+      }
+    },
+    "Faden bringt kein Modell und keinen Suchanbieter mit. Trage deinen Endpoint, deinen Key und den Modellnamen ein — alles bleibt auf diesem Gerät.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faden brings no model and no search provider with it. Enter your endpoint, your key and the model name — all of it stays on this device."
+          }
+        }
+      }
+    },
+    "Fasst den älteren Verlauf im Hintergrund zusammen, sobald die Schwelle erreicht ist.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Summarises the older history in the background once the threshold is reached."
+          }
+        }
+      }
+    },
+    "Für das Vorlesen im Sprachmodus muss oben eine Stimme gewählt sein.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading aloud in voice mode needs a voice chosen above."
+          }
+        }
+      }
+    },
+    "Für das Wiederfinden braucht es Vektoren. Sie entstehen bei deinem Anbieter.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finding things again takes vectors. They are made at your provider."
+          }
+        }
+      }
+    },
+    "Gedankengang anzeigen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show reasoning"
+          }
+        }
+      }
+    },
+    "Gedächtnis führen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep a memory"
+          }
+        }
+      }
+    },
+    "Gelöscht wird nur der Index, nicht das Gemerkte. Die Fakten bleiben; bis ein neuer Index steht, findet die Ähnlichkeitssuche sie nicht. Solange das Gedächtnis an ist und ein Endpoint steht, baut Faden ihn von selbst wieder auf.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only the index is deleted, not what was remembered. The facts stay; until a new index exists, the similarity search will not find them. As long as the memory is on and an endpoint is set, Faden rebuilds it by itself."
+          }
+        }
+      }
+    },
+    "Gilt für die Oberfläche. Systemdialoge — etwa die Frage nach Kamera oder Mikrofon — folgen weiterhin der Spracheinstellung des Geräts.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applies to the interface. System dialogs — the camera or microphone prompt, for instance — still follow the device's language setting."
+          }
+        }
+      }
+    },
+    "Header": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Headers"
+          }
+        }
+      }
+    },
+    "Keys liegen im Schlüsselbund dieses Geräts. Der Verlauf bleibt lokal. Faden spricht ausschließlich mit den Endpoints, die du hier einträgst.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keys live in this device's keychain. The history stays local. Faden speaks only to the endpoints you enter here."
+          }
+        }
+      }
+    },
+    "Liest jede fertige Antwort automatisch vor.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reads every finished answer aloud automatically."
+          }
+        }
+      }
+    },
+    "Mindestähnlichkeit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minimum similarity"
+          }
+        }
+      }
+    },
+    "Mit dieser Anfrage klopft Faden den Endpoint ab, bis eine gültige Antwort zurückkommt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "With this request Faden probes the endpoint until a valid answer comes back."
+          }
+        }
+      }
+    },
+    "Modell entfernen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove model"
+          }
+        }
+      }
+    },
+    "Modell liegt auf diesem Gerät.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The model is on this device."
+          }
+        }
+      }
+    },
+    "Nach jedem Austausch wird still im Hintergrund abgeleitet, was Bestand hat.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After every exchange, what holds up is derived quietly in the background."
+          }
+        }
+      }
+    },
+    "Nichts gefunden.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing found."
+          }
+        }
+      }
+    },
+    "Niedriger heißt: mehr wird erinnert, auch Entfernteres.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lower means: more is recalled, including things further afield."
+          }
+        }
+      }
+    },
+    "Noch nichts eingebettet.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing embedded yet."
+          }
+        }
+      }
+    },
+    "Oberfläche": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interface"
+          }
+        }
+      }
+    },
+    "Ohne": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None"
+          }
+        }
+      }
+    },
+    "Parser steht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parser ready"
+          }
+        }
+      }
+    },
+    "Pause bis zum Senden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pause before sending"
+          }
+        }
+      }
+    },
+    "Platzhalter: {{query}}, {{key}}, {{count}}": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Placeholders: {{query}}, {{key}}, {{count}}"
+          }
+        }
+      }
+    },
+    "Probe hören": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hear a sample"
+          }
+        }
+      }
+    },
+    "Prompt-Caching nutzen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use prompt caching"
+          }
+        }
+      }
+    },
+    "Query": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Query"
+          }
+        }
+      }
+    },
+    "Schwelle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Threshold"
+          }
+        }
+      }
+    },
+    "Sprache": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Language"
+          }
+        }
+      }
+    },
+    "Sprache des Geräts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device language"
+          }
+        }
+      }
+    },
+    "Stimme testen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Test voice"
+          }
+        }
+      }
+    },
+    "Suche erlauben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow search"
+          }
+        }
+      }
+    },
+    "Suche testen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Test search"
+          }
+        }
+      }
+    },
+    "Tempo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speed"
+          }
+        }
+      }
+    },
+    "Von selbst merken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remember on its own"
+          }
+        }
+      }
+    },
+    "Wie sich der Assistent nennt, wenn er von sich spricht.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What the assistant calls itself when it speaks of itself."
+          }
+        }
+      }
+    },
+    "Wird einmal im Schlüsselbund abgelegt und von allen Modellen dieses Anbieters genutzt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stored once in the keychain and used by every model of this provider."
+          }
+        }
+      }
+    },
+    "Wird im Schlüsselbund abgelegt, nicht in den Einstellungen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stored in the keychain, not in the settings."
+          }
+        }
+      }
+    },
+    "Zum Diktieren hältst du im Chat die Mikrofontaste gedrückt und lässt sie los, wenn du fertig bist.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To dictate, hold the microphone button in the chat and let go when you are done."
+          }
+        }
+      }
+    },
+    "eigenhand.dev": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "eigenhand.dev"
+          }
+        }
+      }
+    },
+    "läuft …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "running …"
+          }
+        }
+      }
+    },
+    "vom Endpoint laden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "load from the endpoint"
+          }
+        }
+      }
+    },
+    "·": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "·"
+          }
+        }
+      }
+    },
+    "· %@× erwähnt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "· mentioned %@×"
+          }
+        }
+      }
+    },
+    "—": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "—"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

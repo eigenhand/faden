@@ -228,6 +228,34 @@ struct SettingsView: View {
                             .onChange(of: model.settings.showThinking) { _, _ in model.persist() }
                         }
 
+                        // Steht unten, nicht oben: wer die App zum ersten Mal
+                        // oeffnet, muss einen Anbieter einrichten, sonst tut sie
+                        // nichts. Die Sprache sucht man, wenn man sie sucht.
+                        section("Oberfläche") {
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack {
+                                    Text("Sprache").font(EH.body).foregroundStyle(EH.navy)
+                                    Spacer()
+                                    Picker("Sprache", selection: $model.settings.language) {
+                                        ForEach(AppLanguage.allCases) { language in
+                                            Text(language.label).tag(language)
+                                        }
+                                    }
+                                    .labelsHidden()
+                                    .pickerStyle(.menu)
+                                    .tint(EH.navy)
+                                    // Eine Kennung und kein Text: Der Beschriftung
+                                    // dieses Wählers steht seine eigene Auswahl an,
+                                    // und ein Test, der sie sucht, sucht nach dem
+                                    // Wechsel etwas anderes als vorher.
+                                    .accessibilityIdentifier("language-picker")
+                                    .onChange(of: model.settings.language) { _, _ in model.persist() }
+                                }
+                                Text("Gilt für die Oberfläche. Systemdialoge — etwa die Frage nach Kamera oder Mikrofon — folgen weiterhin der Spracheinstellung des Geräts.")
+                                    .font(.eh(12, .caption)).foregroundStyle(EH.muted)
+                            }
+                        }
+
                         VStack(alignment: .leading, spacing: 6) {
                             BrandRule(width: 40)
                             Text("Keys liegen im Schlüsselbund dieses Geräts. Der Verlauf bleibt lokal. Faden spricht ausschließlich mit den Endpoints, die du hier einträgst.")

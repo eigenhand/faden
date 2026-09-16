@@ -52,6 +52,12 @@ jobs:
       # ohne Angabe bricht xcodebuild mit einem irreführenden „My Mac"-Fehler ab,
       # weil der Gerätename mehrdeutig ist. Eine feste Version wäre dasselbe Problem
       # in ein paar Monaten, nur andersherum.
+      # Laeuft vor den Tests, weil er in einer Sekunde sagt, was der Testlauf
+      # nicht sieht: Xcode traegt neue Strings beim Bauen von selbst in den
+      # Katalog ein — ohne Uebersetzung, und ohne dass irgendetwas rot wird.
+      - name: Uebersetzungen vollstaendig
+        run: ./check-localizations.py
+
       - name: Unittests
         run: |
           xcodebuild test \

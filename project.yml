@@ -1,6 +1,11 @@
 name: Faden
 options:
   bundleIdPrefix: dev.eigenhand
+  # Die Quellsprache ist Deutsch: die Schlüssel in den Stringkatalogen sind die
+  # deutschen Sätze selbst. Das spart ein künstliches Schlüsselschema und hält
+  # den Quelltext lesbar — der Preis ist, dass eine Änderung am deutschen Satz
+  # den Schlüssel ändert und die Übersetzung neu zugeordnet werden muss.
+  developmentLanguage: de
   deploymentTarget:
     iOS: "17.0"
   createIntermediateGroups: true
