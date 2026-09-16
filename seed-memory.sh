@@ -1,8 +1,8 @@
 #!/bin/bash
-# Legt einen Gedächtnis-Speicher mit absichtlich gemischter Herkunft an: Vektoren
-# vom eingestellten Modell, aus einem anderen Modell, und welche ganz ohne Stempel
-# aus der Zeit vor der Kennzeichnung. Damit prüft der Test die Einstufung an dem
-# einen Fall, der im Alltag zählt — jemand wechselt das Einbettungsmodell.
+# Creates a memory store with deliberately mixed provenance: vectors from the
+# configured model, from a different model, and some with no stamp at all from
+# before the marking existed. That lets the test check the classification against
+# the one case that matters day to day — somebody changes the embedding model.
 set -euo pipefail
 DEV="${1:?Geraete-UDID fehlt}"
 CONT=$(xcrun simctl get_app_container "$DEV" dev.eigenhand.perbu data)
@@ -34,8 +34,8 @@ edges = [{"id": str(uuid.uuid4()), "sourceID": nodes[0]["id"], "targetID": nodes
           "embedding": [0.1] * 8, "embeddingStamp": {"model": QWEN, "dimension": 8}}]
 (d / "memory.json").write_text(json.dumps({"nodes": nodes, "edges": edges}, indent=2))
 
-# Den Gedächtnis-Block in die vorhandenen Einstellungen hängen, statt sie zu
-# ersetzen — die Modell-Fixture des anderen Skripts muss stehen bleiben.
+# Attach the memory block to the existing settings rather than replacing them —
+# the other script's model fixture has to stay where it is.
 sp = d / "settings.json"
 settings = json.loads(sp.read_text()) if sp.exists() else {}
 settings["memory"] = {"enabled": True, "embeddingBaseURL": "https://api.tensorx.ai",

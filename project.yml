@@ -1,10 +1,10 @@
 name: Faden
 options:
   bundleIdPrefix: dev.eigenhand
-  # Die Quellsprache ist Deutsch: die Schlüssel in den Stringkatalogen sind die
-  # deutschen Sätze selbst. Das spart ein künstliches Schlüsselschema und hält
-  # den Quelltext lesbar — der Preis ist, dass eine Änderung am deutschen Satz
-  # den Schlüssel ändert und die Übersetzung neu zugeordnet werden muss.
+  # The source language is German: the keys in the string catalogues are the
+  # German sentences themselves. That saves an artificial key scheme and keeps
+  # the source readable — the price is that a change to the German sentence
+  # changes the key and the translation has to be reassigned.
   developmentLanguage: de
   deploymentTarget:
     iOS: "17.0"
@@ -24,12 +24,12 @@ targets:
       - path: Faden
     settings:
       base:
-        # Bleibt „perbu“, und das ist kein Rest vom Umbenennen. Die Bundle-ID
-        # ist die Identität der App in App Store Connect und auf jedem Gerät, auf
-        # dem sie liegt: eine neue wäre eine neue App — neues TestFlight, neu
-        # einzuladende Tester, und bestehende Installationen bekämen ein zweites
-        # Icon statt eines Updates. Daran hängt zudem die Schlüsselbundgruppe.
-        # Eine Kennung ist kein Name; zu sehen bekommt sie niemand.
+        # Stays "perbu", and that is not a leftover from the rename. The bundle ID
+        # is the app's identity in App Store Connect and on every device it sits
+        # on: a new one would be a new app — new TestFlight, testers to invite
+        # again, and existing installations would get a second icon instead of an
+        # update. The keychain group hangs on it too. An identifier is not a name;
+        # nobody ever gets to see it.
         PRODUCT_BUNDLE_IDENTIFIER: dev.eigenhand.perbu
         PRODUCT_NAME: Faden
         INFOPLIST_FILE: Faden/Info.plist
@@ -37,19 +37,19 @@ targets:
         ENABLE_USER_SCRIPT_SANDBOXING: NO
         SWIFT_STRICT_CONCURRENCY: minimal
         TARGETED_DEVICE_FAMILY: "1"
-        # Ohne das gibt der Compiler keine .stringsdata aus, und
-        # `-exportLocalizations` findet nichts, was nicht schon im Katalog steht.
-        # Genau daran lag es, dass die Fehlertexte nach dem Umstellen auf
-        # `String(localized:)` nicht auftauchten.
+        # Without this the compiler emits no .stringsdata, and
+        # `-exportLocalizations` finds nothing that is not already in the
+        # catalogue. That is exactly why the error texts did not turn up after the
+        # move to `String(localized:)`.
         SWIFT_EMIT_LOC_STRINGS: YES
         GENERATE_INFOPLIST_FILE: NO
         CODE_SIGN_ENTITLEMENTS: Faden/Faden.entitlements
-      # Nur das Archiv signiert von Hand. Der Grund steht nicht in Xcode, also hier:
-      # auf diesem Rechner ist kein Apple-Konto in Xcode hinterlegt, weshalb die
-      # automatische Signierung kein Profil erneuern kann. Seit die App Group in den
-      # Berechtigungen steht, reicht das alte zwischengespeicherte Profil nicht mehr.
-      # Das benannte Profil wurde über die App-Store-Connect-API ausgestellt und liegt
-      # lokal. Debug bleibt automatisch, damit Simulator und Tests unberührt laufen.
+      # Only the archive is signed manually. The reason is not written down in Xcode,
+      # so it stands here: no Apple account is registered in Xcode on this machine,
+      # which is why automatic signing cannot renew a profile. Since the App Group
+      # went into the entitlements, the old cached profile is no longer enough. The
+      # named profile was issued through the App Store Connect API and sits locally.
+      # Debug stays automatic so that the simulator and the tests run untouched.
       configs:
         Release:
           CODE_SIGN_STYLE: Manual
@@ -57,10 +57,9 @@ targets:
           PROVISIONING_PROFILE_SPECIFIER: "Faden App Store (API)"
   # Fadens erste Unittests.
   #
-  # Bisher gab es nur ein UI-Testziel, und das ist der Grund, warum eine Entscheidung
-  # wie „bei einer Drosselung sofort auf das langsamere Modell ausweichen" jahrelang
-  # unbemerkt danebenliegen konnte: sie stand nirgends geschrieben, wo sie jemand
-  # nachlesen musste.
+  # There used to be only a UI test target, and that is why a decision like "on a
+  # throttle, fall back to the slower model at once" could sit there wrong for years
+  # unnoticed: it was written down nowhere that anybody had to read.
   FadenTests:
     type: bundle.unit-test
     platform: iOS

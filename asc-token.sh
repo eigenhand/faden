@@ -1,6 +1,6 @@
 #!/bin/bash
-# Relativ zur eigenen Lage und nicht zu einem Pfad auf einem bestimmten Rechner:
-# Das Skript wird aus assign-build.sh und release.sh heraus aufgerufen, und ein
+# Relative to its own location and not to a path on one particular machine: the
+# script gets called from assign-build.sh and release.sh, and a
 # geklontes Repo liegt woanders.
 cd "$(dirname "${BASH_SOURCE[0]}")"
 . ./.release.env

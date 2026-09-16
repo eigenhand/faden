@@ -41,9 +41,9 @@ msgs = [
                "```swift\nfunc harvest(_ json: JSONValue) -> [SearchResult] {\n"
                "    additionalResultPaths.flatMap { collect(at: $0, in: json) }\n}\n```\n\n"
                "Eine der drei Suchen lief in ein Ratenlimit.")]},
- # Zweiter Zug, bewusst hinter dem ersten: eine Nutzernachricht mit Text beginnt
- # einen neuen Zug, und mitten hineingesetzt schneidet sie der ersten Antwort ihre
- # Werkzeugergebnisse ab — samt Quellen. Die lange Frage prueft das Aufklappen.
+ # Second turn, deliberately after the first: a user message with text begins a new
+ # turn, and placed in the middle it cuts the first answer off from its tool results
+ # — sources included. The long question exercises the expanding.
  {"id": str(uuid.uuid4()), "role": "user", "createdAt": now % 4, "tokens": 120,
   "blocks": [T("Kannst du mir das **kurz einordnen**? Hier ist, was ich gefunden habe:\n"
                "- **Sprachmodus 6**: seit einem Jahr stabil, die Umstellung bleibt Arbeit.\n"
@@ -55,8 +55,8 @@ msgs = [
                "Aufgaben nicht gleichzeitig auf denselben Zustand schreiben.")]},
 ]
 import datetime
-# Auf jetzt gestempelt, damit der Start die Unterhaltung wiederherstellt statt einen
-# neuen Chat zu oeffnen — sonst haengt das Testergebnis an der Uhrzeit des Laufs.
+# Stamped to now, so that launching restores the conversation instead of opening a
+# new chat — otherwise the test result hangs on the time of day the run happens.
 fresh = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 conv = {"id": str(uuid.uuid4()), "title": "Swift 6 Strict Concurrency", "messages": msgs,
         "createdAt": now % 0, "updatedAt": fresh, "lastReportedInputTokens": 28400,
@@ -71,4 +71,4 @@ llm = str(uuid.uuid4())
     "activeLLMID": llm, "recipes": [], "searchEnabled": True, "showThinking": True},
     indent=2))
 PY
-echo "Testdaten in $DIR"
+echo "Test data in $DIR"

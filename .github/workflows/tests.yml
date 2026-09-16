@@ -1,22 +1,21 @@
 name: Tests
 
-# Warum es das gibt: 50 Unittests, die bisher nur lief, wer daran dachte. Ein Test,
-# den niemand automatisch ausführt, ist eine Behauptung über die Vergangenheit.
+# Why this exists: 50 unit tests that until now only ran for whoever remembered them.
+# A test nobody runs automatically is an assertion about the past.
 #
-# Warum nur die Unittests und nicht die UI-Tests: Letztere brauchen einen Zustand auf
-# dem Gerät — eine Ablage mit oder ohne Anbieter, eine eingespielte Unterhaltung —,
-# und sie überspringen sich selbst, wenn er fehlt. Auf einem frischen Läufer wären
-# das zwölf Übersprungene und drei Minuten Rechenzeit für nichts. Sie bleiben, wo sie
-# hingehören: von Hand, vor einem Release.
+# Why only the unit tests and not the UI tests: the latter need state on the device —
+# a store with or without a provider, a seeded conversation — and they skip themselves
+# when it is missing. On a fresh runner that would be twelve skips and three minutes
+# of compute for nothing. They stay where they belong: by hand, before a release.
 #
-# macOS-Minuten zählen bei privaten Repos zehnfach. Deshalb keine Läufe für
-# Änderungen, die den Code nicht anfassen, und ein abgebrochener Vorlauf, sobald ein
+# macOS minutes count tenfold on private repos. Hence no runs for changes that do not
+# touch the code, and an aborted earlier run as soon as a
 # neuer Commit kommt.
 #
-# Das Info.plist stand einmal in dieser Liste und gehört nicht hinein. Es sieht aus
-# wie Konfiguration, ist aber Verhalten: Dort stand `UIUserInterfaceStyle = Light`
-# und hat die gesamte dunkle Farbpalette wirkungslos gemacht — eine Änderung, die
-# kein Test der Welt bemerkt hätte, wenn kein Test gelaufen wäre.
+# The Info.plist once stood in this list and does not belong in it. It looks like
+# configuration but is behaviour: `UIUserInterfaceStyle = Light` stood in there and
+# made the entire dark palette inert — a change no test in the world would have
+# caught if no test had run.
 
 on:
   push:
@@ -39,9 +38,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      # Steht im Protokoll, damit ein Fehlschlag, der an der Werkzeugkette liegt,
-      # nicht wie einer im Code aussieht. Das Abbild bringt mehrere Xcodes mit; die
-      # Voreinstellung ist 26.6, und genau damit ist dieser Lauf hier geprüft worden.
+      # In the log, so that a failure caused by the toolchain does not look like one
+      # in the code. The image carries several Xcodes; the default is 26.6, and that
+      # is exactly what this run was checked against.
       - name: Werkzeugkette melden
         run: |
           xcodebuild -version
@@ -53,13 +52,13 @@ jobs:
       - name: Projekt erzeugen
         run: xcodegen generate
 
-      # `OS=latest` und keine feste Zahl: das Abbild führt drei Laufzeiten mit, und
-      # ohne Angabe bricht xcodebuild mit einem irreführenden „My Mac"-Fehler ab,
-      # weil der Gerätename mehrdeutig ist. Eine feste Version wäre dasselbe Problem
-      # in ein paar Monaten, nur andersherum.
-      # Laeuft vor den Tests, weil er in einer Sekunde sagt, was der Testlauf
-      # nicht sieht: Xcode traegt neue Strings beim Bauen von selbst in den
-      # Katalog ein — ohne Uebersetzung, und ohne dass irgendetwas rot wird.
+      # `OS=latest` and not a fixed number: the image carries three runtimes, and
+      # without a version xcodebuild fails with a misleading "My Mac" error, because
+      # the device name is ambiguous. A fixed version would be the same problem in a
+      # few months, only the other way round.
+      # Runs before the tests, because in one second it says what the test run does
+      # not see: Xcode enters new strings into the catalogue by itself while
+      # building — untranslated, and without anything turning red.
       - name: Uebersetzungen vollstaendig
         run: ./check-localizations.py
 

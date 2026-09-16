@@ -1,18 +1,17 @@
 #!/bin/bash
-# Verhindert, dass ein API-Schluessel in die Historie geraet.
+# Keeps an API key out of the history.
 #
-# Liegt versioniert im Repo, nicht in .git/hooks — ein Haken dort wandert bei
-# keinem Klonen mit, also haette ihn weder ein Mitwirkender noch man selbst nach
-# dem naechsten Klonen. Scharf wird er mit:
+# Versioned in the repo, not in .git/hooks — a hook there travels with no clone,
+# so neither a contributor nor you yourself would have it after the next clone.
+# Arm it with:
 #
 #     git config core.hooksPath .githooks
 #
-# Frueher setzte release.sh einen Beta-Schluessel in BundledSetup.swift ein und
-# raeumte per trap wieder auf; brach das Skript dazwischen ab, stand der Schluessel
-# im Arbeitsverzeichnis. Diesen Weg gibt es nicht mehr — die App bringt keinen
-# Anbieter mehr mit, jeder Schluessel gehoert dem Nutzer und liegt im Schluesselbund
-# des Geraets. Der Haken bleibt trotzdem: aus der Historie bekommt man einen
-# Schluessel nicht mehr heraus, und ein Test, der einen einmal hineinschreibt,
+# release.sh used to put a beta key into BundledSetup.swift and tidy up again via
+# a trap; if the script broke off in between, the key stood in the working tree.
+# That route is gone — the app no longer ships a provider, every key belongs to
+# the user and lives in the device's keychain. The hook stays all the same: a key
+# cannot be got back out of the history, and a test that writes one in once
 # kostet nichts ausser diesem Griff.
 if git diff --cached -U0 | grep -qE '^\+.*(sk-[A-Za-z0-9]{16,}|BSA[A-Za-z0-9]{24,})'; then
   echo "ABBRUCH: Die Aenderung enthaelt etwas, das nach einem API-Schluessel aussieht." >&2
