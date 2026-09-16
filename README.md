@@ -1,10 +1,16 @@
 # Faden
 
+[![Tests](https://github.com/eigenhand/faden/actions/workflows/tests.yml/badge.svg)](https://github.com/eigenhand/faden/actions/workflows/tests.yml)
+
 Ein Chatbot fürs iPhone, der nichts mitbringt außer der Oberfläche. Modell, Endpoint,
 API-Key und Suchanbieter kommen von dir. Keine Zwischenserver, keine Konten, keine
 Telemetrie — die App spricht ausschließlich mit den Adressen, die du einträgst.
 
 Design nach [eigenhand.dev](https://eigenhand.dev).
+
+Was die App schützt und was ausdrücklich nicht: [SECURITY.md](SECURITY.md). Ein
+Assistent mit Werkzeugen liest fremden Text und kann handeln — der Abschnitt
+„Bewusste Kompromisse" sagt, wo die Maßnahmen aufhören.
 
 ## Was drin ist
 
