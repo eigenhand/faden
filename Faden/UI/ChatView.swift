@@ -392,7 +392,12 @@ struct ChatView: View {
         // Formensprache steht.
         HStack(spacing: 4) {
             Spacer(minLength: 0)
+            // Erst die Tastatur, dann das Blatt. Ein Sheet über einer Eingabezeile
+            // mit dem Fokus lässt die Tastatur stehen — sie liegt dann unter dem
+            // Verlauf und schiebt ihn hoch, und wer eine Unterhaltung sucht, hat
+            // eine halbe Liste und eine Tastatur, um die er nicht gebeten hat.
             headerButton("clock.arrow.circlepath", label: "Verlauf", shortcut: "y") {
+                inputFocused = false
                 showHistory = true
             }
             headerButton("square.and.pencil", label: "Neue Unterhaltung", shortcut: "n") {
@@ -404,6 +409,7 @@ struct ChatView: View {
             // app-eigenes Symbol, und für die wurde gemessen, dass nur 34 % richtig
             // erraten, was ein Antippen tut — konventionell sind es 60 %.
             headerButton("gearshape", label: "Einstellungen", shortcut: ",") {
+                inputFocused = false
                 showSettings = true
             }
         }

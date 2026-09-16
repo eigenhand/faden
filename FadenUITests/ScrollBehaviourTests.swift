@@ -200,6 +200,29 @@ final class ScrollBehaviourTests: XCTestCase {
         shot("Zurück im Gespräch, Tastatur unten")
     }
 
+    /// Ein Blatt über einer Eingabezeile mit dem Fokus lässt die Tastatur stehen.
+    ///
+    /// Sie liegt dann unter dem Verlauf und schiebt ihn hoch — wer eine Unterhaltung
+    /// sucht, bekommt eine halbe Liste und eine Tastatur, um die er nicht gebeten
+    /// hat. SwiftUI räumt sie beim Präsentieren nicht von selbst weg; das muss die
+    /// App tun, bevor sie das Blatt zeigt.
+    func testOpeningTheHistoryPutsTheKeyboardAway() throws {
+        app.buttons["Neue Unterhaltung"].tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 3),
+                      "Im leeren Chat steht die Tastatur bereit — sonst prüft dieser Test nichts.")
+
+        app.buttons["Verlauf"].tap()
+
+        let gone = expectation(for: NSPredicate(format: "count == 0"),
+                               evaluatedWith: app.keyboards)
+        XCTAssertEqual(XCTWaiter.wait(for: [gone], timeout: 4), .completed,
+                       "Beim Öffnen des Verlaufs muss die Tastatur weichen")
+        shot("Verlauf offen, Tastatur unten")
+
+        // Das Blatt wieder zu, damit der nächste Test einen gewöhnlichen Chat sieht.
+        app.buttons["Fertig"].firstMatch.tap()
+    }
+
     /// A conversation must be passable to someone else — as a file, through the
     /// system's own share sheet, with nothing in between.
     ///
