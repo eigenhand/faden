@@ -241,7 +241,13 @@ final class AppModel {
     /// sharing an id make the transcript's own diffing go wrong.
     @discardableResult
     func importConversation(from url: URL) -> Bool {
-        guard var incoming = try? ConversationTransfer.read(url) else { return false }
+        guard let raw = try? ConversationTransfer.read(url) else { return false }
+        // Eine Datei aus fremder Hand wird hier zur eigenen Vorgeschichte: ab dem
+        // ersten weitergeschriebenen Zug geht sie bei jeder Anfrage mit, und was
+        // darin als Assistentenzug steht, liest das Modell als seine eigene frühere
+        // Ausgabe. Was dabei nicht mitdarf, steht in `ImportGuard`.
+        let checked = ImportGuard.sanitised(raw)
+        var incoming = checked.conversation
         incoming.id = UUID()
         incoming.messages = incoming.messages.map { message in
             var copy = message
@@ -249,6 +255,9 @@ final class AppModel {
             return copy
         }
         incoming.updatedAt = Date()
+        // Gesagt und nicht verschwiegen: wer eine Unterhaltung übernimmt und danach
+        // merkt, dass die Hälfte fehlt, sucht den Fehler bei sich.
+        if let note = checked.note { errorMessage = note }
         conversations.insert(incoming, at: 0)
         switchTo(incoming.id)
         persist()

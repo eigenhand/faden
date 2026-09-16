@@ -17,6 +17,19 @@ extension UTType {
 /// and Messages the same way, and needs no server at either end.
 enum ConversationTransfer {
 
+    enum ImportError: LocalizedError {
+        case tooLarge(bytes: Int)
+
+        var errorDescription: String? {
+            switch self {
+            case .tooLarge(let bytes):
+                let mb = Double(bytes) / 1_048_576
+                return String(format: "Die Datei ist %.1f MB groß. Übernommen werden "
+                              + "höchstens %d MB.", mb, ImportGuard.maxBytes / 1_048_576)
+            }
+        }
+    }
+
     /// A version marker so a file written today can still be read after the message
     /// format has moved on.
     private struct Envelope: Codable {
@@ -53,6 +66,13 @@ enum ConversationTransfer {
         let scoped = url.startAccessingSecurityScopedResource()
         defer { if scoped { url.stopAccessingSecurityScopedResource() } }
 
+        // Die Größe vor dem Lesen, nicht danach: `Data(contentsOf:)` legt die ganze
+        // Datei in den Speicher, und eine Datei aus fremder Hand bestimmt sonst, wie
+        // viel davon die App belegt.
+        let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+        guard size <= ImportGuard.maxBytes else {
+            throw ImportError.tooLarge(bytes: size)
+        }
         let raw = try Data(contentsOf: url)
         if let envelope = try? decoder.decode(Envelope.self, from: raw) {
             return envelope.conversation
