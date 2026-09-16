@@ -10,7 +10,8 @@ Telemetrie — die App spricht ausschließlich mit den Adressen, die du einträg
 
 Design nach [eigenhand.dev](https://eigenhand.dev).
 
-Was die App schützt und was ausdrücklich nicht: [SECURITY.de.md](SECURITY.de.md). Ein
+Was die App schützt und was ausdrücklich nicht: [SECURITY.de.md](SECURITY.de.md).
+Wie sie gebaut ist: [ARCHITECTURE.de.md](ARCHITECTURE.de.md). Ein
 Assistent mit Werkzeugen liest fremden Text und kann handeln — der Abschnitt
 „Bewusste Kompromisse" sagt, wo die Maßnahmen aufhören.
 

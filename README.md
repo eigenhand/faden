@@ -10,7 +10,8 @@ no accounts, no telemetry — the app speaks only to the addresses you enter.
 
 Design after [eigenhand.dev](https://eigenhand.dev).
 
-What the app protects and what it expressly does not: [SECURITY.md](SECURITY.md). An
+What the app protects and what it expressly does not: [SECURITY.md](SECURITY.md).
+How it is put together: [ARCHITECTURE.md](ARCHITECTURE.md). An
 assistant with tools reads foreign text and can act — the section “Deliberate
 compromises” says where the measures stop.
 
