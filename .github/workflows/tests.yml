@@ -12,13 +12,18 @@ name: Tests
 # macOS-Minuten zählen bei privaten Repos zehnfach. Deshalb keine Läufe für
 # Änderungen, die den Code nicht anfassen, und ein abgebrochener Vorlauf, sobald ein
 # neuer Commit kommt.
+#
+# Das Info.plist stand einmal in dieser Liste und gehört nicht hinein. Es sieht aus
+# wie Konfiguration, ist aber Verhalten: Dort stand `UIUserInterfaceStyle = Light`
+# und hat die gesamte dunkle Farbpalette wirkungslos gemacht — eine Änderung, die
+# kein Test der Welt bemerkt hätte, wenn kein Test gelaufen wäre.
 
 on:
   push:
     branches: [main]
-    paths-ignore: ["**/*.md", "**/Info.plist", "LICENSE"]
+    paths-ignore: ["**/*.md", "LICENSE"]
   pull_request:
-    paths-ignore: ["**/*.md", "**/Info.plist", "LICENSE"]
+    paths-ignore: ["**/*.md", "LICENSE"]
   workflow_dispatch:
 
 concurrency:
