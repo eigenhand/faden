@@ -1,19 +1,18 @@
 import XCTest
 @testable import Faden
 
-/// Was passiert, wenn der Anbieter drosselt.
+/// What happens when the provider throttles.
 ///
-/// Fadens erste Unittests, und es ist kein Zufall, dass sie hier anfangen. Bis eben
-/// hat die App bei einem 429 sofort auf das Ausweichmodell geschaltet — auf
-/// derselben Frage gemessen 72 Sekunden gegen 12. Aus zwei Sekunden Warten
-/// wurde eine Minute, und der Nutzer bekam die schlechtere Antwort obendrein.
+/// Faden's first unit tests, and it is no accident that they begin here. Until just now
+/// the app switched to the fallback model immediately on a 429 — measured on the same
+/// question, 72 seconds against 12. Two seconds of waiting turned into a minute, and the
+/// user got the worse answer on top.
 ///
-/// Diese Entscheidung stand nirgends geschrieben, wo jemand sie nachlesen musste.
-/// Jetzt steht sie hier.
+/// This decision stood written nowhere that anyone had to read. Now it stands here.
 final class BackoffTests: XCTestCase {
 
-    /// „Zu viele Anfragen" und „gerade überlastet" sind Wartezeiten. Ein falscher
-    /// Schlüssel ist es nicht — dort brächte Warten nur dreimal dasselbe Ergebnis.
+    /// “Too many requests” and “overloaded right now” are waiting times. A wrong key is
+    /// not — there, waiting would only bring the same result three times.
     func testOnlyBusyStatusesAreWaitedOut() {
         XCTAssertTrue(Backoff.isBusy(429))
         XCTAssertTrue(Backoff.isBusy(503))
@@ -30,7 +29,7 @@ final class BackoffTests: XCTestCase {
         XCTAssertEqual(Backoff.pause(retryAfter: " 12 ", attempt: 1), 12, accuracy: 0.001)
     }
 
-    /// Ein Kopf mit „3600" darf die App nicht für eine Stunde anhalten.
+    /// A header saying “3600” must not stop the app for an hour.
     func testAnAbsurdRetryAfterIsCapped() {
         XCTAssertEqual(Backoff.pause(retryAfter: "3600", attempt: 0), 30, accuracy: 0.001)
     }
@@ -40,8 +39,8 @@ final class BackoffTests: XCTestCase {
         XCTAssertEqual(Backoff.pause(retryAfter: nil, attempt: 1), 4, accuracy: 0.001)
     }
 
-    /// Manche Anbieter schicken ein Datum statt einer Zahl. Das darf nicht zu null
-    /// Sekunden führen — das wäre ein Schwarm statt einer Pause.
+    /// Some providers send a date instead of a number. That must not lead to zero
+    /// seconds — that would be a swarm instead of a pause.
     func testUnusableHeadersFallBackToTheFormula() {
         for header in ["Wed, 21 Oct 2026 07:28:00 GMT", "", "sofort", "0", "-5"] {
             XCTAssertEqual(Backoff.pause(retryAfter: header, attempt: 0), 2, accuracy: 0.001,
@@ -49,8 +48,8 @@ final class BackoffTests: XCTestCase {
         }
     }
 
-    /// Höchstens zwei Pausen, dann ist das Ausweichmodell an der Reihe. Sechs Sekunden
-    /// sind die Grenze dessen, was man stillschweigend aussitzen darf.
+    /// At most two waits, then the fallback model's turn has come. Six seconds is the
+    /// limit of what may be sat out in silence.
     func testTheWaitingIsBoundedBeforeFallingBack() {
         XCTAssertEqual(Backoff.maxWaits, 2)
         let total = (0 ..< Backoff.maxWaits)
@@ -59,27 +58,27 @@ final class BackoffTests: XCTestCase {
         XCTAssertEqual(total, 6, accuracy: 0.001)
     }
 
-    // MARK: Das Ausweichmodell kommt danach, nicht davor
+    // MARK: The fallback comes after, not before
 
-    /// Nach den Pausen darf ausgewichen werden — dann ist die Drosselung kein
-    /// Sekundenproblem mehr, und ein anderes Modell hat womöglich ein eigenes Kontingent.
+    /// After the waits the fallback is allowed — by then the throttling is no longer a
+    /// matter of seconds, and another model may well have a quota of its own.
     func testThrottlingStillAllowsTheFallbackAfterwards() {
         XCTAssertTrue(AgentRunner.isWorthRetrying(LLMError.http(status: 429, body: "")))
         XCTAssertTrue(AgentRunner.isWorthRetrying(LLMError.http(status: 503, body: "")))
     }
 
-    /// Ein falscher Schlüssel bleibt mit jedem Modellnamen falsch.
+    /// A wrong key stays wrong with every model name.
     func testAWrongKeyIsNotWorthAnotherModel() {
         XCTAssertFalse(AgentRunner.isWorthRetrying(LLMError.http(status: 401, body: "")))
     }
 
-    /// 403 ist ausdrücklich dabei: der Anbieter antwortet auf ein unbekanntes Modell
-    /// genau so.
+    /// 403 is expressly included: that is exactly how the provider answers for an
+    /// unknown model.
     func testForbiddenIsWorthAnotherModel() {
         XCTAssertTrue(AgentRunner.isWorthRetrying(LLMError.http(status: 403, body: "")))
     }
 
-    /// Ohne Endpoint und ohne Schlüssel hilft kein anderer Modellname.
+    /// Without an endpoint and without a key, no other model name helps.
     func testLocalProblemsAreNotWorthAnotherModel() {
         XCTAssertFalse(AgentRunner.isWorthRetrying(LLMError.notConfigured))
         XCTAssertFalse(AgentRunner.isWorthRetrying(LLMError.missingKey))
@@ -87,13 +86,13 @@ final class BackoffTests: XCTestCase {
 
     // MARK: Die Meldung
 
-    /// Geprüft wird die Form und nicht der Wortlaut.
+    /// What is checked is the form and not the wording.
     ///
-    /// Seit die Fehlertexte durch den Stringkatalog gehen, hängt der Satz an der
-    /// Sprache des Geräts — auf einem englischen Simulator stand hier „throttling"
-    /// und der Test war rot, obwohl der Code stimmte. Was dieser Test wirklich
-    /// behauptet, ist auch nicht der Wortlaut: Ein 429 wird zu einer Zeile, die ein
-    /// Mensch liest, und nicht zu dem JSON, das der Anbieter geschickt hat.
+    /// Since the error texts go through the string catalogue, the sentence hangs on the
+    /// device's language — on an English simulator “throttling” stood here and the test
+    /// was red although the code was right. What this test really asserts is not the
+    /// wording either: a 429 becomes a line a human reads, and not the JSON the provider
+    /// sent.
     func testThrottlingSaysSoInsteadOfShowingJSON() throws {
         let text = try XCTUnwrap(
             LLMError.http(status: 429, body: "{\"error\":{\"message\":\"rate limit exceeded\"}}")

@@ -150,9 +150,9 @@ struct MemorySettingsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task {
             stored = Keychain.has(account: model.settings.memory.embeddingKeychainAccount)
-            // Die Wahrheit über das Modell steht im Dateisystem, nicht in einer
-            // Zustandsvariablen von vorhin: ein Download kann angekommen sein,
-            // während dieser Bildschirm zu war.
+            // The truth about the model stands in the file system, not in a state
+            // variable from earlier: a download may have arrived while this screen was
+            // closed.
             assetsReady = LocalEmbedder.hasAssets
             await MemoryStore.shared.load()
             counts = await MemoryStore.shared.counts
@@ -162,13 +162,13 @@ struct MemorySettingsView: View {
         .onDisappear { model.persist() }
     }
 
-    // MARK: Woher die Vektoren kommen
+    // MARK: Where the vectors come from
 
-    /// Die Wahl zwischen Endpoint und Gerät — mit den gemessenen Zahlen daneben.
+    /// The choice between endpoint and device — with the measured numbers beside it.
     ///
-    /// Beide Wege haben einen klaren Preis, und keiner davon ist eine Meinung: das
-    /// Netzmodell trifft öfter, das Gerät gibt nichts heraus und kostet 108 MB. Wer
-    /// das entscheiden soll, soll beides sehen.
+    /// Both routes have a clear price, and neither of them is an opinion: the network
+    /// model hits more often, the device gives nothing away and costs 108 MB. Whoever
+    /// has to decide should see both.
     @ViewBuilder
     private var sourceSection: some View {
         @Bindable var model = model
@@ -218,9 +218,9 @@ struct MemorySettingsView: View {
                 }
 
                 if loadingAssets {
-                    // Apples `requestAssets()` meldet keinen Fortschritt, nur fertig
-                    // oder nicht. Einen Balken zu zeigen, der nichts misst, wäre
-                    // gelogen; also steht hier, woran man ist.
+                    // Apple's `requestAssets()` reports no progress, only done or not.
+                    // Showing a bar that measures nothing would be a lie; so what stands
+                    // here is where one is.
                     Text("Apple lädt das Modell im Hintergrund. Einen Fortschritt meldet das System dabei nicht — du kannst die App in der Zwischenzeit benutzen.")
                         .font(.eh(12, .caption)).foregroundStyle(EH.muted)
                 }
@@ -264,12 +264,12 @@ struct MemorySettingsView: View {
 
     // MARK: Index
 
-    /// Was im Index liegt, und was man damit tun kann.
+    /// What lies in the index, and what can be done with it.
     ///
-    /// Vektoren aus zwei Modellen im selben Raum zu vergleichen ergibt keinen
-    /// Fehler, sondern eine Zahl ohne Bedeutung — und damit stille Falschtreffer.
-    /// Deshalb steht hier nicht „so viele Einbettungen", sondern wie viele davon
-    /// zum eingestellten Modell überhaupt passen.
+    /// Comparing vectors from two models in the same space produces no error but a
+    /// number without meaning — and therefore quiet false hits. Which is why what stands
+    /// here is not “this many embeddings” but how many of them fit the configured model
+    /// at all.
     @ViewBuilder
     private var indexSection: some View {
         let modelName = model.settings.memory.effectiveModel.trimmingCharacters(in: .whitespaces)
@@ -286,8 +286,8 @@ struct MemorySettingsView: View {
                     if index.foreign > 0 { zahl(index.foreign, "fremd", EH.warn) }
                     if index.missing > 0 { zahl(index.missing, "offen", EH.muted) }
                 }
-                // Drei große Zahlen mit winzigen Kleinversalien darunter liest eine
-                // Sprachausgabe als Zahlenfolge vor. Zusammengefasst ist es ein Satz.
+                // Three large numbers with tiny small caps beneath them are read out
+                // by a screen reader as a sequence of digits. Combined it is a sentence.
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(Text("\(index.usable) nutzbar, \(index.foreign) fremd, \(index.missing) offen"))
                 .accessibilityIdentifier("indexStatus")

@@ -2,20 +2,20 @@ import XCTest
 import SwiftUI
 @testable import Faden
 
-/// Die Palette, nachgemessen.
+/// The palette, measured.
 ///
-/// Der Kommentar in `Theme.swift` nennt Zahlen — 9.73 für Überschriften, 5.28 für
-/// Bildunterschriften —, und Zahlen in einem Kommentar sind Behauptungen, bis sie
-/// jemand nachrechnet. Ein Ton, den später jemand „nur ein bisschen“ aufhellt, fällt
-/// hier auf und nicht erst bei dem Nutzer, der ihn nicht mehr lesen kann.
+/// The comment in `Theme.swift` names numbers — 9.73 for headings, 5.28 for captions —
+/// and numbers in a comment are assertions until somebody works them out. A tone that
+/// somebody later brightens “just a little” stands out here and not first at the user
+/// who can no longer read it.
 ///
-/// Gerechnet wird nach WCAG 2.1: relative Leuchtdichte aus den linearisierten
-/// sRGB-Anteilen, Verhältnis `(hell + 0.05) / (dunkel + 0.05)`.
+/// Computed after WCAG 2.1: relative luminance from the linearised sRGB components,
+/// ratio `(lighter + 0.05) / (darker + 0.05)`.
 final class PaletteContrastTests: XCTestCase {
 
-    /// Fließtext und alles Kleinere: WCAG AA verlangt 4.5:1.
+    /// Body text and anything smaller: WCAG AA asks for 4.5:1.
     private let textFloor = 4.5
-    /// Ränder, die das Einzige sind, was einen Bedienteil begrenzt: 1.4.11 verlangt 3:1.
+    /// Borders that are the only thing bounding a control: 1.4.11 asks for 3:1.
     private let borderFloor = 3.0
 
     private var grounds: [(String, Color)] {
@@ -48,10 +48,10 @@ final class PaletteContrastTests: XCTestCase {
         }
     }
 
-    /// Der eigentliche Entwurf, und deshalb der Test, der am meisten sagt: Die dunkle
-    /// Fassung hat **dieselben** Verhältnisse wie die helle, nicht mehr. Weiß auf
-    /// Schwarz misst 21:1 und blendet nachts; wer die dunklen Töne später aufhellt,
-    /// macht sie nicht lesbarer, sondern greller.
+    /// The actual design, and therefore the test that says the most: the dark version
+    /// has **the same** ratios as the light one, not more. White on black measures 21:1
+    /// and glares at night; whoever brightens the dark tones later does not make them
+    /// more readable but harsher.
     func testDarkMirrorsLightRatherThanMaximisingContrast() {
         for (tokenName, token) in textTokens {
             let light = ratio(token, EH.surface, .light)
@@ -62,8 +62,8 @@ final class PaletteContrastTests: XCTestCase {
         }
     }
 
-    /// Die Grundflächen müssen sich unterscheiden — sonst ist eine Karte keine Karte.
-    /// Sichtbar, aber ruhig: Im Hellen liegt `surface` zu `surfaceSunk` bei 1.05.
+    /// The grounds have to differ — or a card is not a card. Visible but quiet: in
+    /// light mode `surface` to `surfaceSunk` sits at 1.05.
     func testTheThreeGroundsStayDistinguishable() {
         for style in [UIUserInterfaceStyle.light, .dark] {
             let r = ratio(EH.surface, EH.surfaceSunk, style)
@@ -73,9 +73,9 @@ final class PaletteContrastTests: XCTestCase {
     }
 
 
-    /// Was auf einer gefüllten Fläche steht, muss gegen **diese** Fläche lesbar sein
-    /// und nicht gegen den Hintergrund dahinter. Der Test steht hier, weil genau das
-    /// im ersten dunklen Entwurf fehlte: weißes Kamerasymbol auf hellem `navy`.
+    /// What stands on a filled surface has to be readable against **that** surface and
+    /// not against the background behind it. The test stands here because exactly that
+    /// was missing in the first dark draft: a white camera symbol on a light `navy`.
     func testWhatSitsOnAFilledSurfaceIsReadableAgainstIt() {
         for style in [UIUserInterfaceStyle.light, .dark] {
             for (fillName, fill) in [("navy", EH.navy), ("accent", EH.accent), ("bad", EH.bad)] {

@@ -1,33 +1,31 @@
 import Foundation
 
-/// Was die App an Anbietern mitbringt — Adressen, keine Schlüssel.
+/// What the app brings in the way of providers — addresses, not keys.
 ///
-/// Der Unterschied zu dem, was hier bis eben stand, ist der ganze Punkt. Ein
-/// *mitgelieferter Anbieter* trug einen Schlüssel im Binary und richtete sich beim
-/// ersten Start selbst ein; wer die App hatte, hatte den Schlüssel. Eine *Vorlage*
-/// trägt nur, was ohnehin öffentlich ist: die Adresse, den Pfad und das Format, das
-/// dort gesprochen wird. Den Schlüssel bringt der Nutzer mit, und er landet im
-/// Schlüsselbund des Geräts.
+/// The difference from what stood here until just now is the whole point. A *bundled
+/// provider* carried a key in the binary and set itself up on first launch; whoever had
+/// the app had the key. A *preset* carries only what is public anyway: the address, the
+/// path and the format spoken there. The key is brought by the user, and it lands in the
+/// device's keychain.
 ///
-/// Warum es das überhaupt braucht: „https://api.groq.com/openai" tippt niemand
-/// richtig aus dem Gedächtnis, und wer sich beim Pfad vertut, bekommt einen 404 und
-/// hält den Schlüssel für falsch. Für die Suche gibt es diese Liste seit jeher
-/// (`BuiltinRecipes`); dass die Modellseite sie nicht hatte, war eine Lücke und
-/// keine Entscheidung.
+/// Why this is needed at all: nobody types “https://api.groq.com/openai” correctly from
+/// memory, and whoever gets the path wrong receives a 404 and thinks the key is wrong.
+/// For search this list has always existed (`BuiltinRecipes`); that the model side did
+/// not have one was a gap and not a decision.
 ///
-/// Jede Adresse ist angeklopft worden, bevor sie hier steht: ein POST ohne Schlüssel
-/// muss mit 401 oder 400 antworten. Das beweist nicht, dass der Anbieter gut ist —
-/// nur dass Adresse und Pfad existieren, und genau das ist der Fehler, den eine
-/// Vorlage verhindern soll.
+/// Every address has been knocked on before it stands here: a POST without a key has to
+/// answer with 401 or 400. That does not prove the provider is any good — only that the
+/// address and the path exist, and that is exactly the mistake a preset is meant to
+/// prevent.
 struct ModelProvider: Identifiable, Equatable, Sendable {
     var id: String { name }
     let name: String
     let baseURL: String
     let path: String
     let wireFormat: LLMWireFormat
-    /// Ein Satz über den Anbieter, dort wo er die Wahl erleichtert. Leer, wo es
-    /// nichts zu sagen gibt — eine Zeile Füllung unter jedem Eintrag macht die Liste
-    /// länger und nicht klarer.
+    /// A sentence about the provider, where it makes the choice easier. Empty where
+    /// there is nothing to say — a line of filler under every entry makes the list
+    /// longer and not clearer.
     let note: String
 
     init(_ name: String, _ baseURL: String, path: String = "/v1/chat/completions",
@@ -39,8 +37,8 @@ struct ModelProvider: Identifiable, Equatable, Sendable {
         self.note = note
     }
 
-    /// Eine frische Konfiguration aus dieser Vorlage. Ohne Modell und ohne Schlüssel —
-    /// beides kommt aus dem nächsten Schritt.
+    /// A fresh configuration from this preset. Without a model and without a key —
+    /// both come from the next step.
     func config() -> LLMConfig {
         var c = LLMConfig()
         c.name = name
@@ -51,12 +49,11 @@ struct ModelProvider: Identifiable, Equatable, Sendable {
     }
 }
 
-/// Das gemeinsame Vorlagen-Verzeichnis für beide Seiten der App.
+/// The shared preset directory for both sides of the app.
 ///
-/// Eine Stelle und nicht zwei: Anbieter für Modelle und Anbieter für die Suche sind
-/// dasselbe Versprechen an den Nutzer — „die Adresse kennen wir schon, den Schlüssel
-/// bringst du mit" —, und wer eine der beiden Listen pflegt, soll die andere daneben
-/// sehen.
+/// One place and not two: providers for models and providers for search are the same
+/// promise to the user — “we already know the address, you bring the key” — and whoever
+/// maintains one of the two lists should see the other beside it.
 enum Builtins {
 
     static var models: [ModelProvider] {
@@ -84,8 +81,8 @@ enum Builtins {
         ]
     }
 
-    /// Die Suchseite. Liegt weiterhin in `BuiltinRecipes`, weil ein Suchrezept mehr
-    /// beschreibt als eine Adresse — Parameter, Auth-Form, wo die Treffer im JSON
-    /// stehen. Hier steht der Verweis, damit das Verzeichnis vollständig ist.
+    /// The search side. Still lives in `BuiltinRecipes`, because a search recipe
+    /// describes more than an address — parameters, the auth style, where the results sit
+    /// in the JSON. The reference stands here so the directory is complete.
     static var search: [SearchRecipe] { BuiltinRecipes.all }
 }

@@ -4,12 +4,12 @@ import Foundation
 struct MemoryConfig: Codable, Equatable {
     var enabled: Bool = false
 
-    /// Woher die Vektoren kommen.
+    /// Where the vectors come from.
     enum Source: String, Codable, CaseIterable {
-        /// Über den Endpoint des Nutzers — die Voreinstellung, und die genauere.
+        /// Through the user's endpoint — the default, and the more accurate one.
         case endpoint
-        /// Auf dem Gerät, mit Apples Modell. Gröber, dafür verlässt kein Satz das
-        /// Telefon und es braucht überhaupt keinen Endpoint.
+        /// On the device, with Apple's model. Coarser, but no sentence leaves the
+        /// phone and it needs no endpoint at all.
         case onDevice
     }
     var source: Source = .endpoint
@@ -43,11 +43,11 @@ struct MemoryConfig: Codable, Equatable {
         return URL(string: b + embeddingPath)
     }
 
-    /// Der Name, der als Herkunft an jedem Vektor steht.
+    /// The name that stands on every vector as its origin.
     ///
-    /// Nicht `embeddingModel`: auf dem Gerät gibt es kein Feld, in das jemand einen
-    /// Namen tippt, und der Stempel braucht trotzdem einen — sonst ließen sich die
-    /// beiden Quellen nicht auseinanderhalten, und genau dafür ist er da.
+    /// Not `embeddingModel`: on the device there is no field for anyone to type a name
+    /// into, and the stamp needs one all the same — otherwise the two sources could not
+    /// be told apart, and that is exactly what it is for.
     var effectiveModel: String {
         switch source {
         case .endpoint: return embeddingModel
@@ -65,14 +65,14 @@ struct MemoryConfig: Codable, Equatable {
         }
     }
 
-    /// Ob die Ähnlichkeiten vor dem Vergleich zentriert werden müssen.
+    /// Whether the similarities have to be centred before comparison.
     ///
-    /// Beim lokalen Modell liegen alle Kosinuswerte über 0,95 — gemessen: Hund zu
-    /// „Welches Haustier habe ich?" 0,979, Auto zur selben Frage 0,970. Die
-    /// Rangfolge stimmt noch, aber die Mindestähnlichkeit filtert nichts mehr, weil
-    /// jeder Wert über jedem Schwellwert liegt. Den Mittelvektor des Bestands
-    /// abzuziehen ist das übliche Mittel dagegen und stellt die Bedeutung des
-    /// Reglers wieder her. Auf die Trefferquote wirkt es nicht — auch das gemessen.
+    /// With the local model every cosine lies above 0.95 — measured: dog against “which
+    /// pet do I have?” 0.979, car against the same question 0.970. The ranking still
+    /// holds, but the minimum similarity filters nothing any more, because every value
+    /// lies above every threshold. Subtracting the mean vector of the store is the usual
+    /// remedy and restores the slider's meaning. It does not affect the hit rate — that
+    /// too is measured.
     var needsCentering: Bool { source == .onDevice }
 
     init() {}

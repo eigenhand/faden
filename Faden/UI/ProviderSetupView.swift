@@ -1,17 +1,16 @@
 import SwiftUI
 
-/// Richtet einen Anbieter ein: Adresse, Schlüssel, und welches Modell zuerst
-/// antwortet.
+/// Sets up a provider: address, key, and which model answers first.
 ///
-/// Hier entsteht **ein** Eintrag und nicht einer je Modell. Das ist der Unterschied
-/// zur früheren Fassung, und er hat einen Grund: ein Anbieter ist eine Adresse mit
-/// einem Schlüssel, und die Modelle darin sind Rollen — welches antwortet, welches
-/// einspringt, welches die Bilder ansieht. Als flache Liste nebeneinander liessen
-/// sie sich nur einzeln bearbeiten, und wer ein zweites Modell desselben Anbieters
-/// wollte, tippte Adresse und Schlüssel noch einmal ab.
+/// **One** entry arises here and not one per model. That is the difference from the
+/// earlier version, and it has a reason: a provider is an address with a key, and the
+/// models inside it are roles — which one answers, which one steps in, which one looks
+/// at the images. As a flat list side by side they could only be edited one at a time,
+/// and whoever wanted a second model from the same provider typed the address and the
+/// key out again.
 ///
-/// Die geladene Liste wandert mit in den Eintrag. Die Rollen werden danach im
-/// Anbieter besetzt, ohne dass der Endpoint dafür noch einmal gefragt werden muss.
+/// The loaded list travels into the entry with it. The roles are filled afterwards in
+/// the provider, without the endpoint having to be asked again.
 struct ProviderSetupView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
@@ -23,22 +22,21 @@ struct ProviderSetupView: View {
     @State private var key = ""
 
     @State private var models: [RemoteModel] = []
-    /// Welches Modell zuerst antwortet. Die übrigen Rollen kommen danach im Anbieter.
+    /// Which model answers first. The remaining roles come afterwards in the provider.
     @State private var picked: String?
     @State private var loading = false
     @State private var error: String?
     @State private var search = ""
     /// Typed manually when the endpoint publishes no list.
     @State private var manualModel = ""
-    /// Der Satz zur gewählten Vorlage, solange einer dabeisteht.
+    /// The sentence for the chosen preset, as long as one comes with it.
     @State private var presetNote = ""
-    /// Hält den Zurücksetzer am Formatwechsel an, während eine Vorlage greift.
+    /// Holds the reset on a format change while a preset is taking effect.
     ///
-    /// Der Wechsel des Formats setzt sonst den Pfad auf den Standard zurück — was
-    /// richtig ist, wenn der Nutzer den Schalter umlegt, und falsch, wenn die
-    /// Vorlage gerade beides zusammen gesetzt hat. Heute stimmt bei jeder Vorlage
-    /// der Pfad zufällig mit dem Standard überein; auf dieses Zufall darf sich der
-    /// nächste Eintrag in der Liste nicht verlassen.
+    /// Changing the format otherwise resets the path to the default — which is right
+    /// when the user flips the switch, and wrong when the preset has just set both
+    /// together. Today the path happens to match the default for every preset; the next
+    /// entry in the list must not rely on that coincidence.
     @State private var applyingPreset = false
 
     private var shown: [RemoteModel] {
@@ -46,11 +44,11 @@ struct ProviderSetupView: View {
         return models.filter { $0.id.localizedCaseInsensitiveContains(search) }
     }
 
-    /// Eine Vorlage in die Felder schreiben.
+    /// Writes a preset into the fields.
     ///
-    /// „Eigener Endpoint" trägt bewusst nichts ein: der Name der Vorlage wäre dort
-    /// als Anbietername gelogen, und ein leeres Feld sagt deutlicher, dass jetzt der
-    /// Nutzer dran ist.
+    /// “Your own endpoint” deliberately enters nothing: the preset's name would be a lie
+    /// as a provider name there, and an empty field says more clearly that it is now the
+    /// user's turn.
     private func apply(_ provider: ModelProvider) {
         applyingPreset = provider.wireFormat != wireFormat
         wireFormat = provider.wireFormat
@@ -239,11 +237,11 @@ struct ProviderSetupView: View {
         }
     }
 
-    /// Die Ersteinrichtung ohne Einrichtung.
+    /// The first setup without a setup.
     ///
-    /// Für jemanden, der keinen Endpoint hat, ist das hier der einzige Weg, die App
-    /// überhaupt zu benutzen — und gleichzeitig der ehrlichste Moment, ihm zu sagen,
-    /// was ihm damit fehlt. Beides steht deshalb auf derselben Seite.
+    /// For somebody without an endpoint this is the only way to use the app at all — and
+    /// at the same time the most honest moment to tell them what they are missing by it.
+    /// Both therefore stand on the same page.
     private var appleSetup: some View {
         let status = AppleModel.status
         return VStack(alignment: .leading, spacing: 18) {
@@ -274,7 +272,7 @@ struct ProviderSetupView: View {
     }
 
     private var canApply: Bool {
-        // Apples Modell braucht nichts ausgefuellt — nur, dass das System es hergibt.
+        // Apple's model needs nothing filled in — only that the system hands it out.
         guard wireFormat.needsEndpoint else { return AppleModel.status.isUsable }
         guard canLoad else { return false }
         return picked != nil || !manualModel.trimmingCharacters(in: .whitespaces).isEmpty
@@ -319,12 +317,12 @@ struct ProviderSetupView: View {
         c.path = path
         c.model = main.id
         c.keychainAccount = account
-        // Die ganze Liste zieht mit ein, nicht nur das gewählte Modell: aus ihr
-        // werden gleich die übrigen Rollen besetzt, und dafür soll niemand noch
-        // einmal auf das Netz warten müssen.
+        // The whole list moves in, not only the chosen model: the remaining roles are
+        // filled from it in a moment, and nobody should have to wait on the network
+        // again for that.
         c.knownModels = models
-        // Was die Liste über das Hauptmodell sagt, zieht mit ein. Geprüft wird es
-        // erst beim Verbindungstest — dort gewinnt die Messung.
+        // What the list says about the main model moves in with it. It is only checked
+        // in the connection test — there the measurement wins.
         c.supportsVision = main.capabilities.vision == true
         c.supportsTools = main.capabilities.tools
         c.supportsReasoning = main.capabilities.reasoning
@@ -337,18 +335,18 @@ struct ProviderSetupView: View {
             c.maxOutputTokens = min(c.maxOutputTokens, out)
         }
         model.settings.llms.append(c)
-        // Der erste eingerichtete Anbieter wird der aktive.
+        // The first provider set up becomes the active one.
         if model.settings.activeLLMID == nil { model.settings.activeLLMID = c.id }
         model.persist()
         model.recomputeUsage()
         dismiss()
     }
 
-    /// Apples Modell eintragen: kein Schluessel, keine Adresse, kein Modellname.
+    /// Enters Apple's model: no key, no address, no model name.
     ///
-    /// Das Kontextfenster klein gesetzt und nicht auf den ueblichen Vorgabewert: das
-    /// Systemmodell hat wenige tausend Token, und ein Balken, der 200 000 verspricht,
-    /// wuerde beim ersten laengeren Gespraech luegen statt zu warnen.
+    /// The context window set small and not to the usual default: the system model has a
+    /// few thousand tokens, and a bar promising 200,000 would lie rather than warn on
+    /// the first longer conversation.
     private func applyApple() {
         var c = LLMConfig()
         c.name = "Apple · auf dem Gerät"
@@ -356,8 +354,8 @@ struct ProviderSetupView: View {
         c.model = "apple-system"
         c.contextWindow = 4_000
         c.maxOutputTokens = 1_500
-        // Fest und nicht wachsend: Apples Modell auf dem Gerät hat ein kleines
-        // Fenster, das sich nicht dadurch vergrößert, dass man mehr verlangt.
+        // Fixed and not growing: Apple's on-device model has a small window that does
+        // not get any larger by asking for more.
         c.maxOutputTokensIsCustom = true
         c.supportsVision = false
         model.settings.llms.append(c)

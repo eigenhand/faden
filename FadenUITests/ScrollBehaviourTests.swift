@@ -83,29 +83,29 @@ final class ScrollBehaviourTests: XCTestCase {
 
     /// The composer controls, same rule.
     func testComposerTargetsAreLargeEnough() throws {
-        // Aus dem Fenster der App und nicht aus `app.buttons`.
+        // From the app's window and not from `app.buttons`.
         //
-        // Die Tastatur ist ein eigenes Fenster und bringt eigene Knoepfe mit,
-        // darunter eine Taste namens „Senden". `app.buttons` findet die zuerst, und
-        // gemessen wuerde dann eine Tastaturtaste statt des Absendeknopfes. Der Test
-        // lief nur deshalb jahrelang durch, weil er auf einer Ablage ohne Anbieter
-        // lief — dort steht kein leerer Chat und damit keine Tastatur. Sobald jemand
-        // die Suite auf einem eingerichteten Geraet laufen liess, fiel er durch, und
-        // zwar mit einer Meldung ueber Automatisierungstypen statt ueber Groessen.
+        // The keyboard is a window of its own and brings its own buttons, among them a
+        // key called “Senden”. `app.buttons` finds that one first, and what would then
+        // be measured is a keyboard key instead of the send button. The test only
+        // passed for years because it ran on a store without a provider — there is no
+        // empty chat there and therefore no keyboard. As soon as somebody ran the suite
+        // on a configured device it failed, and with a message about automation types
+        // rather than about sizes.
         let send = app.windows.element(boundBy: 0).buttons["Senden"]
         XCTAssertTrue(send.waitForExistence(timeout: 3))
         assertTarget(send, "Senden")
     }
 
-    /// Ein 44-pt-Ziel, mit einem halben Punkt Nachsicht.
+    /// A 44 pt target, with half a point of leniency.
     ///
-    /// Die Prüfung stand vorher auf `>= 44` und fiel bei **43,99999999999994** durch —
-    /// sechs Zehnbillionstel Punkt zu klein. Der Knopf hatte sich nicht geändert, nur
-    /// seine Position, und damit die Rundung der aufsummierten Layout-Arithmetik. Eine
-    /// Behauptung, die auf ein Bit hinter dem fünfzehnten Nachkommastellen reagiert,
-    /// prüft nicht die Trefffläche, sondern die Fließkommadarstellung. Ein halber Punkt
-    /// ist ein Drittel eines Gerätepixels bei @3x — unter jeder Schwelle, die ein
-    /// Daumen bemerkt, und weit über dem Rauschen.
+    /// The check used to stand at `>= 44` and failed at **43.99999999999994** — six
+    /// ten-trillionths of a point too small. The button had not changed, only its
+    /// position, and with it the rounding of the accumulated layout arithmetic. An
+    /// assertion that reacts to one bit past the fifteenth decimal place is not testing
+    /// the hit area but the floating-point representation. Half a point is a third of a
+    /// device pixel at @3x — below any threshold a thumb notices, and far above the
+    /// noise.
     private func assertTarget(_ element: XCUIElement, _ name: String,
                               file: StaticString = #filePath, line: UInt = #line) {
         let f = element.frame
@@ -149,8 +149,8 @@ final class ScrollBehaviourTests: XCTestCase {
         XCTAssertTrue(button.waitForExistence(timeout: 3))
         let items = app.buttons.matching(identifier: "answerSource")
 
-        // Ungefragt stehen die ersten drei da — genug, um zu sehen, worauf die
-        // Antwort steht, ohne die Antwort zuzuschütten.
+        // Unasked, the first three stand there — enough to see what the answer rests
+        // on, without burying the answer.
         XCTAssertEqual(items.count, 3, "Anfangs gehören drei Quellen sichtbar zu sein")
         shot("Quellen im Ausgangszustand")
 
@@ -158,7 +158,7 @@ final class ScrollBehaviourTests: XCTestCase {
         XCTAssertEqual(items.count, 5, "Aufgeklappt müssen alle fünf dastehen")
         shot("Quellen vollständig")
 
-        // Und wieder zu heißt ganz zu, nicht zurück auf drei.
+        // And closed again means fully closed, not back to three.
         button.tap()
         XCTAssertEqual(items.count, 0, "Zugeklappt darf keine Quelle stehen bleiben")
     }
@@ -190,8 +190,8 @@ final class ScrollBehaviourTests: XCTestCase {
                       "Im leeren Chat muss die Tastatur ohne Zutun bereitstehen")
         shot("Leerer Chat, Tastatur bereit")
 
-        // Und wieder zurück. Die Regel gilt in beide Richtungen: geöffnet wird eine
-        // gespeicherte Unterhaltung zum Lesen, nicht zum Tippen.
+        // And back again. The rule holds in both directions: a saved conversation is
+        // opened to be read, not to be typed in.
         try openFixture()
         let gone = expectation(for: NSPredicate(format: "count == 0"),
                                evaluatedWith: app.keyboards)
@@ -200,12 +200,12 @@ final class ScrollBehaviourTests: XCTestCase {
         shot("Zurück im Gespräch, Tastatur unten")
     }
 
-    /// Ein Blatt über einer Eingabezeile mit dem Fokus lässt die Tastatur stehen.
+    /// A sheet over a focused composer leaves the keyboard standing.
     ///
-    /// Sie liegt dann unter dem Verlauf und schiebt ihn hoch — wer eine Unterhaltung
-    /// sucht, bekommt eine halbe Liste und eine Tastatur, um die er nicht gebeten
-    /// hat. SwiftUI räumt sie beim Präsentieren nicht von selbst weg; das muss die
-    /// App tun, bevor sie das Blatt zeigt.
+    /// It then lies under the history and pushes it up — whoever is looking for a
+    /// conversation gets half a list and a keyboard they did not ask for. SwiftUI does
+    /// not clear it away by itself when presenting; the app has to do that before it
+    /// shows the sheet.
     func testOpeningTheHistoryPutsTheKeyboardAway() throws {
         app.buttons["Neue Unterhaltung"].tap()
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 3),
@@ -219,7 +219,7 @@ final class ScrollBehaviourTests: XCTestCase {
                        "Beim Öffnen des Verlaufs muss die Tastatur weichen")
         shot("Verlauf offen, Tastatur unten")
 
-        // Das Blatt wieder zu, damit der nächste Test einen gewöhnlichen Chat sieht.
+        // Close the sheet again so the next test sees an ordinary chat.
         app.buttons["Fertig"].firstMatch.tap()
     }
 
@@ -272,11 +272,11 @@ final class ScrollBehaviourTests: XCTestCase {
         shot("Nach dem ersten Buchstaben")
     }
 
-    /// Eine lange Frage bleibt eine Überschrift, und Markdown darin wird gesetzt.
+    /// A long question stays a heading, and Markdown inside it is typeset.
     ///
-    /// Die Frage steht seit dem Umbau in 20 pt Halbfett. Wer einen Auszug einwirft,
-    /// füllte damit den halben Bildschirm und schob die Antwort — den Grund für die
-    /// App — unter die Falz. Drei Zeilen, dann auf Wunsch der Rest.
+    /// Since the rebuild the question stands in 20 pt semibold. Whoever pastes an
+    /// excerpt filled half the screen with it and pushed the answer — the reason for
+    /// the app — below the fold. Three lines, then the rest on request.
     ///
     /// Needs the fixture: `./seed-fixture.sh <udid>` before running.
     func testLongQuestionFoldsToThreeLines() throws {
@@ -286,8 +286,8 @@ final class ScrollBehaviourTests: XCTestCase {
         XCTAssertTrue(auf.waitForExistence(timeout: 4),
                       "Eine lange Frage muss sich aufklappen lassen")
 
-        // Die rohen Sternchen dürfen nicht dastehen — Markdown wird gesetzt, nicht
-        // gezeigt. Die Prüfung greift auf die gekürzte wie auf die volle Fassung.
+        // The raw asterisks must not stand there — Markdown is typeset, not shown.
+        // The check applies to the shortened version as well as the full one.
         XCTAssertFalse(app.staticTexts.containing(
             NSPredicate(format: "label CONTAINS %@", "**")).firstMatch.exists,
             "In der Frage stehen rohe Markdown-Zeichen")
@@ -303,13 +303,13 @@ final class ScrollBehaviourTests: XCTestCase {
         shot("Frage ganz")
     }
 
-    /// Einbettungen aus zwei Modellen dürfen nicht als ein Index gelten.
+    /// Embeddings from two models must not count as one index.
     ///
-    /// Der Fehler, den das verhindert, macht keinen Lärm: wer das Einbettungsmodell
-    /// wechselt, behält die alten Vektoren, und ein Kosinus zwischen zwei Räumen
-    /// liefert Zahlen, die wie Treffer aussehen. Die Fixture stellt genau diesen Fall
-    /// her — sechs Vektoren vom eingestellten Modell plus eine Kante, drei aus einem
-    /// anderen Modell, zwei ohne Stempel aus der Zeit davor, zwei ganz ohne Vektor.
+    /// The mistake this prevents makes no noise: whoever switches the embedding model
+    /// keeps the old vectors, and a cosine between two spaces returns numbers that look
+    /// like hits. The fixture produces exactly that case — six vectors from the
+    /// configured model plus one edge, three from a different model, two without a
+    /// stamp from the time before, two with no vector at all.
     ///
     /// Needs the fixture: `./seed-memory.sh <udid>` before running.
     func testIndexClassifiesEmbeddingsByProvenance() throws {
@@ -330,19 +330,20 @@ final class ScrollBehaviourTests: XCTestCase {
                        "Die Einstufung nach Herkunft stimmt nicht")
         shot("Index nach Herkunft eingestuft")
 
-        // Die fremden zählen zur Arbeit, die noch ansteht — sonst bliebe der Index
-        // still halb falsch, statt beim nächsten Nachholen ersetzt zu werden.
+        // The foreign ones count towards the work still outstanding — otherwise the
+        // index would quietly stay half wrong instead of being replaced at the next
+        // catch-up.
         XCTAssertTrue(app.staticTexts.containing(
             NSPredicate(format: "label CONTAINS %@", "7 warten auf Einbettung")).firstMatch.exists,
             "Fremde Vektoren müssen wie fehlende behandelt werden")
     }
 
-    /// Die Herkunft steht unter der Eingabezeile — in jedem Zustand dieselbe Stelle.
+    /// The attribution stands under the composer — in the same place in every state.
     ///
-    /// Im Rollbereich hielt das nicht: mit vier Vorschlägen und offener Tastatur lag
-    /// die Zeile hinter der Eingabezeile, mit drei war sie halb abgeschnitten. Der
-    /// leere Chat mit Tastatur ist genau der Fall, der das aufdeckt — also prüft der
-    /// Test ihn mit.
+    /// In the scroll view that did not hold: with four suggestions and the keyboard
+    /// open, the line lay behind the composer; with three it was half cut off. The
+    /// empty chat with the keyboard is exactly the case that exposes this — so the test
+    /// covers it.
     ///
     /// Needs the fixture: `./seed-fixture.sh <udid>` before running.
     func testBrandSitsBelowTheComposer() throws {
@@ -370,7 +371,7 @@ final class ScrollBehaviourTests: XCTestCase {
                           "Die Zeile darf nicht unter der Tastatur liegen")
         shot("Herkunft im leeren Chat, Tastatur offen")
 
-        // Zustand wiederherstellen, statt ihn dem naechsten Test zu hinterlassen.
+        // Restore the state rather than leaving it to the next test.
         try openFixture()
     }
 
@@ -391,7 +392,7 @@ final class ScrollBehaviourTests: XCTestCase {
         field.typeText("Concurrency")
         XCTAssertTrue(row.exists, "Der passende Eintrag ist verschwunden")
 
-        // Und etwas, das nicht passt, filtert ihn weg.
+        // And something that does not match filters it away.
         field.typeText("xyz")
         let gone = expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: row)
         XCTAssertEqual(XCTWaiter.wait(for: [gone], timeout: 4), .completed,

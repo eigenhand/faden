@@ -7,8 +7,7 @@ import Foundation
 /// exact prefix, and the render order is tools → system → messages: anything volatile
 /// in the system prompt changes the first bytes of every request, so nothing after it
 /// can ever be reused and every turn is billed in full. Measured on this app's own
-/// prompt, wechselnde Erinnerungen brachen den gemeinsamen Präfix schon nach 1965 von
-/// 2521 Zeichen.
+/// prompt, changing memories broke the shared prefix after 1,965 of 2,521 characters.
 ///
 /// Appended to the last user message, both sit past any cache breakpoint, on content
 /// that is new anyway.

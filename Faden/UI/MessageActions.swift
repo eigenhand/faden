@@ -19,13 +19,13 @@ struct MessageActions: View {
 
     @State private var copied = false
 
-    /// Nennenswert, wenn mehrere Modelle eingerichtet sind — oder wenn geantwortet
-    /// hat, was gar nicht eingestellt war.
+    /// Worth naming when several models are set up — or when the thing that answered
+    /// was not the one configured.
     ///
-    /// Der zweite Fall ist das Ausweichmodell: es springt ein, ohne zu fragen, und
-    /// still die Antwort einer anderen Maschine unterzuschieben wäre genau die Art
-    /// von Hilfsbereitschaft, die einem später niemand glaubt. Sonst bleibt die
-    /// Zeile weg, weil sie unter jeder einzelnen Antwort Lärm wäre.
+    /// The second case is the fallback model: it steps in without asking, and quietly
+    /// slipping in another machine's answer would be exactly the kind of helpfulness
+    /// nobody believes you about later. Otherwise the line stays away, because under
+    /// every single answer it would be noise.
     private var attribution: String? {
         guard let name = message.producedBy else { return nil }
         let eingestellt = model.settings.activeLLM?.model
@@ -108,9 +108,9 @@ struct MessageActions: View {
             Spacer(minLength: 0)
 
             if let attribution {
-                // Nachrangig im Platz: die Zeile ist eine Auskunft, die Knöpfe sind
-                // Bedienelemente. Ohne das nahm der Modellname sich seine Breite und
-                // die Beschriftungen brachen um — „Kopiere / n", „Nochm / al".
+                // Lower priority for space: the line is information, the buttons are
+                // controls. Without this the model name took its width and the labels
+                // broke — “Cop / y”, “Try aga / in”.
                 Text(attribution)
                     .font(.eh(10, .caption2))
                     .foregroundStyle(EH.muted)

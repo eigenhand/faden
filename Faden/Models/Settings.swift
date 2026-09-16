@@ -5,9 +5,9 @@ import Foundation
 enum LLMWireFormat: String, Codable, CaseIterable, Identifiable {
     case anthropic
     case openai
-    /// Apples Modell im System. Kein Draht, daher streng genommen kein Wire-Format —
-    /// aber die Anbieterwahl haengt an diesem Schalter, und ein zweiter Schalter
-    /// daneben haette dieselben Zustaende noch einmal darstellbar gemacht.
+    /// Apple's model in the system. No wire, so strictly speaking no wire format —
+    /// but the provider choice hangs on this switch, and a second switch beside it
+    /// would have made the same states representable twice over.
     case appleOnDevice
     var id: String { rawValue }
     var label: String {
@@ -26,7 +26,7 @@ enum LLMWireFormat: String, Codable, CaseIterable, Identifiable {
                  + "und ohne Werkzeuge und Bilder."
         }
     }
-    /// Fuer den Segmentschalter, wo drei volle Namen alle drei abschneiden.
+    /// For the segmented control, where three full names truncate all three.
     var shortLabel: String {
         switch self {
         case .anthropic:     return "Anthropic"
@@ -35,7 +35,7 @@ enum LLMWireFormat: String, Codable, CaseIterable, Identifiable {
         }
     }
 
-    /// Ob dieses Format Adresse, Pfad und Schlüssel braucht.
+    /// Whether this format needs an address, a path and a key.
     var needsEndpoint: Bool { self != .appleOnDevice }
 }
 
@@ -50,36 +50,35 @@ struct LLMConfig: Codable, Equatable, Identifiable {
     /// Path appended to the base URL. Pre-filled per wire format, editable.
     var path: String = "/v1/messages"
     var model: String = ""
-    /// Worauf ausgewichen wird, wenn das Hauptmodell nicht antwortet. Leer heisst:
-    /// gar nicht ausweichen.
+    /// What to fall back to when the main model does not answer. Empty means: do not
+    /// fall back at all.
     ///
-    /// Aus den Einstellungen und nicht aus dem Build. Solange die App einen Anbieter
-    /// mitbrachte, stand hier dessen zweites Modell, gebunden an dessen Adresse —
-    /// wer seinen eigenen Endpoint eintrug, hätte sonst bei einem Fehlschlag einen
-    /// Modellnamen vorgesetzt bekommen, den sein Anbieter nicht kennt. Das war ein
-    /// zweiter Fehlschlag statt einer Rettung. Was der Nutzer selbst einträgt, liegt
-    /// bei seinem Anbieter.
+    /// From the settings and not from the build. While the app still shipped a
+    /// provider, its second model stood here, tied to its address — whoever entered
+    /// their own endpoint would otherwise have been handed a model name on a failure
+    /// that their provider does not know. That was a second failure instead of a
+    /// rescue. What the user enters themselves lives at their own provider.
     var fallbackModel: String = ""
-    /// Das Modell für Züge, an denen ein Bild hängt. Leer heisst: das Hauptmodell
-    /// macht das mit.
+    /// The model for turns that carry an image. Empty means: the main model handles
+    /// those too.
     ///
-    /// Es gibt Modelle, die alles besser können ausser sehen. `z-ai/glm-5.3` ist so
-    /// eines — dieselbe Familie, dieselbe Geschwindigkeit, und auf ein Bild antwortet
-    /// es „Model only supports text input", während `-flash` daneben das Bild
-    /// beschreibt. Ohne diese Zeile müsste man sich entscheiden: entweder das bessere
-    /// Modell oder Bilder. Mit ihr wandert der eine Zug, an dem ein Bild hängt, zu
-    /// dem Modell, das hinsehen kann, und alle anderen bleiben, wo sie sind.
+    /// There are models that do everything better except see. `z-ai/glm-5.3` is one —
+    /// the same family, the same speed, and to an image it answers “Model only supports
+    /// text input”, while `-flash` beside it describes the picture. Without this line
+    /// you would have to choose: either the better model or images. With it, the one
+    /// turn that carries an image goes to the model that can look, and all the others
+    /// stay where they are.
     var visionModel: String = ""
-    /// Worauf ein Bild-Zug ausweicht. Muss selbst Bilder sehen, sonst wäre das
-    /// Ausweichen nur ein zweiter Fehlschlag.
+    /// What an image turn falls back to. Has to see images itself, or the fallback
+    /// would only be a second failure.
     var visionFallbackModel: String = ""
-    /// Die Modellliste dieses Anbieters, so wie er sie zuletzt herausgegeben hat.
+    /// This provider's model list, as it last handed it out.
     ///
-    /// Aufbewahrt und nicht jedes Mal neu geholt: aus dieser Liste werden die vier
-    /// Rollen besetzt, und eine Auswahl, die erst nach einer Netzanfrage aufgeht,
-    /// ist im Zug oder im Keller keine. Sie trägt ausserdem die Fähigkeiten mit sich
-    /// — deshalb kann die Auswahl für Bilder die Modelle anbieten, von denen bekannt
-    /// ist, dass sie welche sehen, statt alle.
+    /// Kept rather than fetched anew every time: the four roles are filled from this
+    /// list, and a picker that only opens after a network request is no picker on a
+    /// train or in a basement. It also carries the capabilities along — which is why
+    /// the picker for images can offer the models known to see them, rather than all
+    /// of them.
     var knownModels: [RemoteModel] = []
     /// Nominal context window in tokens. Drives the bar and the compaction trigger.
     var contextWindow: Int = 200_000
@@ -92,15 +91,16 @@ struct LLMConfig: Codable, Equatable, Identifiable {
     var reportedOutputLimit: Int?
     var maxOutputTokens: Int = 4096
 
-    /// Ob die Antwortlänge von Hand gesetzt wurde.
+    /// Whether the answer length was set by hand.
     ///
-    /// Ist sie das nicht, wächst sie aus der Nutzung: Wird eine Antwort
-    /// abgeschnitten, bevor Text kam, verdoppelt Faden den Vorrat und fragt noch
-    /// einmal. Ein Denkmodell an einer schweren Aufgabe braucht ein Vielfaches
-    /// dessen, was für eine Auskunft reicht, und 4096 ist für beides die falsche
-    /// Zahl — nur merkt man es erst, wenn der Gedankengang mitten im Satz aufhört.
+    /// If it was not, it grows out of use: when an answer is cut off before any text
+    /// arrived, Faden doubles the budget and asks again. A reasoning model on a hard
+    /// task needs a multiple of what suffices for a piece of information, and 4096 is
+    /// the wrong number for both — you only notice when the reasoning stops
+    /// mid-sentence.
     ///
-    /// Wer die Zahl selbst einstellt, wollte sie so. Ab dann wächst nichts mehr.
+    /// Whoever sets the number themselves wanted it that way. From then on nothing
+    /// grows any more.
     var maxOutputTokensIsCustom: Bool = false
     var temperature: Double = 1.0
     /// Extra headers, e.g. `HTTP-Referer` for OpenRouter.
@@ -109,14 +109,14 @@ struct LLMConfig: Codable, Equatable, Identifiable {
     /// to ask an arbitrary endpoint, and sending an image to a text-only model is a
     /// hard error rather than a graceful degradation.
     var supportsVision: Bool = false
-    /// Ob dieses Modell Werkzeuge annimmt. **nil heisst ungeprüft.**
+    /// Whether this model accepts tools. **nil means unchecked.**
     ///
-    /// Der Unterschied trägt hier Gewicht: `false` schaltet die Werkzeuge in jedem
-    /// Zug ab, `nil` lässt es beim bisherigen Verhalten — die App schickt sie mit,
-    /// wie sie es immer getan hat. Ein Endpoint, der den Parameter nicht kennt,
-    /// weist die Anfrage mit HTTP 400 ab; das ist die Messung, die hier landet.
+    /// The difference carries weight here: `false` switches the tools off in every
+    /// turn, `nil` leaves the previous behaviour in place — the app sends them along as
+    /// it always has. An endpoint that does not know the parameter refuses the request
+    /// with HTTP 400; that is the measurement that lands here.
     var supportsTools: Bool?
-    /// Ob das Modell seinen Gedankengang mitschickt. **nil heisst ungeprüft.**
+    /// Whether the model sends its reasoning along. **nil means unchecked.**
     var supportsReasoning: Bool?
     /// Anthropic only: ask for adaptive thinking and stream a summary of it.
     var requestThinking: Bool = false
@@ -147,9 +147,9 @@ struct LLMConfig: Codable, Equatable, Identifiable {
         reportedContextLimit  = try c.decodeIfPresent(Int.self, forKey: .reportedContextLimit)
         reportedOutputLimit   = try c.decodeIfPresent(Int.self, forKey: .reportedOutputLimit)
         maxOutputTokens       = try c.decodeIfPresent(Int.self, forKey: .maxOutputTokens) ?? d.maxOutputTokens
-        // Eine Einstellung von vor dieser Funktion weiß nicht, ob jemand die Zahl
-        // angefasst hat. Steht dort noch die Vorgabe, hat es niemand getan — und
-        // genau der Fall ist der, dem das Wachsen hilft.
+        // A settings file from before this feature does not know whether anyone
+        // touched the number. If the default still stands there, nobody did — and that
+        // is exactly the case the growing helps.
         maxOutputTokensIsCustom = try c.decodeIfPresent(Bool.self, forKey: .maxOutputTokensIsCustom)
             ?? (maxOutputTokens != d.maxOutputTokens)
         temperature           = try c.decodeIfPresent(Double.self, forKey: .temperature) ?? d.temperature
@@ -164,43 +164,44 @@ struct LLMConfig: Codable, Equatable, Identifiable {
 
     init() {}
 
-    /// Die Modelle, die für Bilder in Frage kommen.
+    /// The models that come into question for images.
     ///
-    /// Alles ausser dem, was nachweislich blind ist. Bewusst nicht „nur was
-    /// nachweislich sieht": die meisten Anbieter schweigen zu Bildern, und eine
-    /// Auswahl, die deshalb leer bleibt, hilft niemandem. Was dasteht, ist also
-    /// „kommt in Frage" und nicht „ist geprüft" — geprüft wird beim Verbindungstest.
+    /// Everything except what is demonstrably blind. Deliberately not “only what
+    /// demonstrably sees”: most providers say nothing about images, and a picker that
+    /// stays empty because of it helps nobody. What stands there therefore means “comes
+    /// into question” and not “has been checked” — checking happens in the connection
+    /// test.
     var imageCapableModels: [RemoteModel] {
         knownModels.filter { $0.capabilities.vision != false }
     }
 
-    /// Ob überhaupt ein Bild angehängt werden darf.
+    /// Whether an image may be attached at all.
     ///
-    /// Zwei Wege führen dahin, und der zweite ist der neue: entweder das Hauptmodell
-    /// sieht Bilder, oder es gibt ein eigenes Modell dafür. Ohne diese Frage an einer
-    /// Stelle hinge das Pluszeichen weiter allein am Hauptmodell — und wer gerade ein
-    /// Vision-Modell eingetragen hat, sähe es trotzdem nicht.
+    /// Two routes lead there, and the second is the new one: either the main model sees
+    /// images, or there is a separate model for them. Without this question in one
+    /// place the plus sign would still hang on the main model alone — and whoever had
+    /// just entered a vision model would still not see it.
     var acceptsImages: Bool {
         supportsVision || !visionModel.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
-    /// Welches Modell diesen Zug bearbeitet.
+    /// Which model handles this turn.
     ///
-    /// Statisch wäre hier falsch: die Antwort hängt an dieser Konfiguration. Prüfbar
-    /// ist sie trotzdem, denn sie fragt nichts ausser sich selbst.
+    /// Static would be wrong here: the answer hangs on this configuration. It is
+    /// testable all the same, because it asks nothing but itself.
     func model(forImages: Bool) -> String {
         let vision = visionModel.trimmingCharacters(in: .whitespaces)
         return forImages && !vision.isEmpty ? vision : model
     }
 
-    /// Worauf dieser Zug ausweicht, oder nil.
+    /// What this turn falls back to, or nil.
     ///
-    /// `active` ist das Modell, das gerade gescheitert ist — auf dasselbe noch einmal
-    /// auszuweichen wäre keine zweite Chance, sondern derselbe Fehler.
+    /// `active` is the model that has just failed — falling back to the same one again
+    /// would be no second chance but the same mistake.
     ///
-    /// Hängt ein Bild am Zug, gilt zuerst das Bild-Ausweichmodell und erst dann das
-    /// allgemeine. Andersherum liefe man Gefahr, ein Bild an ein Modell zu schicken,
-    /// das nicht sehen kann — und der Rettungsversuch wäre der zweite Fehlschlag.
+    /// If an image hangs on the turn, the image fallback applies first and the general
+    /// one only after. The other way round you would risk sending an image to a model
+    /// that cannot see — and the rescue attempt would be the second failure.
     func fallback(forImages: Bool, after active: String) -> String? {
         func clean(_ s: String) -> String { s.trimmingCharacters(in: .whitespaces) }
         let candidates = forImages
@@ -209,11 +210,11 @@ struct LLMConfig: Codable, Equatable, Identifiable {
         return candidates.first { !$0.isEmpty && $0 != active }
     }
 
-    /// Die Marken, die unter diesem Modell stehen.
+    /// The badges that stand under this model.
     ///
-    /// `supportsVision` ist hier die Ausnahme: es ist ein Schalter und keine
-    /// Feststellung — aus steht für „biete keine Bilder an", gleich ob geprüft oder
-    /// nicht. Als Marke zählt deshalb nur das Ja.
+    /// `supportsVision` is the exception here: it is a switch and not a finding — off
+    /// stands for “do not offer images”, whether checked or not. Only the yes counts as
+    /// a badge, therefore.
     var capabilities: Capabilities {
         Capabilities(vision: supportsVision ? true : nil,
                      tools: supportsTools,
@@ -227,11 +228,12 @@ struct LLMConfig: Codable, Equatable, Identifiable {
         return URL(string: base + path)
     }
 
-    /// Ob dieses Modell benutzbar ist.
+    /// Whether this model is usable.
     ///
-    /// Apples Modell braucht weder Adresse noch Modellnamen — es ist da oder nicht,
-    /// und das entscheidet das System. Deshalb hier nur die Frage, ob die App es
-    /// ansprechen *darf*; ob es gerade bereit ist, sagt `AppleModel.status`.
+    /// Apple's model needs neither an address nor a model name — it is there or it is
+    /// not, and the system decides that. So the question here is only whether the app
+    /// *may* address it; whether it is ready right now is what `AppleModel.status`
+    /// says.
     var isComplete: Bool {
         if wireFormat == .appleOnDevice { return true }
         return endpointURL != nil && !model.trimmingCharacters(in: .whitespaces).isEmpty

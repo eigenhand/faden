@@ -7,8 +7,8 @@ struct ModelPickerSheet: View {
     let apiKey: String
     /// Called with the chosen model and the limits the endpoint reported for it.
     var onPick: (RemoteModel) -> Void
-    /// Die ganze geladene Liste, damit der Anbieter sie behalten kann. Aus ihr werden
-    /// die übrigen Rollen besetzt — ohne sie müsste jede Auswahl wieder ans Netz.
+    /// The whole loaded list, so the provider can keep it. The remaining roles are
+    /// filled from it — without it every choice would have to go to the network again.
     var onLoad: ([RemoteModel]) -> Void = { _ in }
 
     @State private var models: [RemoteModel] = []

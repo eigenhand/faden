@@ -1,48 +1,45 @@
 import Foundation
 
-/// Was aus einer fremden Datei in den eigenen Verlauf darf.
+/// What may pass from a foreign file into your own history.
 ///
-/// Eine geteilte Unterhaltung ist bequem und harmlos, solange man sie liest. Sie wird
-/// etwas anderes, sobald man in ihr weiterschreibt: ab dann geht sie bei jeder
-/// Anfrage als Vorgeschichte mit, und was darin als *Assistentenzug* steht, liest das
-/// Modell als seine eigene frühere Ausgabe. Kein Sprachmodell wiegt beides gleich —
-/// die eigene Vorgeschichte wiegt schwerer als jede Bitte des Nutzers.
+/// A shared conversation is convenient and harmless as long as you read it. It becomes
+/// something else the moment you write on in it: from then on it travels with every
+/// request as prehistory, and what stands in it as an *assistant turn* is read by the
+/// model as its own earlier output. No language model weighs the two equally — its own
+/// prehistory weighs more than any request from the user.
 ///
-/// Drei Dinge werden deshalb beim Hereinnehmen entfernt, und jedes hat einen
-/// konkreten Anlass:
+/// Three things are therefore removed on import, and each has a concrete occasion:
 ///
-///  - **Gedankengänge.** Sie sind in der Oberfläche eingeklappt und werden von keinem
-///    Anbieter zurückgeschickt — sie sind also unsichtbar *und* wirkungslos, wenn sie
-///    echt sind. Ein gefälschter wäre das Gegenteil: die überzeugendste Stimme im
-///    ganzen Verlauf, weil sie klingt wie das Modell mit sich selbst. Etwas, das nur
-///    schaden kann, lässt man draussen.
-///  - **Das Kennzeichen „Zusammenfassung".** In der Systemanweisung steht wörtlich:
-///    erscheint im Verlauf eine Zusammenfassung, ist sie massgeblich. Genau dieses
-///    Kennzeichen kann eine Datei setzen. Eine fremde Datei darf ihren Inhalt nicht
-///    selbst für massgeblich erklären.
-///  - **Werkzeugaufrufe ohne Ergebnis und Ergebnisse ohne Aufruf.** Das ist weniger
-///    Angriff als Defekt, und ein teurer: Anbieter lehnen einen Verlauf mit einem
-///    unbeantworteten Aufruf ab — *jede* weitere Anfrage in dieser Unterhaltung, denn
-///    der Verlauf geht jedes Mal mit. Eine Datei könnte also eine Unterhaltung
-///    erzeugen, in der man nie wieder etwas senden kann.
+///  - **Reasoning.** It is collapsed in the interface and is sent back by no provider —
+///    so it is invisible *and* ineffective when genuine. A forged one would be the
+///    opposite: the most persuasive voice in the whole history, because it sounds like
+///    the model talking to itself. Something that can only do harm is left outside.
+///  - **The “summary” flag.** The system instruction says it verbatim: if a summary
+///    appears in the history, it is authoritative. That very flag is something a file
+///    can set. A foreign file must not declare its own content authoritative.
+///  - **Tool calls without results and results without calls.** That is less an attack
+///    than a defect, and an expensive one: providers refuse a history with an
+///    unanswered call — *every* further request in this conversation, because the
+///    history travels along every time. A file could therefore produce a conversation
+///    in which nothing can ever be sent again.
 ///
-/// Dazu zwei Obergrenzen. Eine Datei aus fremder Hand bestimmt sonst, wie viel
-/// Speicher die App belegt und wie gross der Kontext beim nächsten Zug ist — und
-/// Kontext ist bezahlt.
+/// Plus two upper bounds. A file from someone else's hand would otherwise decide how
+/// much storage the app takes and how large the context is on the next turn — and
+/// context is paid for.
 enum ImportGuard {
 
-    /// So gross darf die Datei sein. Ein Bild macht aus sechs Nachrichten schon
-    /// 340 000 Zeichen; acht Megabyte fassen damit jede Unterhaltung, die jemand
-    /// wirklich weiterreicht, und keine, die als Waffe gemeint ist.
+    /// How large the file may be. One image already turns six messages into 340,000
+    /// characters; eight megabytes therefore hold every conversation somebody really
+    /// passes on, and none meant as a weapon.
     static let maxBytes = 8 * 1024 * 1024
-    /// So viele Nachrichten. Behalten wird das **Ende**: dort steht, woran jemand
-    /// weiterschreiben will.
+    /// This many messages. What is kept is the **end**: that is where the thing
+    /// somebody wants to write on stands.
     static let maxMessages = 2_000
     static let maxBlocksPerMessage = 200
 
     struct Outcome {
         var conversation: Conversation
-        /// Was entfernt wurde, in einem Satz für den Nutzer — oder leer.
+        /// What was removed, in one sentence for the user — or empty.
         var note: String?
     }
 
@@ -58,7 +55,7 @@ enum ImportGuard {
             c.messages = Array(c.messages.suffix(maxMessages))
         }
 
-        // Welche Werkzeugaufrufe im Verlauf beantwortet werden, und umgekehrt.
+        // Which tool calls in the history are answered, and the other way round.
         var answeredCalls: Set<String> = []
         var presentCalls: Set<String> = []
         for m in c.messages {
@@ -91,8 +88,8 @@ enum ImportGuard {
                 droppedToolBlocks += m.blocks.count - maxBlocksPerMessage
             }
             m.blocks = kept
-            // Eine Nachricht ohne Inhalt ist keine. Sie stehenzulassen hiesse, dem
-            // Anbieter eine leere Rolle zu schicken, und manche lehnen das ab.
+            // A message without content is none. Leaving it in place would mean
+            // sending the provider an empty role, and some refuse that.
             return kept.isEmpty ? nil : m
         }
 

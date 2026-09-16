@@ -3,18 +3,17 @@ import Foundation
 import FoundationModels
 #endif
 
-/// Apples Modell auf dem Gerät, über `FoundationModels`.
+/// Apple's on-device model, through `FoundationModels`.
 ///
-/// Der eine Anbieter in dieser App, der keiner ist: kein Endpoint, kein Schlüssel,
-/// keine Leitung. Das passt zu Fadens Prämisse besser als alles andere — die App
-/// bringt keine Infrastruktur mit, und hier gibt es keine, die sie mitbringen
-/// könnte. Ein Gespräch mit diesem Modell verlässt das Telefon nicht.
+/// The one provider in this app that is none: no endpoint, no key, no wire. That fits
+/// Faden's premise better than anything else — the app brings no infrastructure with it,
+/// and here there is none it could bring. A conversation with this model does not leave
+/// the phone.
 ///
-/// Der Preis steht in `AppleModel.limitations` und wird in den Einstellungen
-/// angezeigt, nicht verschwiegen: kein Werkzeuggebrauch, keine Bilder, ein kleines
-/// Kontextfenster. Ein schwaches Modell, das man richtig beschreibt, ist brauchbar;
-/// eines, das man als gleichwertig hinstellt, enttäuscht bei der ersten Frage, die
-/// eine Websuche gebraucht hätte.
+/// The price stands in `AppleModel.limitations` and is shown in the settings, not kept
+/// quiet: no tool use, no images, a small context window. A weak model described
+/// correctly is usable; one presented as an equal disappoints on the first question that
+/// would have needed a web search.
 struct AppleProvider: LLMProvider {
 
     func stream(messages: [Message], system: String, tools: [ToolSpec],
@@ -50,10 +49,10 @@ struct AppleProvider: LLMProvider {
             throw LLMError.transport(AppleModel.status.detail)
         }
 
-        // Die letzte Nutzernachricht ist die Frage, alles davor der Verlauf. Anders
-        // als bei den Netz-Anbietern schickt man hier nicht die ganze Historie als
-        // eine Anfrage: die Sitzung führt ihr eigenes Protokoll, und der Prompt ist
-        // nur der neue Zug.
+        // The last user message is the question, everything before it the history.
+        // Unlike with the network providers, the whole history is not sent as one
+        // request here: the session keeps its own transcript, and the prompt is only the
+        // new turn.
         guard let lastUser = messages.last(where: { $0.role == .user }) else {
             throw LLMError.transport("Keine Frage in der Unterhaltung gefunden.")
         }
@@ -65,10 +64,9 @@ struct AppleProvider: LLMProvider {
         var options = GenerationOptions(temperature: config.temperature)
         options.maximumResponseTokens = config.maxOutputTokens
 
-        // Die Schnappschüsse sind kumulativ — jeder enthält den ganzen bisherigen
-        // Text, nicht das neue Stück. Faden erwartet Zuwächse, also wird hier
-        // differenziert. Ohne das stünde die Antwort nach jedem Schnappschuss
-        // vollständig noch einmal da.
+        // The snapshots are cumulative — each holds all the text so far, not the new
+        // piece. Faden expects increments, so the difference is taken here. Without it
+        // the answer would stand there in full again after every snapshot.
         var emitted = ""
         for try await snapshot in session.streamResponse(to: prompt(lastUser), options: options) {
             try Task.checkCancellation()
@@ -82,12 +80,11 @@ struct AppleProvider: LLMProvider {
         continuation.finish()
     }
 
-    /// Fadens Verlauf als Protokoll der Sitzung.
+    /// Faden's history as the session's transcript.
     ///
-    /// Bilder, Werkzeugaufrufe und Gedankengänge fallen dabei heraus — das Modell
-    /// kann keines davon. Sie stillschweigend als Text mitzuschicken wäre schlimmer
-    /// als sie wegzulassen: aus einem Werkzeugergebnis würde eine Behauptung ohne
-    /// Herkunft.
+    /// Images, tool calls and reasoning fall away in the process — the model can do none
+    /// of them. Sending them along silently as text would be worse than leaving them
+    /// out: a tool result would turn into an assertion without a source.
     @available(iOS 26.0, *)
     private static func entries(system: String, history: [Message]) -> [Transcript.Entry] {
         var out: [Transcript.Entry] = []
@@ -107,9 +104,9 @@ struct AppleProvider: LLMProvider {
             switch message.role {
             case .user:      out.append(.prompt(Transcript.Prompt(segments: segments)))
             case .assistant: out.append(.response(Transcript.Response(assetIDs: [], segments: segments)))
-            // Eine System-Nachricht mitten im Verlauf gehoert nicht ins Protokoll:
-            // die Anweisung steht schon als `instructions` am Anfang, und ein
-            // zweiter Satz Regeln in der Mitte wuerde dem Modell widersprechen.
+            // A system message in the middle of the history does not belong in the
+            // transcript: the instruction already stands as `instructions` at the
+            // start, and a second set of rules in the middle would contradict it.
             case .system:    break
             }
         }
@@ -124,18 +121,18 @@ struct AppleProvider: LLMProvider {
         }.joined(separator: "\n")
     }
 
-    /// Apples Fehler in Sätze, die sagen, was zu tun ist.
+    /// Apple's errors turned into sentences that say what to do.
     ///
-    /// Über den in iOS 27 abgekündigten `GenerationError` und nicht über den neuen
-    /// `LanguageModelError` — den gibt es erst ab 27, und diese Funktion soll ab 26
-    /// laufen. Abgekündigt heißt vorhanden; wenn Faden einmal iOS 27 voraussetzt,
-    /// ist das hier die Stelle, die umzieht.
+    /// Through `GenerationError`, deprecated in iOS 27, and not through the new
+    /// `LanguageModelError` — that one only exists from 27 onwards, and this function
+    /// should run from 26. Deprecated means present; if Faden ever requires iOS 27, this
+    /// is the place that moves.
     @available(iOS 26.0, *)
     private static func translate(_ error: Error) -> Error {
         guard let generation = error as? LanguageModelSession.GenerationError else {
-            // Apples Sicherheitspruefung sitzt als eigener Systemdienst daneben und
-            // fehlt im Simulator ganz. Der rohe Fehler sagt „SensitiveContentAnalysisML
-            // 15" und schickt jeden auf die falsche Suche.
+            // Apple's safety check sits beside it as a system service of its own and
+            // is missing from the simulator entirely. The raw error says
+            // “SensitiveContentAnalysisML 15” and sends everyone on the wrong hunt.
             let ns = error as NSError
             if ns.domain.contains("SensitiveContentAnalysis") {
                 return LLMError.transport(
@@ -175,13 +172,13 @@ struct AppleProvider: LLMProvider {
     #endif
 }
 
-/// Was Apples Modell ist, kann und nicht kann — an einer Stelle, damit Oberfläche
-/// und Anbieter dasselbe sagen.
+/// What Apple's model is, can and cannot do — in one place, so that the interface and
+/// the provider say the same thing.
 enum AppleModel {
 
     static let needsOS = "Apples Modell auf dem Gerät gibt es ab iOS 26."
 
-    /// Die Grenzen, ungeschönt. Stehen so in den Einstellungen.
+    /// The limits, unvarnished. They stand like this in the settings.
     static let limitations = [
         "Keine Werkzeuge: keine Websuche, kein Gedächtnisabruf, keine Dateien.",
         "Keine Bilder — das Modell liest nur Text.",
@@ -195,13 +192,12 @@ enum AppleModel {
         var detail: String
     }
 
-    /// Was das System gerade sagt — und bei jedem Nein, woran es liegt.
+    /// What the system says right now — and, on every no, what it is down to.
     ///
-    /// Drei verschiedene Gründe, und sie verlangen drei verschiedene Handlungen:
-    /// ein zu altes Gerät ist endgültig, eine abgeschaltete Apple Intelligence ist
-    /// ein Schalter in den Systemeinstellungen, ein nicht geladenes Modell ist
-    /// Warten. Alle drei als „nicht verfügbar" zu zeigen hieße, den Nutzer raten zu
-    /// lassen, welcher davon gilt.
+    /// Three different reasons, and they call for three different actions: a device too
+    /// old is final, Apple Intelligence switched off is a toggle in the system settings,
+    /// a model not yet downloaded is waiting. Showing all three as “not available” would
+    /// mean leaving the user to guess which one applies.
     static var status: Status {
         #if canImport(FoundationModels)
         guard #available(iOS 26.0, *) else {

@@ -29,7 +29,7 @@ enum LLMError: LocalizedError {
         case .notConfigured:          return String(localized: "Kein Modell konfiguriert. Endpoint, Key und Modellname fehlen.")
         case .missingKey:             return String(localized: "Kein API-Key im Schlüsselbund hinterlegt.")
         case .http(let s, _) where Backoff.isBusy(s):
-            // Nach den Wartepausen. „HTTP 429" plus JSON wäre richtig und nutzlos.
+            // After the waits. “HTTP 429” plus JSON would be correct and useless.
             return String(localized: "Der Anbieter drosselt gerade (HTTP \(s)) — auch nach zwei Wartepausen noch.")
         case .http(let s, let b):
             let snippet = b.count > 400 ? String(b.prefix(400)) + "…" : b
@@ -40,28 +40,28 @@ enum LLMError: LocalizedError {
     }
 }
 
-/// Warten, wenn der Anbieter drosselt.
+/// Waiting when the provider throttles.
 ///
-/// Ein 429 heißt „zu viele Anfragen", 503 und 529 heißen „gerade überlastet". Das
-/// sind Wartezeiten, keine Defekte — und die richtige Antwort darauf ist, kurz zu
-/// warten und dasselbe Modell noch einmal zu fragen.
+/// A 429 means “too many requests”, 503 and 529 mean “overloaded right now”. Those are
+/// waiting times, not defects — and the right answer to them is to wait briefly and ask
+/// the same model again.
 ///
-/// Faden hat stattdessen sofort auf das Ausweichmodell geschaltet. Das ist die
-/// teuerste mögliche Reaktion: zwei Modelle desselben Anbieters, auf derselben
-/// Frage gemessen, lagen 72 Sekunden gegen 12 — aus zwei Sekunden Warten wurde
-/// eine Minute, und der Nutzer bekam die schlechtere Antwort obendrein. Das
-/// Ausweichmodell bleibt, aber als letzter Schritt und nicht als erster.
+/// Faden instead switched to the fallback model at once. That is the most expensive
+/// possible reaction: two models from the same provider, measured on the same question,
+/// came to 72 seconds against 12 — two seconds of waiting turned into a minute, and the
+/// user got the worse answer on top. The fallback model stays, but as the last step and
+/// not the first.
 enum Backoff {
 
     static func isBusy(_ status: Int) -> Bool { status == 429 || status == 503 || status == 529 }
 
-    /// Höchstens zwei Pausen. Sechs Sekunden sind die Grenze dessen, was man
-    /// stillschweigend aussitzen darf; danach ist das Ausweichmodell an der Reihe.
+    /// At most two waits. Six seconds is the limit of what may be sat out in silence;
+    /// after that the fallback model's turn has come.
     static let maxWaits = 2
 
-    /// `Retry-After` zuerst, weil der Anbieter es besser weiß als jede Formel —
-    /// gedeckelt, damit ein Kopf mit „3600" nicht die App für eine Stunde anhält.
-    /// Sonst 2, dann 4 Sekunden.
+    /// `Retry-After` first, because the provider knows better than any formula —
+    /// capped, so that a header saying “3600” does not stop the app for an hour.
+    /// Otherwise 2, then 4 seconds.
     static func pause(retryAfter header: String?, attempt: Int) -> Double {
         if let header, let seconds = Double(header.trimmingCharacters(in: .whitespaces)),
            seconds > 0 {
@@ -70,13 +70,13 @@ enum Backoff {
         return Double(1 << (attempt + 1))
     }
 
-    /// Öffnet die Verbindung — und wartet, statt bei einer Drosselung aufzugeben.
+    /// Opens the connection — and waits rather than giving up on a throttle.
     ///
-    /// Gemeinsam für beide Anbieter, weil beide dieselben sechs Zeilen hatten und ein
-    /// Wartemechanismus an zwei Stellen einer ist, der an einer Stelle vergessen wird.
+    /// Shared by both providers, because both carried the same six lines, and a waiting
+    /// mechanism in two places is one that gets forgotten in one of them.
     ///
-    /// Ein zweiter Versuch ist hier gefahrlos: es ist noch kein Zeichen beim Leser
-    /// angekommen. Nach den ersten Zeichen wäre er es nicht mehr.
+    /// A second attempt is harmless here: not a character has reached the reader yet.
+    /// After the first characters it would no longer be.
     static func open(_ build: () throws -> URLRequest) async throws -> URLSession.AsyncBytes {
         var attempt = 0
         while true {
@@ -103,20 +103,20 @@ enum Backoff {
 
 extension Array where Element == Message {
 
-    /// Entfernt Werkzeugaufrufe, zu denen kein Ergebnis in der Historie steht —
-    /// und Ergebnisse, zu denen kein Aufruf steht.
+    /// Removes tool calls that have no result in the history — and results that have
+    /// no call.
     ///
-    /// Beide Formate verlangen die Paarung. OpenAI-kompatible Endpoints antworten
-    /// auf eine Assistenznachricht mit `tool_calls` ohne passende `tool`-Nachrichten
-    /// mit HTTP 400, Anthropic ebenso. Und weil bei jeder Anfrage die *ganze*
-    /// Historie mitgeht, ist ein einziges verwaistes Paar kein einmaliger Fehler:
-    /// ab da geht in diesem Gespräch keine Nachricht mehr durch. Genau so ist es
-    /// aufgefallen — zwei Antworten mit Quellen, und danach nichts mehr.
+    /// Both formats demand the pairing. OpenAI-compatible endpoints answer an assistant
+    /// message carrying `tool_calls` without matching `tool` messages with HTTP 400, and
+    /// Anthropic does the same. And because the *whole* history travels with every
+    /// request, a single orphaned pair is not a one-off error: from then on no message
+    /// gets through in that conversation again. That is exactly how it came to light —
+    /// two answers with sources, and after that nothing.
     ///
-    /// Entstehen kann es beim Abbrechen: das Modell hat die Aufrufe schon gestellt,
-    /// die Werkzeuge sind noch nicht gelaufen. Die Stelle ist repariert, aber das
-    /// hilft keinem Gespräch, das schon auf dem Gerät liegt. Deshalb steht der
-    /// Schutz hier, an der Leitung, wo jede Anfrage vorbeimuss.
+    /// It can arise on cancellation: the model has already made the calls, the tools
+    /// have not run yet. That place is repaired, but it helps no conversation already
+    /// sitting on the device. Which is why the protection stands here, on the wire,
+    /// where every request has to pass.
     func pairingToolCallsAndResults() -> [Message] {
         var called: Set<String> = []
         var answered: Set<String> = []
@@ -129,7 +129,8 @@ extension Array where Element == Message {
                 }
             }
         }
-        // Der Normalfall, und er soll nichts kosten: nichts kopieren, wenn alles paart.
+        // The normal case, and it should cost nothing: copy nothing when everything
+        // pairs up.
         guard called != answered else { return self }
 
         return compactMap { m in

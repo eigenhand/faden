@@ -1,11 +1,11 @@
 import SwiftUI
 
-/// Hell oder dunkel.
+/// Light or dark.
 ///
-/// Die Vorgabe folgt dem Gerät, und das ist mehr als Bequemlichkeit: iOS schaltet
-/// zur Dämmerung um, und wer das eingestellt hat, will es überall. Die beiden festen
-/// Werte sind für die Fälle, in denen jemand es besser weiß — ein heller Bildschirm
-/// in der Sonne, ein dunkler im Bett neben jemandem, der schläft.
+/// The default follows the device, and that is more than convenience: iOS switches at
+/// dusk, and whoever set that up wants it everywhere. The two fixed values are for the
+/// cases where somebody knows better — a light screen in the sun, a dark one in bed
+/// beside somebody who is asleep.
 enum AppAppearance: String, Codable, CaseIterable, Identifiable, Sendable {
     case system
     case light
@@ -13,7 +13,7 @@ enum AppAppearance: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var id: String { rawValue }
 
-    /// `nil` heißt: das Gerät entscheidet.
+    /// `nil` means: the device decides.
     var scheme: ColorScheme? {
         switch self {
         case .system: return nil

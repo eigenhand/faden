@@ -1,18 +1,17 @@
 import SwiftUI
 
-/// Was ein Modell kann, soweit man es weiss.
+/// What a model can do, as far as it is known.
 ///
-/// Drei Fragen mit je drei Antworten: ja, nein, und **ungeprüft**. Das dritte ist
-/// keine Spitzfindigkeit, sondern der häufigste Fall und der gefährlichste. Die
-/// Modellliste eines Anbieters schweigt regelmässig zu einer Fähigkeit, statt sie zu
-/// verneinen — und wer Schweigen als Nein liest, versteckt eine Funktion, die da
-/// wäre; wer es als Ja liest, bietet eine an, die beim ersten Versuch mit HTTP 400
-/// auseinanderfliegt.
+/// Three questions with three answers each: yes, no, and **unchecked**. The third is no
+/// pedantry but the most common case and the most dangerous. A provider's model list
+/// regularly says nothing about a capability rather than denying it — and whoever reads
+/// silence as no hides a feature that is there; whoever reads it as yes offers one that
+/// falls apart with HTTP 400 on the first attempt.
 ///
-/// Gemessen statt geglaubt, wo es billig ist: `z-ai/glm-5.3` führt in der Liste
-/// dieses Anbieters gar kein Feld für Bilder — weder wahr noch falsch —, und auf ein
-/// Bild antwortet es „Model only supports text input". Dasselbe Modell mit `-flash`
-/// am Namen sieht das Bild. Auf die Liste allein ist also kein Verlass.
+/// Measured rather than believed, where it is cheap: `z-ai/glm-5.3` carries no field for
+/// images at all in this provider's list — neither true nor false — and to an image it
+/// answers “Model only supports text input”. The same model with `-flash` in the name
+/// sees the picture. So the list alone cannot be relied on.
 struct Capabilities: Codable, Equatable, Hashable, Sendable {
     var vision: Bool?
     var tools: Bool?
@@ -26,10 +25,10 @@ struct Capabilities: Codable, Equatable, Hashable, Sendable {
 
     var isEmpty: Bool { vision == nil && tools == nil && reasoning == nil }
 
-    /// Was der Anbieter behauptet, überschrieben von dem, was gemessen wurde.
+    /// What the provider claims, overridden by what was measured.
     ///
-    /// Die Messung gewinnt immer, wenn es eine gibt. Sie hat das Modell wirklich
-    /// gefragt; die Liste gibt wieder, was jemand einmal eingetragen hat.
+    /// The measurement always wins when there is one. It really asked the model; the
+    /// list repeats what somebody once entered.
     func overridden(by measured: Capabilities) -> Capabilities {
         Capabilities(vision: measured.vision ?? vision,
                      tools: measured.tools ?? tools,
@@ -37,13 +36,12 @@ struct Capabilities: Codable, Equatable, Hashable, Sendable {
     }
 }
 
-/// Die Marken unter einem Modellnamen.
+/// The badges under a model name.
 ///
-/// Nur was zutrifft, bekommt eine Marke. Eine Reihe aus „Vision ✗ · Functions ✓"
-/// liest sich als Prüfbericht; drei Wörter, von denen jedes für sich steht, liest man
-/// im Vorbeigehen. Was fehlt, fehlt — und der Unterschied zwischen „kann es nicht"
-/// und „wissen wir nicht" gehört in den Text daneben, nicht in eine durchgestrichene
-/// Marke.
+/// Only what applies gets a badge. A row reading “Vision ✗ · Functions ✓” reads like an
+/// inspection report; three words that each stand on their own are read in passing. What
+/// is missing is missing — and the difference between “cannot do it” and “we do not
+/// know” belongs in the text beside it, not in a struck-through badge.
 struct CapabilityBadges: View {
     let capabilities: Capabilities
 

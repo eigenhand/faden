@@ -182,9 +182,9 @@ enum PageFetcher {
         guard let url = URL(string: urlString) else {
             return "Fehler: „\(urlString)“ ist keine gültige Adresse."
         }
-        // Die Adresse kommt vom Modell und damit mittelbar aus einer Quelle, die
-        // jemand anderes geschrieben hat. Was ins lokale Netz zeigt, wird nicht
-        // geladen — siehe `FetchTarget`.
+        // The address comes from the model and therefore indirectly from a source
+        // somebody else wrote. What points into the local network is not loaded — see
+        // `FetchTarget`.
         if let refusal = FetchTarget.refusal(for: url) {
             return "Fehler: \(refusal)"
         }
@@ -199,9 +199,9 @@ enum PageFetcher {
         do {
             let (data, response) = try await Net.session.data(for: req, delegate: redirectGuard)
             let status = (response as? HTTPURLResponse)?.statusCode ?? 0
-            // Eine abgebrochene Weiterleitung kommt als 3xx zurueck. Ohne diesen Satz
-            // stuende dort nur der Status, und das Modell versuchte es wieder — es
-            // laege ja scheinbar an der Seite.
+            // An aborted redirect comes back as a 3xx. Without this sentence only the
+            // status would stand there, and the model would try again — it would appear
+            // to be the page's fault.
             if (300...399).contains(status) {
                 return "Fehler: Die Seite leitet in ein lokales Netz weiter. Nicht gefolgt."
             }

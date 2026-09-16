@@ -1,59 +1,57 @@
 import Foundation
 import NaturalLanguage
 
-/// Einbettungen auf dem Gerät, mit Apples `NLContextualEmbedding`.
+/// Embeddings on the device, with Apple's `NLContextualEmbedding`.
 ///
-/// Der Grund dafür ist nicht Geschwindigkeit, obwohl sie da ist: 8 ms je Satz gegen
-/// gut acht Sekunden für eine ganze Aufnahme über das Netz. Der Grund ist, dass
-/// Erinnerungen der persönlichste Text in dieser App sind und zum Einbetten bisher
-/// über die Leitung mussten — und dass ein Gedächtnis ohne Einbettungs-Endpoint
-/// überhaupt nicht lief. Wer bei einem kleinen Anbieter nur ein Chat-Modell hat,
-/// bekam gar keines.
+/// The reason is not speed, although it is there: 8 ms per sentence against a good
+/// eight seconds for a whole ingestion over the network. The reason is that memories are
+/// the most personal text in this app and had to travel down the wire to be embedded —
+/// and that a memory without an embedding endpoint did not run at all. Whoever has only
+/// a chat model at a small provider got none.
 ///
-/// Der Preis steht in denselben Messungen. Auf neun Fragen gegen vierzehn deutsche
-/// Erinnerungen traf das Netzmodell (qwen3-embedding-8b, 4096 Dimensionen) siebenmal
-/// auf Platz eins, dieses hier fünfmal; im Mittel steht die richtige Erinnerung dort
-/// auf Rang 1,44, hier auf 4,33. Und das Modell wiegt 108 MB, während die ganze App
-/// 3,3 MB wiegt. Deshalb ist das hier eine Wahl und keine Voreinstellung.
+/// The price stands in the same measurements. On nine questions against fourteen German
+/// memories, the network model (qwen3-embedding-8b, 4096 dimensions) hit first place
+/// seven times, this one five; on average the right memory ranks 1.44 there and 4.33
+/// here. And the model weighs 108 MB, while the whole app weighs 3.3 MB. Which is why
+/// this is a choice and not a default.
 actor LocalEmbedder {
     static let shared = LocalEmbedder()
 
-    /// Der Name, der als Herkunft an jedem Vektor steht.
+    /// The name that stands on every vector as its origin.
     ///
-    /// Mit Revision, weil Apple das Modell mit einem Systemupdate austauschen kann:
-    /// dieselbe Kennung für zwei verschiedene Modelle wäre genau der stille Unsinn,
-    /// gegen den der Stempel gebaut wurde.
+    /// With a revision, because Apple can swap the model out in a system update: the
+    /// same identifier for two different models would be exactly the quiet nonsense the
+    /// stamp was built against.
     static var modelIdentifier: String {
         let revision = NLContextualEmbedding(script: .latin)?.revision ?? 0
         return "apple-nlcontextual-v\(revision)"
     }
 
-    /// Ein Modell für alle lateinischen Schriften, nicht eines je Sprache.
+    /// One model for all Latin scripts, not one per language.
     ///
-    /// Ein persönliches Gedächtnis enthält deutsche und englische Sätze
-    /// nebeneinander. Zwei Sprachmodelle wären zwei Vektorräume, und damit genau
-    /// das Problem, das der Herkunftsstempel verhindern soll. Das lateinische Modell
-    /// deckt 20 Sprachen ab; gemessen liegt ein deutscher Satz und seine englische
-    /// Entsprechung bei 0,95 zueinander.
+    /// A personal memory holds German and English sentences side by side. Two language
+    /// models would be two vector spaces, and therefore exactly the problem the origin
+    /// stamp is meant to prevent. The Latin model covers 20 languages; measured, a
+    /// German sentence and its English counterpart sit at 0.95 to each other.
     private static func makeModel() -> NLContextualEmbedding? {
         NLContextualEmbedding(script: .latin)
     }
 
     private var model: NLContextualEmbedding?
 
-    /// True, wenn dieses Gerät das Modell überhaupt kennt.
+    /// True when this device knows the model at all.
     nonisolated static var isSupported: Bool { makeModel() != nil }
 
-    /// True, wenn die 108 MB schon auf dem Gerät liegen.
+    /// True when the 108 MB already lie on the device.
     nonisolated static var hasAssets: Bool { makeModel()?.hasAvailableAssets ?? false }
 
-    /// Lädt die Modelldateien. Kommt sofort zurück, wenn sie schon da sind.
+    /// Downloads the model files. Returns at once when they are already there.
     ///
-    /// Mit Zeitgrenze, weil der Aufruf sonst nicht zurückkommt: im Simulator lief er
-    /// über sechs Minuten ohne Ergebnis, und `mobileassetd` meldet keinen Fortschritt
-    /// und keinen Fehlschlag. Die Zeitgrenze bricht nur das *Warten* ab — der
-    /// Download läuft im System weiter, und ob er ankam, sagt allein `hasAssets`.
-    /// Deshalb ist das hier auch kein Fehler, sondern eine Auskunft.
+    /// With a time limit, because the call otherwise does not come back: in the
+    /// simulator it ran for over six minutes with no result, and `mobileassetd` reports
+    /// neither progress nor failure. The limit only cuts off the *waiting* — the
+    /// download carries on in the system, and whether it arrived is something only
+    /// `hasAssets` says. Which is why this is not an error but a piece of information.
     static func requestAssets(timeout: Duration = .seconds(180)) async throws {
         guard let probe = makeModel() else { throw MemoryError.notConfigured("Das lokale Modell") }
         guard !probe.hasAvailableAssets else { return }
@@ -61,10 +59,10 @@ actor LocalEmbedder {
         let result: NLContextualEmbedding.AssetsResult? = try await withThrowingTaskGroup(
             of: NLContextualEmbedding.AssetsResult?.self) { group in
             group.addTask {
-                // Eigene Instanz statt der von draußen: NLContextualEmbedding ist
-                // nicht Sendable, und sie über eine Aufgabengrenze zu reichen wäre
-                // genau das Datenrennen, vor dem der Compiler warnt. Das Objekt ist
-                // ohnehin nur ein Griff auf dasselbe Systemmodell.
+                // Its own instance rather than the one from outside:
+                // NLContextualEmbedding is not Sendable, and handing it across a task
+                // boundary would be exactly the data race the compiler warns about. The
+                // object is only a handle on the same system model anyway.
                 guard let model = makeModel() else { return nil }
                 return try await model.requestAssets()
             }
@@ -97,7 +95,7 @@ actor LocalEmbedder {
         return made
     }
 
-    /// Gibt den Arbeitsspeicher wieder frei — gemessen 13,5 MB.
+    /// Releases the memory again — measured at 13.5 MB.
     func unload() {
         model?.unload()
         model = nil
@@ -108,16 +106,15 @@ actor LocalEmbedder {
         return try texts.map { try vector(for: $0, model: model) }
     }
 
-    /// Der Vektor des ersten Tokens, nicht der Mittelwert über alle.
+    /// The vector of the first token, not the mean across all of them.
     ///
-    /// Apple nennt in der Kopfzeile vier Verfahren und empfiehlt keines. Gemessen an
-    /// denselben neun Fragen: erster Token 5/9, Mittelwert 3/9, Maximum 2/9, letzter
-    /// Token 1/9. Also gemessen statt geraten — der Mittelwert wäre die naheliegende
-    /// Wahl gewesen und ist die schlechtere.
+    /// Apple names four methods in the header and recommends none. Measured against the
+    /// same nine questions: first token 5/9, mean 3/9, maximum 2/9, last token 1/9. So
+    /// measured rather than guessed — the mean would have been the obvious choice and
+    /// is the worse one.
     private func vector(for text: String, model: NLContextualEmbedding) throws -> [Float] {
-        // Ein leerer Text hat keinen ersten Token; ohne diese Zeile käme ein
-        // Nullvektor heraus, dessen Kosinus zu allem 0 ist — also ein Treffer, der
-        // wie ein Nichttreffer aussieht.
+        // An empty text has no first token; without this line a zero vector would
+        // come out, whose cosine to everything is 0 — a hit that looks like a miss.
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { throw MemoryError.embedding("Leerer Text.") }
 

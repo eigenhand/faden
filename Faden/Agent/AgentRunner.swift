@@ -7,18 +7,18 @@ enum TurnEvent {
     case toolStarted(id: String, name: String, summary: String)
     case toolFinished(id: String, ok: Bool, summary: String)
     case usage(input: Int?, output: Int?)
-    /// Der Anbieter hat in einer Absage seine eigenen Grenzen genannt.
+    /// The provider named its own limits in a refusal.
     ///
-    /// Die einzige ehrliche Quelle für einen Endpoint, der keine veröffentlicht.
-    /// Früher hat die App danach gefragt, indem sie eine absurde Obergrenze schickte;
-    /// das ist weg. Was hier ankommt, hat ein echter Zug ausgelöst.
+    /// The only honest source for an endpoint that publishes none. The app used to ask
+    /// by sending an absurd upper bound; that is gone. What arrives here was triggered
+    /// by a real turn.
     case learnedLimits(context: Int?, output: Int?)
-    /// Die Antwortlänge ist aus der Nutzung heraus gewachsen.
+    /// The answer length grew out of use.
     ///
-    /// Nicht geraten und nicht ausprobiert: Ein Zug ist an dieser Grenze
-    /// abgeschnitten worden, und das ist der Anlass.
+    /// Not guessed and not probed: a turn was cut off at this limit, and that is the
+    /// occasion.
     case grewOutputBudget(Int)
-    /// Der Zug beginnt noch einmal. Was bisher zu sehen war, gilt nicht mehr.
+    /// The turn starts over. What was visible so far no longer holds.
     case restarted(reason: String)
     case finished
     case failed(String)
@@ -46,17 +46,16 @@ struct AgentRunner {
     /// Deliberately free of anything that changes between requests — no clock, no
     /// recalled memories. Those are appended to the last user message instead, so
     /// this whole prompt stays byte-identical and cacheable.
-    /// Der kurze Prompt für Apples Modell auf dem Geraet.
+    /// The short prompt for Apple's on-device model.
     ///
-    /// Der grosse Prompt beschreibt Websuche, `fetch_page`, Gedaechtnisabruf und einen
-    /// Block in eckigen Klammern am Ende der Nutzernachricht. Nichts davon hat dieses
-    /// Modell — und es hat sich prompt daran gehalten, indem es ankuendigte, im
-    /// Gedaechtnis nachzusehen, statt zu antworten. Ein kleines Modell erzaehlt, was
-    /// im Prompt steht, und nicht, was es kann.
+    /// The long prompt describes web search, `fetch_page`, memory recall and a block in
+    /// square brackets at the end of the user message. This model has none of that — and
+    /// it obliged at once by announcing that it would look in the memory instead of
+    /// answering. A small model recounts what stands in the prompt, not what it can do.
     ///
-    /// Das Datum steht hier drin statt am Ende der Nachricht: dort hat es das Modell in
-    /// die Antwort hineinkopiert, trotz gegenteiliger Anweisung. Der Cache-Grund, aus
-    /// dem es bei den Netz-Anbietern hinten steht, gilt hier ohnehin nicht.
+    /// The date sits in here rather than at the end of the message: there the model
+    /// copied it into the answer, against explicit instruction. The caching reason it
+    /// sits at the back for network providers does not apply here anyway.
     static func compactSystemPrompt(settings: AppSettings, at date: Date = Date()) -> String {
         let persona = settings.persona
         let df = DateFormatter()
@@ -183,10 +182,10 @@ struct AgentRunner {
             do {
                 let outcome = try await RecipeEngine.search(
                     recipe, query: query, key: key, count: settings.resultsPerSearch)
-                // Eingefasst: Treffertexte sind fremder Inhalt wie jede Seite auch.
-                // Ein Suchergebnis ist sogar die bequemere Stelle für einen Angriff —
-                // wer eine Seite auf ein Stichwort optimiert, bekommt seinen Text vor
-                // das Modell, ohne dass ihn jemand aufrufen muss.
+                // Fenced: result texts are foreign content like any page. A search
+                // result is in fact the more convenient place for an attack — optimise
+                // a page for a keyword and your text lands in front of the model
+                // without anyone having to call it up.
                 let fenced = UntrustedContent.wrap(Self.render(outcome),
                                                    source: "Websuche „\(query)“")
                 return (fenced, true, "\(outcome.results.count) Treffer")
@@ -201,8 +200,8 @@ struct AgentRunner {
             }
             let text = await PageFetcher.fetch(url)
             let ok = !text.hasPrefix("Fehler")
-            // Eine Fehlermeldung kommt von uns und bleibt unverpackt; alles andere
-            // ist der Text einer fremden Seite.
+            // An error message comes from us and stays unwrapped; everything else is
+            // the text of a foreign page.
             return (ok ? UntrustedContent.wrap(text, source: url) : text,
                     ok, ok ? "\(text.count) Zeichen" : "nicht ladbar")
 
@@ -368,33 +367,33 @@ struct AgentRunner {
 
     // MARK: Ausweichen
 
-    // Welches Modell einen Zug bearbeitet und worauf er ausweicht, steht jetzt in
-    // `LLMConfig` — `model(forImages:)` und `fallback(forImages:after:)`. Dort, weil
-    // es vier Felder derselben Konfiguration gegeneinander abwägt und nichts sonst
-    // braucht; hier stand es nur, solange die Antwort aus dem Build kam.
+    // Which model handles a turn and what it falls back to now lives in `LLMConfig` —
+    // `model(forImages:)` and `fallback(forImages:after:)`. There, because it weighs
+    // four fields of the same configuration against each other and needs nothing else;
+    // it only stood here while the answer came from the build.
 
-    /// Ob ein anderes Modell diesen Fehler überhaupt beheben könnte.
+    /// Whether another model could fix this error at all.
     ///
-    /// Ausgenommen ist, was lokal feststeht — kein Endpoint, kein Schlüssel — und
-    /// HTTP 401, weil ein falscher Schlüssel mit jedem Modellnamen falsch bleibt.
+    /// Excluded is everything settled locally — no endpoint, no key — and HTTP 401,
+    /// because a wrong key stays wrong with every model name.
     ///
-    /// **403 ist ausdrücklich dabei**, und das ist gemessen, nicht überlegt. Beim
-    /// ersten Versuch stand hier `status != 403`, weil 403 nach Schlüsselproblem
-    /// aussieht. Der Anbieter antwortet auf ein unbekanntes Modell aber genau so:
-    /// „key not allowed to access model. This key can only access models=['public']".
-    /// Das ist eine Absage an das *Modell*, nicht an den Schlüssel — also der Fall,
-    /// für den das Ausweichen gebaut wurde, und er wäre still übersprungen worden.
-    // MARK: Antwortlänge
+    /// **403 is expressly included**, and that is measured, not reasoned. The first
+    /// attempt had `status != 403` here, because a 403 looks like a key problem. But
+    /// this is exactly how the provider answers for an unknown model:
+    /// “key not allowed to access model. This key can only access models=['public']”.
+    /// That is a refusal aimed at the *model*, not at the key — so the very case the
+    /// fallback was built for, and it would have been skipped in silence.
+    // MARK: Answer length
 
-    /// Ob dem Zug der Vorrat ausgegangen ist.
+    /// Whether the turn ran out of room.
     ///
-    /// Zwei Zeichen. Der Anbieter sagt es — „max_tokens", „length" —, oder er sagt
-    /// nichts und schickt einen Zug, der **nur** aus Gedankengang besteht: kein
-    /// Text, kein Werkzeugaufruf, und trotzdem zu Ende. Das zweite ist der Fall, den
-    /// die App bisher stillschweigend als fertige Antwort verbucht hat.
+    /// Two signs. The provider says so — “max_tokens”, “length” — or it says nothing
+    /// and sends a turn consisting of **nothing but** reasoning: no text, no tool call,
+    /// and finished all the same. The second is the case the app used to book silently
+    /// as a finished answer.
     ///
-    /// Ein Zug mit Werkzeugaufruf zählt nicht, auch wenn kein Text dabei ist: Das
-    /// ist die normale Form einer Runde, in der das Modell erst etwas nachsehen will.
+    /// A turn with a tool call does not count, even when no text came with it: that is
+    /// the normal shape of a round in which the model wants to look something up first.
     static func ranOutOfRoom(stopReason: String?, text: String,
                              thinking: String, toolCalls: Int) -> Bool {
         if stopReason == "max_tokens" || stopReason == "length" { return true }
@@ -402,41 +401,40 @@ struct AgentRunner {
             && !thinking.isEmpty && toolCalls == 0
     }
 
-    /// Ob der Zug noch einmal beginnen darf.
+    /// Whether the turn may start over.
     ///
-    /// Nur, wenn nichts zu verlieren ist. Steht schon Text auf dem Schirm, wäre ein
-    /// neuer Anlauf kein zweiter Versuch, sondern ein Rückschritt: Der Leser sähe
-    /// seine halbe Antwort verschwinden und wartete von vorn. Die gewachsene Zahl
-    /// bleibt trotzdem stehen — der nächste Zug fängt oben an.
+    /// Only when there is nothing to lose. If text already stands on screen, a fresh
+    /// attempt would not be a second try but a step backwards: the reader would watch
+    /// half an answer disappear and wait from the beginning. The grown number stays put
+    /// all the same — the next turn starts high.
     static func shouldAskAgain(text: String, toolCalls: Int, alreadyGrew: Int) -> Bool {
         text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             && toolCalls == 0
             && alreadyGrew < maxGrowths
     }
 
-    /// Wie oft ein Zug nachlegen darf.
+    /// How often a turn may add more room.
     ///
-    /// Drei Verdopplungen, also aus 4 096 höchstens 32 768 in einer Runde. Jede
-    /// kostet die ganze Anfrage noch einmal — der Verlauf geht jedes Mal mit —, und
-    /// deshalb ist hier eine Grenze und nicht „so lange, bis es passt". Was in
-    /// dieser Runde gelernt wurde, bleibt stehen: Der nächste Zug fängt oben an.
+    /// Three doublings, so from 4,096 at most 32,768 in one round. Each one costs the
+    /// whole request again — the history travels with it every time — which is why
+    /// there is a limit here and not “until it fits”. What was learned in this round
+    /// stays: the next turn starts high.
     static let maxGrowths = 3
 
-    /// Die letzte Schranke, wenn der Anbieter keine nennt.
+    /// The last barrier when the provider names none.
     ///
-    /// Kein Modell schreibt heute mehr als das in einem Zug. Wer eines hat, stellt
-    /// die Zahl von Hand ein — und schaltet das Wachsen damit ohnehin ab.
+    /// No model today writes more than this in one turn. Whoever has one sets the
+    /// number by hand — and switches the growing off in doing so.
     static let outputCeiling = 128_000
 
-    /// Die nächste Antwortlänge, wenn die letzte nicht gereicht hat.
+    /// The next answer length when the last one was not enough.
     ///
-    /// Verdoppeln und nicht raten. Die App hat früher eine absurde Obergrenze
-    /// geschickt, um die echte zu erfahren; das ist weg und soll nicht
-    /// zurückkommen. Was hier passiert, ist die Antwort auf einen Zug, der
-    /// tatsächlich angestoßen ist.
+    /// Doubling and not guessing. The app used to send an absurd upper bound to learn
+    /// the real one; that is gone and must not come back. What happens here is the
+    /// answer to a turn that actually hit the limit.
     ///
-    /// `nil` heißt: Hier ist Schluss. Entweder steht der Anbieter mit seiner
-    /// genannten Grenze davor, oder die letzte Schranke tut es.
+    /// `nil` means: this is the end. Either the provider stands in the way with the
+    /// limit it named, or the last barrier does.
     static func nextOutputBudget(after current: Int, ceiling: Int?) -> Int? {
         let doubled = current * 2
         if let ceiling {
@@ -466,8 +464,8 @@ struct AgentRunner {
         history: inout [Message],
         onEvent: @MainActor @escaping (TurnEvent) -> Void
     ) async {
-        // Apples Modell kann keine Werkzeuge, und ein Prompt, der welche beschreibt,
-        // laesst es davon erzaehlen statt zu antworten.
+        // Apple's model has no tools, and a prompt describing some makes it talk
+        // about them instead of answering.
         let onDevice = config.wireFormat == .appleOnDevice
         let tools = onDevice ? [] : Tools.available(
             searchEnabled: settings.searchEnabled && settings.activeRecipe != nil,
@@ -480,14 +478,14 @@ struct AgentRunner {
                 providerName: settings.activeRecipe?.name)
         let provider = ProviderFactory.make(for: config.wireFormat)
 
-        // Hängt an diesem Zug ein Bild? Über die ganze Historie gefragt und nicht nur
-        // über die letzte Nachricht: bei jeder Anfrage geht die ganze Unterhaltung
-        // mit, also auch das Bild von vor zehn Zügen. Wer nur die letzte Nachricht
-        // prüft, schickt es an ein Modell, das nicht sehen kann.
+        // Does an image hang on this turn? Asked across the whole history and not
+        // only the last message: every request carries the entire conversation, so the
+        // image from ten turns ago as well. Check only the last message and you send it
+        // to a model that cannot see.
         let hasImages = history.contains(where: \.hasImage)
 
-        // Veränderbar, weil bei einem Fehlschlag das Modell gewechselt wird. Die
-        // Einstellungen des Nutzers bleiben unberührt — das gilt für diesen Zug.
+        // Mutable, because the model is switched on a failure. The user's settings
+        // stay untouched — this holds for this turn only.
         var activeConfig = config
         activeConfig.model = config.model(forImages: hasImages)
         var didFallBack = false
@@ -508,9 +506,9 @@ struct AgentRunner {
                 // Stamped here rather than stored: the conversation on disk stays
                 // free of timestamps, and each request carries a fresh one at the end.
                 for try await event in provider.stream(
-                    // Ohne Gedaechtnisblock und ohne Zeitstempel: beide standen am Ende
-                    // der Nutzernachricht, und das kleine Modell hat den einen befolgt
-                    // wie eine Frage und den anderen in die Antwort kopiert.
+                    // Without the memory block and without the timestamp: both stood
+                    // at the end of the user message, and the small model obeyed one
+                    // as if it were a question and copied the other into the answer.
                     messages: onDevice ? history
                                        : TurnContext.applied(to: history, memories: recalled),
                     system: system, tools: tools,
@@ -531,9 +529,9 @@ struct AgentRunner {
                     case .usage(let i, let o):
                         await onEvent(.usage(input: i, output: o))
                     case .stopped(let reason):
-                        // Früher weggeworfen, und das war der Fehler: Ein Zug, der
-                        // seinen Vorrat im Nachdenken aufbraucht, sieht ohne diesen
-                        // Grund aus wie eine fertige Antwort.
+                        // Thrown away before, and that was the mistake: a turn that
+                        // spends its whole budget on reasoning looks, without this
+                        // reason, like a finished answer.
                         stopReason = reason
                     }
                 }
@@ -545,9 +543,9 @@ struct AgentRunner {
             }
 
             if let failure {
-                // Eine Absage, die eine Zahl nennt, ist die einzige Gelegenheit, die
-                // Grenzen eines Anbieters zu erfahren, der keine veröffentlicht.
-                // Sie kommt hier vorbei, ob ausgewichen wird oder nicht.
+                // A refusal that names a number is the only chance to learn the
+                // limits of a provider that publishes none. It passes through here
+                // whether the fallback happens or not.
                 if let llm = caught as? LLMError, case .http(_, let body) = llm {
                     let limits = ModelCatalog.extractLimits(from: body)
                     if limits.context != nil || limits.output != nil {
@@ -556,10 +554,10 @@ struct AgentRunner {
                     }
                 }
 
-                // Einmal auf das Ausweichmodell, und nur solange nichts angekommen
-                // ist. Nach den ersten Zeichen wäre es kein zweiter Versuch mehr,
-                // sondern eine zweite Antwort hinter der halben ersten — der Leser
-                // sähe den Bruch mitten im Satz.
+                // Once to the fallback model, and only while nothing has arrived.
+                // After the first characters it would no longer be a second try but a
+                // second answer behind half of the first — the reader would see the
+                // break mid-sentence.
                 if !didFallBack,
                    text.isEmpty, thinking.isEmpty, pendingCalls.isEmpty,
                    let error = caught, Self.isWorthRetrying(error),
@@ -574,14 +572,13 @@ struct AgentRunner {
                 return
             }
 
-            // Der Vorrat hat nicht gereicht.
+            // The budget was not enough.
             //
-            // Zwei Zeichen dafür. Der Anbieter sagt es — „max_tokens", „length" —,
-            // oder er sagt nichts und schickt einen Zug, der nur aus Gedankengang
-            // besteht: kein Text, kein Werkzeugaufruf, und trotzdem zu Ende. Das
-            // zweite ist der Fall, der die App bisher stillschweigend als fertige
-            // Antwort verbucht hat, und für einen Nutzer sieht er aus, als hörte das
-            // Denken mitten im Satz auf.
+            // Two signs of it. The provider says so — “max_tokens”, “length” — or it
+            // says nothing and sends a turn consisting of nothing but reasoning: no
+            // text, no tool call, and finished all the same. The second is the case the
+            // app used to book silently as a finished answer, and to a user it looks as
+            // if the thinking stopped mid-sentence.
             let ranOut = Self.ranOutOfRoom(stopReason: stopReason, text: text,
                                            thinking: thinking, toolCalls: pendingCalls.count)
             if ranOut, !config.maxOutputTokensIsCustom,
@@ -590,10 +587,10 @@ struct AgentRunner {
                 activeConfig.maxOutputTokens = bigger
                 await onEvent(.grewOutputBudget(bigger))
 
-                // Der Vorrat wächst immer, noch einmal gefragt wird nur, wenn nichts
-                // zu verlieren ist. Kam schon Text an, ist eine halbe Antwort mehr
-                // wert als eine ganze, die den Leser zweimal warten lässt — und die
-                // gewachsene Zahl steht ohnehin schon für den nächsten Zug bereit.
+                // The budget always grows; the turn is only asked again when there
+                // is nothing to lose. If text already arrived, half an answer is worth
+                // more than a whole one that makes the reader wait twice — and the
+                // grown number already stands ready for the next turn.
                 if Self.shouldAskAgain(text: text, toolCalls: pendingCalls.count,
                                        alreadyGrew: grewTimes) {
                     grewTimes += 1
@@ -615,7 +612,7 @@ struct AgentRunner {
                 return
             }
             var reply = Message(role: .assistant, blocks: blocks)
-            // Das Modell, das wirklich geantwortet hat — nicht das eingestellte.
+            // The model that actually answered — not the one that was configured.
             reply.producedBy = activeConfig.model
             history.append(reply)
 
@@ -624,10 +621,10 @@ struct AgentRunner {
                 return
             }
             if Task.isCancelled {
-                // Nicht einfach aussteigen: die Aufrufe stehen schon in der Historie,
-                // und ohne Ergebnisse daneben lehnt der Anbieter *jede* weitere
-                // Anfrage in diesem Gespräch ab — die ganze Historie geht ja jedes
-                // Mal mit. Also wird der Abbruch aufgeschrieben statt verschwiegen.
+                // Do not simply bail out: the calls already stand in the history, and
+                // without results beside them the provider refuses *every* further
+                // request in this conversation — the whole history travels along every
+                // time. So the cancellation is written down rather than kept quiet.
                 history.append(Message(role: .user, blocks: pendingCalls.map {
                     .toolResult(toolUseID: $0.id, content: "Abgebrochen.", isError: true)
                 }))

@@ -28,25 +28,24 @@ struct ExtractedEdge: Codable, Equatable {
 
 // MARK: - Stored graph
 
-/// Woher ein Vektor stammt.
+/// Where a vector comes from.
 ///
-/// Zwei Einbettungen sind nur dann vergleichbar, wenn sie aus demselben Modell
-/// kommen. Ohne diesen Stempel stand am Knoten nur die Zahlenreihe: wer in den
-/// Einstellungen das Einbettungsmodell wechselte, behielt die alten Vektoren, und
-/// die Ähnlichkeitssuche rechnete danach zwischen zwei Räumen, die nichts
-/// miteinander zu tun haben. Das schlägt nicht fehl, es liefert still Unsinn —
-/// die schlechteste Art von Fehler.
+/// Two embeddings are only comparable when they come from the same model. Without this
+/// stamp only the row of numbers stood at the node: whoever changed the embedding model
+/// in the settings kept the old vectors, and the similarity search then computed between
+/// two spaces that have nothing to do with each other. That does not fail, it quietly
+/// delivers nonsense — the worst kind of error.
 ///
-/// Die Dimension steht dabei, weil der Name allein nicht reicht: derselbe
-/// Modellname liefert je nach Anbieter und Einstellung unterschiedlich lange
-/// Vektoren, und ein Kosinus zwischen verschieden langen Vektoren ist nicht
-/// falsch berechnet, sondern gar nicht definiert.
+/// The dimension stands with it, because the name alone is not enough: the same model
+/// name delivers vectors of different lengths depending on the provider and the setting,
+/// and a cosine between vectors of different lengths is not computed wrongly but not
+/// defined at all.
 struct EmbeddingStamp: Codable, Equatable {
     var model: String
     var dimension: Int
 
-    /// Modellnamen kommen aus einem Textfeld — Groß-/Kleinschreibung und
-    /// Leerzeichen sollen keinen Neuaufbau des Index auslösen.
+    /// Model names come from a text field — capitalisation and whitespace should not
+    /// trigger a rebuild of the index.
     static func normalise(_ model: String) -> String {
         model.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
@@ -77,8 +76,8 @@ struct MemoryNode: Identifiable, Codable, Equatable {
     var mentions: Int = 1
     /// Embedding of the node's embeddable text.
     var embedding: [Float]?
-    /// Aus welchem Modell dieser Vektor stammt. `nil` heißt: aus einer Fassung vor
-    /// dieser Kennzeichnung, also unbekannter Herkunft und damit unbrauchbar.
+    /// Which model this vector comes from. `nil` means: from a version before this
+    /// marking, so of unknown origin and therefore unusable.
     var embeddingStamp: EmbeddingStamp?
 
     var isValid: Bool { validTo == nil }

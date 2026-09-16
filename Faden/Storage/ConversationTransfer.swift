@@ -23,9 +23,9 @@ enum ConversationTransfer {
         var errorDescription: String? {
             switch self {
             case .tooLarge(let bytes):
-                // `String(localized:)` mit Interpolation statt `String(format:)`:
-                // Der Katalog sieht nur ganze Schlüssel, und ein Formatstring, der
-                // aus zwei Stücken entsteht, ist keiner.
+                // `String(localized:)` with interpolation instead of
+                // `String(format:)`: the catalogue only sees whole keys, and a format
+                // string assembled from two pieces is not one.
                 let mb = Double(bytes) / 1_048_576
                 let cap = ImportGuard.maxBytes / 1_048_576
                 return String(localized: "Die Datei ist \(mb, specifier: "%.1f") MB groß. Übernommen werden höchstens \(cap) MB.")
@@ -69,9 +69,9 @@ enum ConversationTransfer {
         let scoped = url.startAccessingSecurityScopedResource()
         defer { if scoped { url.stopAccessingSecurityScopedResource() } }
 
-        // Die Größe vor dem Lesen, nicht danach: `Data(contentsOf:)` legt die ganze
-        // Datei in den Speicher, und eine Datei aus fremder Hand bestimmt sonst, wie
-        // viel davon die App belegt.
+        // The size before reading, not after: `Data(contentsOf:)` puts the whole file
+        // into memory, and a file from someone else's hand would otherwise decide how
+        // much of it the app takes.
         let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
         guard size <= ImportGuard.maxBytes else {
             throw ImportError.tooLarge(bytes: size)
@@ -90,8 +90,8 @@ enum ConversationTransfer {
             .replacingOccurrences(of: ":", with: "-")
             .trimmingCharacters(in: .whitespacesAndNewlines)
         let stem = title.isEmpty ? "Unterhaltung" : String(title.prefix(60))
-        // Neue Dateien heißen .faden; .perbu bleibt in der Info.plist als
-        // gültige Endung stehen, damit die aus den Builds davor weiter aufgehen.
+        // New files are called .faden; .perbu stays in the Info.plist as a valid
+        // extension so that the ones from earlier builds still open.
         return stem + ".faden"
     }
 }

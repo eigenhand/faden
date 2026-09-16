@@ -1,17 +1,18 @@
 import XCTest
 @testable import Faden
 
-/// Was eine Modellliste über die Fähigkeiten verrät.
+/// What a model list reveals about capabilities.
 ///
-/// Es gibt dafür keinen Standard, und deshalb steht hier ein Test und keine Zeile
-/// Code mit einem Feldnamen darin. Drei Schreibweisen sind im Umlauf: der Boolean
-/// (`supports_vision`), die Beschreibung dessen, was hineingeht (OpenRouter mit
-/// `architecture.input_modalities`), und der Sammelknoten (`capabilities`).
+/// There is no standard for it, which is why a test stands here and not a line of code
+/// with one field name in it. Three spellings are in circulation: the boolean
+/// (`supports_vision`), the description of what goes in (OpenRouter with
+/// `architecture.input_modalities`), and the collecting node (`capabilities`).
 ///
-/// Der wichtigste Fall ist aber keiner davon, sondern das Schweigen. `z-ai/glm-5.3`
-/// führt bei seinem Anbieter gar kein Feld für Bilder — und wer das als „kann keine"
-/// liest, hat zufaellig recht, und wer es bei `z-ai/glm-5.2` genauso liest, hat
-/// unrecht. Schweigen muss **nil** bleiben, damit die Messung es entscheiden kann.
+/// The most important case is none of them, though, but the silence. `z-ai/glm-5.3`
+/// carries no field for images at all at its provider — and whoever reads that as
+/// “cannot do any” happens to be right, while whoever reads it the same way for
+/// `z-ai/glm-5.2` is wrong. Silence has to stay **nil**, so the measurement can
+/// decide it.
 final class CapabilityTests: XCTestCase {
 
     private func caps(_ json: String) throws -> Capabilities {
@@ -29,7 +30,7 @@ final class CapabilityTests: XCTestCase {
         XCTAssertEqual(c.reasoning, false)
     }
 
-    /// OpenRouter sagt nicht „kann Bilder", sondern „nimmt Bilder entgegen".
+    /// OpenRouter does not say “can do images” but “accepts images”.
     func testTheOpenRouterSpelling() throws {
         let c = try caps("""
         {"id": "a",
@@ -61,7 +62,7 @@ final class CapabilityTests: XCTestCase {
         XCTAssertNil(c.reasoning)
     }
 
-    /// Der Fall, um den es geht: kein Feld, keine Aussage.
+    /// The case this is about: no field, no statement.
     func testSilenceStaysUnknown() throws {
         let c = try caps("""
         {"id": "z-ai/glm-5.3", "max_input_tokens": 1048576}
@@ -71,7 +72,7 @@ final class CapabilityTests: XCTestCase {
         XCTAssertNil(c.reasoning)
     }
 
-    /// Listen schreiben Wahrheitswerte auch als Wort oder Zahl.
+    /// Lists write truth values as words or numbers too.
     func testBooleansWrittenAsWordsOrNumbers() throws {
         let c = try caps("""
         {"id": "a", "supports_vision": "true", "supports_reasoning": 1}
@@ -80,7 +81,7 @@ final class CapabilityTests: XCTestCase {
         XCTAssertEqual(c.reasoning, true)
     }
 
-    // MARK: Messung schlägt Behauptung
+    // MARK: Measurement beats assertion
 
     func testAMeasurementOverridesTheList() {
         let claimed = Capabilities(vision: true, tools: true, reasoning: nil)
@@ -91,8 +92,8 @@ final class CapabilityTests: XCTestCase {
         XCTAssertNil(merged.reasoning)
     }
 
-    /// Der Schalter für Bilder ist eine Entscheidung und keine Feststellung: steht er
-    /// aus, gibt es keine Marke — auch wenn das Modell Bilder könnte.
+    /// The switch for images is a decision and not a finding: with it off there is no
+    /// badge — even if the model could do images.
     func testTheVisionBadgeFollowsTheSwitch() {
         var config = LLMConfig()
         config.supportsVision = false

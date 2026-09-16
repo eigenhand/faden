@@ -52,8 +52,8 @@ struct Embedder {
     }
 
     private func embedOnce(_ texts: [String]) async throws -> [[Float]] {
-        // Auf dem Gerät gibt es keine Leitung, kein Ratenlimit und keinen
-        // Wiederholungsbedarf — der Weg endet hier.
+        // On the device there is no wire, no rate limit and no need to retry — the
+        // route ends here.
         if config.source == .onDevice {
             return try await LocalEmbedder.shared.embed(texts)
         }

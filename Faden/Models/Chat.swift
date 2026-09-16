@@ -54,11 +54,11 @@ struct Message: Codable, Identifiable, Equatable, Hashable, Sendable {
 
     var text: String { blocks.map(\.plainText).joined(separator: "\n") }
 
-    /// Ob an dieser Nachricht ein Bild haengt.
+    /// Whether an image hangs on this message.
     ///
-    /// Steht hier und nicht dreimal als `if case .image = $0` im Code verteilt: an
-    /// dieser Frage haengt jetzt, welches Modell den Zug bearbeitet, und eine
-    /// Formulierung an einer Stelle kann nicht an der zweiten anders ausfallen.
+    /// It stands here and not three times as `if case .image = $0` scattered through the
+    /// code: which model handles the turn now hangs on this question, and a formulation
+    /// in one place cannot come out differently in the second.
     var hasImage: Bool {
         blocks.contains { if case .image = $0 { return true }; return false }
     }
@@ -90,15 +90,15 @@ struct Message: Codable, Identifiable, Equatable, Hashable, Sendable {
 
 struct Conversation: Codable, Identifiable, Equatable, Sendable {
     var id: UUID = UUID()
-    /// Der gespeicherte Titel. Die Vorgabe bleibt **deutsch**, auch wenn die App
-    /// englisch läuft: Sie steht in der Datei auf der Platte, `AppModel` vergleicht
-    /// gegen sie, um zu erkennen, dass noch niemand einen Titel vergeben hat, und
-    /// eine übersetzte Vorgabe hiesse, dass dieser Vergleich nach einem
-    /// Sprachwechsel nicht mehr zutrifft. Angezeigt wird `displayTitle`.
+    /// The stored title. The default stays **German**, even when the app runs in
+    /// English: it stands in the file on disk, `AppModel` compares against it to
+    /// recognise that nobody has given a title yet, and a translated default would mean
+    /// that comparison no longer holds after a language switch. What is displayed is
+    /// `displayTitle`.
     var title: String = "Neue Unterhaltung"
 
-    /// Was in der Liste steht. Die unbenannte Unterhaltung heisst in der Sprache
-    /// des Nutzers; alles andere ist sein eigener Text und bleibt, wie er ist.
+    /// What stands in the list. The unnamed conversation is called by the user's
+    /// language; everything else is their own text and stays as it is.
     var displayTitle: String {
         title == "Neue Unterhaltung" ? String(localized: "Neue Unterhaltung") : title
     }
@@ -181,12 +181,12 @@ indirect enum JSONValue: Codable, Equatable, Hashable {
         default:             return nil
         }
     }
-    /// Ein Wahrheitswert, auch wenn er als Wort oder Zahl dasteht.
+    /// A truth value, even when it stands there as a word or a number.
     ///
-    /// Modelllisten schreiben Fähigkeiten mal als `true`, mal als `"true"`, mal als
-    /// `1` — und wer nur den echten Boolean liest, hält die anderen beiden für
-    /// „nicht angegeben". Das ist der Unterschied zwischen einer Marke, die
-    /// erscheint, und einer, die fehlt.
+    /// Model lists write capabilities sometimes as `true`, sometimes as `"true"`,
+    /// sometimes as `1` — and whoever reads only the real boolean takes the other two for
+    /// “not stated”. That is the difference between a badge that appears and one that is
+    /// missing.
     var boolValue: Bool? {
         switch self {
         case .bool(let b):   return b

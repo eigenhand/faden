@@ -19,12 +19,11 @@ struct HistoryView: View {
         }
     }
 
-    /// Wonach der Verlauf gegliedert ist.
+    /// How the history is grouped.
     ///
-    /// „10.09.2026" in jeder Zeile ist ein Datum, aber niemand liest es als „vorige
-    /// Woche". Abschnitte tun das — und sie sind die zweite Stelle, an der das weit
-    /// gesperrte Kleinversal der Vorlage Struktur tragen kann statt nur Formulare
-    /// zu beschriften.
+    /// “10.09.2026” in every row is a date, but nobody reads it as “last week”. Sections
+    /// do — and they are the second place where the design's wide-tracked small caps can
+    /// carry structure instead of merely labelling forms.
     private enum Bucket: Int, CaseIterable {
         case today, yesterday, week, month, older
 
@@ -38,7 +37,7 @@ struct HistoryView: View {
             }
         }
 
-        /// Ob in der Zeile die Uhrzeit oder das Datum mehr sagt.
+        /// Whether the time or the date says more in this row.
         var showsTime: Bool { self == .today || self == .yesterday }
 
         static func of(_ date: Date, now: Date = .now, calendar: Calendar = .current) -> Bucket {

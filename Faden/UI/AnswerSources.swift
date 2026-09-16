@@ -153,10 +153,9 @@ struct SourcesRow: View {
                     if reduceMotion { reveal = next }
                     else { withAnimation(.easeOut(duration: 0.18)) { reveal = next } }
                 } label: {
-                    // Das weit gesperrte Kleinversal ist die einzige Signatur der
-                    // Vorlage — und stand bis hierher nur in Formularen, im
-                    // Hauptbildschirm überhaupt nicht. Hier trägt es Struktur:
-                    // gesperrtes Wort, Zahl, Pfeil.
+                    // The wide-tracked small caps are the design's only signature —
+                    // and until here they stood only in forms, not on the main screen at
+                    // all. Here they carry structure: tracked word, number, arrow.
                     HStack(spacing: 9) {
                         EH.label(sources.count == 1 ? "Quelle" : "Quellen")
                         Text("\(sources.count)")

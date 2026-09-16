@@ -1,15 +1,15 @@
 import XCTest
 @testable import Faden
 
-/// Die Sprachumschaltung.
+/// Switching the language.
 ///
-/// Geprueft wird der mechanische Teil: dass beide Sprachen im Bundle liegen und dass
-/// ein Schluessel in beiden etwas anderes ergibt. Ob jeder Satz uebersetzt *ist*,
-/// prueft `check-localizations.py` bei jedem Push — ein Test kann den Quellkatalog
-/// zur Laufzeit nicht sehen.
+/// What is checked is the mechanical part: that both languages lie in the bundle and
+/// that a key yields something different in each. Whether every sentence *is* translated
+/// is what `check-localizations.py` checks on every push — a test cannot see the source
+/// catalogue at runtime.
 final class LocalizationTests: XCTestCase {
 
-    /// Das App-Bundle, nicht das des Tests: die Kataloge gehoeren zur App.
+    /// The app bundle, not the test's: the catalogues belong to the app.
     private var app: Bundle {
         let here = Bundle(for: type(of: self))
         return Bundle(url: here.bundleURL.deletingLastPathComponent()
@@ -29,19 +29,18 @@ final class LocalizationTests: XCTestCase {
         }
     }
 
-    /// Ein Platzhalter muss die Uebersetzung ueberleben — faellt er weg, fehlt zur
-    /// Laufzeit die Zahl, und faellt ein zweiter hinein, stuerzt das Formatieren ab.
+    /// A placeholder has to survive the translation — if it falls away, the number is
+    /// missing at runtime, and if a second one falls in, the formatting crashes.
     func testPlaceholdersSurviveTranslation() throws {
-        // `%lld` und nicht `%@`: Der Schlüssel entsteht aus dem Format, das die
-        // Interpolation erzeugt, und eine Zahl wird zu `%lld`. Von Hand mit `%@`
-        // eingetragene Schlüssel sahen richtig aus und trafen nie.
+        // `%lld` and not `%@`: the key arises from the format the interpolation
+        // produces, and a number becomes `%lld`. Keys entered by hand with `%@` looked
+        // right and never matched.
         XCTAssertEqual(try text("%lld Treffer", in: "en"), "%lld results")
         XCTAssertEqual(try text("%@ · %lld Dimensionen", in: "en"), "%@ · %lld dimensions")
     }
 
-    /// Ein unbekannter Schluessel gibt sich selbst zurueck. Das ist die Zusicherung,
-    /// auf der die Wahl deutscher Schluessel beruht: Wer einen Satz vergisst, sieht
-    /// Deutsch — und nicht eine leere Zeile.
+    /// An unknown key returns itself. That is the guarantee the choice of German keys
+    /// rests on: whoever forgets a sentence sees German — and not an empty line.
     func testAnUnknownKeyFallsBackToItself() throws {
         XCTAssertEqual(try text("Diesen Satz gibt es nicht", in: "en"),
                        "Diesen Satz gibt es nicht")
@@ -56,8 +55,8 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(AppLanguage.english.locale?.identifier, "en")
     }
 
-    /// Jede Sprache nennt sich in sich selbst — wer die Oberflaeche gerade nicht
-    /// versteht, findet trotzdem den Weg zurueck.
+    /// Every language names itself — whoever does not currently understand the
+    /// interface still finds the way back.
     func testEachLanguageNamesItselfInItsOwnTongue() {
         XCTAssertEqual(AppLanguage.german.label, "Deutsch")
         XCTAssertEqual(AppLanguage.english.label, "English")
@@ -71,7 +70,7 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(back.language, .english)
     }
 
-    /// Eine Einstellung aus der Zeit vor dieser Funktion kennt das Feld nicht.
+    /// A settings file from before this feature does not know the field.
     func testAnOlderSettingsFileDefaultsToTheDevice() throws {
         let old = Data(#"{"searchEnabled":true}"#.utf8)
         XCTAssertEqual(try JSONDecoder().decode(AppSettings.self, from: old).language,

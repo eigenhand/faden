@@ -16,14 +16,14 @@ enum EH {
 
     // MARK: Palette
     //
-    // Zwei Werte je Token. Die dunklen sind nicht gegriffen, sondern gerechnet: Zu
-    // jedem hellen Ton wurde der Farbton behalten, die Sättigung gesenkt und die
-    // Helligkeit so gesucht, dass das Kontrastverhältnis gegen den dunklen Grund
-    // **dasselbe** ist wie im Hellen gegen den hellen. Darum geht es — nicht um
-    // möglichst viel Kontrast. Weiße Schrift auf Schwarz misst 21:1 und blendet
-    // nachts; diese Palette misst dieselben 9.7 / 6.5 / 5.3, die tagsüber
-    // angenehm sind. Ohne gesenkte Sättigung wäre aus `navy` ein kräftiges
-    // #9EC6FF geworden: derselbe Farbton, hell gelesen aber viel bunter.
+    // Two values per token. The dark ones are not picked but calculated: for every
+    // light tone the hue was kept, the saturation lowered, and the brightness searched
+    // until the contrast ratio against the dark ground is **the same** as the light
+    // one's against the light ground. That is the point — not as much contrast as
+    // possible. White type on black measures 21:1 and glares at night; this palette
+    // measures the same 9.7 / 6.5 / 5.3 that are comfortable by day. Without the
+    // lowered saturation `navy` would have become a vivid #9EC6FF: the same hue, but
+    // read as far more colourful when light.
     static let navy    = Color(light: 0x374559, dark: 0xC0CFE3)   // 9.73 · 9.74 — headings
     static let slate   = Color(light: 0x525F73, dark: 0x9FA9B7)   // 6.48 · 6.48 — body
     static let bg      = Color(light: 0xFAFBFC, dark: 0x151A22)
@@ -42,13 +42,13 @@ enum EH {
     static let accent      = Color(light: 0x374559, dark: 0xC0CFE3)
 
 
-    /// Was **auf** einer gefüllten Fläche aus `navy` oder `accent` steht.
+    /// What stands **on** a filled surface of `navy` or `accent`.
     ///
-    /// Der Grund, warum es diesen Token gibt: Im Hellen ist `navy` dunkel, und Weiß
-    /// darauf ist richtig. Im Dunklen ist `navy` hell — und dasselbe Weiß
-    /// verschwindet. Ein Kamera-Knopf mit weißem Symbol auf hellem Grund war das
-    /// erste, was auf dem ersten dunklen Screenshot auffiel; ein fest verdrahtetes
-    /// `.white` ist in einer Palette mit zwei Fassungen immer eine halbe Annahme.
+    /// The reason this token exists: in light mode `navy` is dark, and white on it is
+    /// right. In dark mode `navy` is light — and the same white disappears. A camera
+    /// button with a white symbol on a light ground was the first thing that stood out
+    /// on the first dark screenshot; a hard-wired `.white` is always half an assumption
+    /// in a palette with two versions.
     static let onAccent = Color(light: 0xFFFFFF, dark: 0x151A22)
 
     /// Semantic tints, kept desaturated to stay inside the brand's quiet register
@@ -78,15 +78,13 @@ enum EH {
     }
 
     // MARK: Type scale
-    /// Wide-tracked uppercase micro label — the site's signature (`DEMNÄCHST`)
-    /// Eine Abschnittsüberschrift.
+    /// Wide-tracked uppercase micro label — the site's signature (`DEMNÄCHST`).
     ///
-    /// `LocalizedStringKey` und nicht `String`, und `.textCase` statt
-    /// `.uppercased()`: Ein `String` geht am Stringkatalog vorbei — Xcode trägt nur
-    /// ein, was als Schlüssel dasteht. Jede Überschrift dieser App war deshalb
-    /// unübersetzbar, ohne dass irgendwo etwas rot wurde. `.textCase(.uppercase)`
-    /// macht dieselben Großbuchstaben, aber erst beim Zeichnen und damit nach dem
-    /// Nachschlagen.
+    /// `LocalizedStringKey` and not `String`, and `.textCase` instead of
+    /// `.uppercased()`: a `String` goes past the string catalogue — Xcode only records
+    /// what stands there as a key. Every heading in this app was therefore
+    /// untranslatable without anything turning red anywhere. `.textCase(.uppercase)`
+    /// makes the same capitals, but only when drawing and therefore after the lookup.
     static func label(_ key: LocalizedStringKey) -> some View {
         Text(key)
             .textCase(.uppercase)
@@ -95,62 +93,60 @@ enum EH {
             .foregroundStyle(EH.muted)
     }
 
-    // Berechnet, nicht gespeichert: `Font.eh` fragt `UIFontMetrics` nach der
-    // aktuellen Textgröße, und ein `static let` würde diese Antwort einmal beim
-    // Programmstart festschreiben. Genau das war zu sehen — die Kopfzeile wuchs mit
-    // der Einstellung, der Fließtext nicht, weil er aus diesen Konstanten kam.
+    // Computed, not stored: `Font.eh` asks `UIFontMetrics` for the current text size,
+    // and a `static let` would fix that answer once at launch. That was exactly what
+    // could be seen — the header grew with the setting, the body text did not, because
+    // it came from these constants.
     static var body: Font      { Font.eh(16, .callout) }
     static var bodySmall: Font { Font.eh(14, .footnote) }
     static var mono: Font      { Font.eh(13.5, .footnote, monospaced: true) }
     static var title: Font     { Font.eh(26, .title) }
 
-    // Das obere Ende der Skala. Es fehlte.
+    // The upper end of the scale. It was missing.
     //
-    // Ausgezählt kamen 87 % aller 128 Schriftaufrufe dieser App aus dem Bereich
-    // 8–12 pt: 12 pt neunundfünfzigmal, 11 pt neunzehnmal, 10 pt vierzehnmal. Der
-    // Fließtext zweimal, der Titel einmal. Die Vorlage lebt vom Gegenteil — eine
-    // große gezeichnete Marke gegen ein 10-pt-Wort, Verhältnis etwa 8:1. Übernommen
-    // war die Zurückhaltung, nicht der Kontrast.
+    // Counted out, 87 % of all 128 font calls in this app came from the 8–12 pt range:
+    // 12 pt fifty-nine times, 11 pt nineteen times, 10 pt fourteen times. The body text
+    // twice, the title once. The design it follows lives on the opposite — a large
+    // drawn mark against a 10 pt word, a ratio of roughly 8:1. What had been carried
+    // over was the restraint, not the contrast.
     //
-    // Die Antwort ist der Grund, warum es die App gibt, und stand mit 16 pt gegen
-    // ihre eigenen Metadaten mit 12 — Verhältnis 1,33. Mit 17 gegen 11 sind es 1,55,
-    // und weil die Frage als Überschrift 20 pt trägt, spannt der Zug 20 → 17 → 11.
+    // The answer is the reason the app exists, and it stood at 16 pt against its own
+    // metadata at 12 — a ratio of 1.33. At 17 against 11 it is 1.55, and because the
+    // question carries 20 pt as a heading, the turn spans 20 → 17 → 11.
 
-    /// Die Antwort selbst, eine Stufe über der Oberfläche ringsum.
+    /// The answer itself, one step above the interface around it.
     static var answer: Font    { Font.eh(17, .body) }
-    /// Eine Frage, gesetzt als Überschrift ihres Zuges.
+    /// A question, set as the heading of its turn.
     static var question: Font  { Font.eh(20, .title3, weight: .semibold) }
     /// Beiwerk: Quellenzeile, Hosts, Zeitangaben.
     static var meta: Font      { Font.eh(11, .caption) }
 
-    /// Durchschuss für Prosa.
+    /// Leading for prose.
     ///
-    /// `lineSpacing` ist der *zusätzliche* Abstand zwischen Zeilen, nicht die
-    /// Zeilenhöhe. Fünf Punkt auf 17 pt Schrift ergeben etwa das 1,45-fache —
-    /// der Bereich, in dem Lesetypografie langen Text ansetzt. In der ganzen App
-    /// stand vorher nirgends ein `lineSpacing`; jede Antwort lief mit dem
-    /// Standarddurchschuss von Bedienoberflächen.
+    /// `lineSpacing` is the *additional* space between lines, not the line height. Five
+    /// points on 17 pt type give roughly 1.45× — the range in which reading typography
+    /// sets long text. Nowhere in the whole app did a `lineSpacing` stand before; every
+    /// answer ran with the default leading of user interfaces.
     static let prose: CGFloat = 5
 
     // MARK: Metrics
-    // Zwei Radien, und jeder hat eine Aufgabe. Vorher trugen 47 von 57 Behältern
-    // denselben — alles war dieselbe Schachtel, also war nichts wichtig.
-    /// Was man anfasst: Eingabefeld, Schaltflächen, Blätter.
+    // Two radii, and each has a job. Before, 47 of 57 containers carried the same one
+    // — everything was the same box, so nothing was important.
+    /// What you touch: the input field, buttons, sheets.
     static let radius: CGFloat = 14
-    /// Was man liest: Karten, Codeblöcke, Bilder.
+    /// What you read: cards, code blocks, images.
     static let radiusSmall: CGFloat = 10
 
-    /// Höhe der Eingabezeile bei einer Textzeile: 21 pt Zeile plus zweimal 13.
+    /// Height of the composer at one line of text: a 21 pt line plus twice 13.
     static let composerHeight: CGFloat = 47
-    /// Die Eingabezeile, bei einer Zeile genau halbrund.
+    /// The composer, exactly half-round at one line.
     ///
-    /// Sie steht zwischen vier Kreisen. Ein Rechteck mit 14 pt Radius bildet mit
-    /// denen keine Familie — und als das Feld von 41 auf 47 pt wuchs, fiel das
-    /// Verhältnis Radius zu Höhe von 0,34 auf 0,30, also wurde es optisch kastiger,
-    /// ohne dass sich der Radius geändert hatte. Die Hälfte der Höhe macht bei einer
-    /// Zeile eine Kapsel und bleibt bei sechs Zeilen ein großzügig gerundetes Feld,
-    /// statt zum stehenden Stadion zu werden. Als Rechnung geschrieben, weil die
-    /// Höhe der Grund für den Wert ist.
+    /// It stands among four circles. A rectangle with a 14 pt radius makes no family
+    /// with those — and when the field grew from 41 to 47 pt, the ratio of radius to
+    /// height fell from 0.34 to 0.30, so it became visually boxier without the radius
+    /// having changed. Half the height makes a capsule at one line and stays a
+    /// generously rounded field at six, instead of turning into an upright stadium.
+    /// Written as a calculation, because the height is the reason for the value.
     static var radiusField: CGFloat { composerHeight / 2 }
     static let gutter: CGFloat = 18
     static let hairWidth: CGFloat = 1 / 3   // true hairline on @3x
@@ -205,13 +201,13 @@ extension Font {
 }
 
 extension Color {
-    /// Zwei Werte, einer je Erscheinungsbild.
+    /// Two values, one per appearance.
     ///
-    /// Ein `UIColor` mit Anbieter statt zweier `Color`-Konstanten und einer Abfrage
-    /// an jeder Fundstelle: Das System fragt ihn beim Zeichnen und noch einmal, wenn
-    /// der Nutzer umschaltet — auch in einem Blatt, einem Menü oder einer Vorschau,
-    /// wo eine Umgebung nicht immer ankommt. Die Aufrufer merken davon nichts:
-    /// `EH.navy` bleibt `EH.navy`.
+    /// A `UIColor` with a provider closure rather than two `Color` constants and a
+    /// query at every call site: the system asks it when drawing and again when the
+    /// user switches — including in a sheet, a menu or a preview, where an environment
+    /// does not always arrive. The callers notice none of it: `EH.navy` stays
+    /// `EH.navy`.
     init(light: UInt32, dark: UInt32, alpha: Double = 1) {
         self.init(uiColor: UIColor { traits in
             UIColor(Color(hex: traits.userInterfaceStyle == .dark ? dark : light,
@@ -265,11 +261,11 @@ struct BrandRule: View {
 
 /// Faint brand watermark, mirroring the site's 3 % mark in the lower right.
 ///
-/// Gemessen lag sie vorher zwischen 42 % und 81 % der Bildschirmhöhe in der rechten
-/// Hälfte — mitten hinter der Textspalte. Bei 3 % Deckkraft stört das keinen
-/// Buchstaben, aber im leeren Zustand, wo nichts mit ihr konkurriert, las sie sich
-/// als Fleck statt als Absicht. Jetzt läuft sie aus der unteren rechten Ecke heraus:
-/// dieselbe Marke, dieselben 3 %, nur als Anschnitt, wie auf der Seite.
+/// Measured, it previously sat between 42 % and 81 % of the screen height in the right
+/// half — right behind the column of text. At 3 % opacity that disturbs no letter, but
+/// in the empty state, where nothing competes with it, it read as a smudge rather than
+/// as intent. Now it runs out of the lower right corner: the same mark, the same 3 %,
+/// only bleeding off the edge, as on the site.
 struct BrandWatermark: View {
     var body: some View {
         GeometryReader { geo in

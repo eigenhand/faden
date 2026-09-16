@@ -1,11 +1,10 @@
 import Foundation
 
 /// One model as an endpoint describes it.
-/// Ein Modell, wie ein Endpoint es beschreibt.
 ///
-/// `Codable`, seit die Liste eines Anbieters aufbewahrt wird: die Rollen — Haupt,
-/// Ausweich, Vision, Vision-Ausweich — werden daraus gewählt, und dafür jedes Mal
-/// den Endpoint zu fragen hiesse, dass die Auswahl ohne Netz nicht aufgeht.
+/// `Codable` ever since a provider's list is kept: the roles — main, fallback, vision,
+/// vision fallback — are chosen from it, and asking the endpoint every time for that
+/// would mean the picker does not open without a network.
 struct RemoteModel: Identifiable, Codable, Equatable, Hashable {
     var id: String
     var displayName: String?
@@ -14,7 +13,7 @@ struct RemoteModel: Identifiable, Codable, Equatable, Hashable {
     var owner: String?
     /// Formatted price per million input/output tokens, when the endpoint says.
     var pricing: String?
-    /// Was die Liste über die Fähigkeiten sagt — oft nichts. Siehe `Capabilities`.
+    /// What the list says about the capabilities — often nothing. See `Capabilities`.
     var capabilities = Capabilities()
 
     var title: String { displayName ?? id }
@@ -45,8 +44,8 @@ enum ModelCatalog {
     // MARK: Listing
 
     static func fetch(config: LLMConfig, apiKey: String) async throws -> [RemoteModel] {
-        // Apples Modell hat keine Modellliste — es ist genau eines, und ob es da ist,
-        // sagt das System und nicht eine Abfrage.
+        // Apple's model has no model list — it is exactly one, and whether it is there
+        // is something the system says and not a request.
         guard config.wireFormat.needsEndpoint else { throw LLMError.notConfigured }
         guard let base = config.endpointURL else { throw LLMError.notConfigured }
         // The list lives next to the chat path: …/v1/chat/completions -> …/v1/models
@@ -112,17 +111,16 @@ enum ModelCatalog {
         return m
     }
 
-    /// Die Fähigkeiten, wie sie in den drei gängigen Schreibweisen dastehen.
+    /// The capabilities as they stand in the three common spellings.
     ///
-    /// Es gibt keinen Standard dafür, und das ist der ganze Aufwand hier. LiteLLM und
-    /// die Häuser, die es einsetzen, schreiben `supports_vision` als Boolean.
-    /// OpenRouter beschreibt stattdessen, was hineingeht (`architecture`
-    /// `input_modalities` mit „image") und welche Parameter die Anfrage annimmt
-    /// (`supported_parameters` mit „tools" oder „reasoning"). Andere hängen alles
-    /// unter `capabilities`.
+    /// There is no standard for it, and that is the whole effort here. LiteLLM and the
+    /// houses that deploy it write `supports_vision` as a boolean. OpenRouter instead
+    /// describes what goes in (`architecture` `input_modalities` with “image”) and which
+    /// parameters the request accepts (`supported_parameters` with “tools” or
+    /// “reasoning”). Others hang everything under `capabilities`.
     ///
-    /// Fehlt ein Feld, bleibt die Antwort **nil** und nicht `false`. Ein Anbieter,
-    /// der zu Bildern schweigt, hat nicht gesagt, dass sein Modell keine sieht.
+    /// If a field is missing, the answer stays **nil** and not `false`. A provider that
+    /// says nothing about images has not said its model sees none.
     static func capabilities(from v: JSONValue) -> Capabilities {
         var caps = Capabilities()
 
@@ -138,7 +136,7 @@ enum ModelCatalog {
                            "function_calling"])
         caps.reasoning = flag(["supports_reasoning", "reasoning"])
 
-        // OpenRouter: was hineingeht, und welche Parameter die Anfrage annimmt.
+        // OpenRouter: what goes in, and which parameters the request accepts.
         let modalities = (v["architecture"]?["input_modalities"]?.arrayValue ?? [])
             .compactMap { $0.stringValue?.lowercased() }
         if caps.vision == nil, !modalities.isEmpty {
@@ -161,14 +159,14 @@ enum ModelCatalog {
         return Int(d)
     }
 
-    // MARK: Grenzen, die der Anbieter nicht nennt
+    // MARK: Limits the provider does not name
 
-    // Hier stand ein Test, der eine absurde Obergrenze schickte und die echte aus der
-    // Absage las. Er funktionierte — und ist trotzdem weg. Die App erfindet keine
-    // Zahlen, um Grenzen auszuloten; sie nimmt, was in der Modellliste steht, und
-    // lernt den Rest aus echten Anfragen. `extractLimits` bleibt deshalb, nur der
-    // Aufrufer ist ein anderer: nicht mehr ein Test beim Einrichten, sondern die
-    // Absage, die ein Nutzer tatsaechlich kassiert hat.
+    // There used to be a test here that sent an absurd upper bound and read the real one
+    // out of the refusal. It worked — and is gone all the same. The app invents no
+    // numbers to sound out limits; it takes what stands in the model list and learns the
+    // rest from real requests. `extractLimits` therefore stays, only the caller is a
+    // different one: no longer a test during setup, but the refusal a user actually
+    // collected.
 
     /// Pulls plausible token ceilings out of an error message.
     static func extractLimits(from text: String) -> (context: Int?, output: Int?) {

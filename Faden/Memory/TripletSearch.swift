@@ -33,15 +33,14 @@ struct TripletSearch {
     /// All scores are kept, not just the top ones: ranking a triplet needs the
     /// similarity of both its endpoints, and an endpoint that missed the seed cut
     /// is exactly what distinguishes two facts hanging off the same person.
-    /// Zieht den Mittelvektor ab und normiert neu.
+    /// Subtracts the mean vector and renormalises.
     ///
-    /// Nur für die Vektoren vom Gerät nötig. Bei BERT-artigen Modellen zeigen alle
-    /// Sätze in dieselbe Richtung — gemessen lagen sämtliche Kosinuswerte über 0,95,
-    /// und der Abstand zwischen einer passenden und einer unpassenden Erinnerung
-    /// betrug neun Tausendstel. Die Rangfolge überlebt das, die Mindestähnlichkeit
-    /// nicht: jeder Wert liegt über jedem Schwellwert, also filtert der Regler
-    /// nichts. Was alle gemeinsam haben, abzuziehen lässt übrig, was sie
-    /// unterscheidet, und gibt dem Regler seine Bedeutung zurück.
+    /// Only needed for the vectors from the device. With BERT-like models every sentence
+    /// points in the same direction — measured, all cosines lay above 0.95, and the gap
+    /// between a fitting and an unfitting memory was nine thousandths. The ranking
+    /// survives that, the minimum similarity does not: every value lies above every
+    /// threshold, so the slider filters nothing. Subtracting what they all have in
+    /// common leaves what distinguishes them, and gives the slider its meaning back.
     private static func centred(_ v: [Float], _ centroid: [Float]?) -> [Float] {
         guard let centroid, centroid.count == v.count else { return v }
         var out = [Float](repeating: 0, count: v.count)

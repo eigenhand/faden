@@ -65,23 +65,23 @@ struct MessageView: View {
     }
 }
 
-/// Die Frage, gesetzt als Überschrift ihres Zuges.
+/// The question, set as the heading of its turn.
 ///
-/// Vorher eine rechtsbündige Karte mit Rahmen. Zwei Dinge sprachen dagegen: die
-/// Frage stand in derselben Größe wie ihre eigene Antwort, und die Antwort — der
-/// Grund für die App — hatte als Einzige keinen Behälter, sah also aus wie das,
-/// was übrig blieb. Größe und Gewicht ordnen das ohne Rahmen, und der Zug liest
-/// sich als Dokument: Überschrift, dann Text.
+/// Previously a right-aligned card with a border. Two things spoke against it: the
+/// question stood at the same size as its own answer, and the answer — the reason for
+/// the app — was the only thing without a container, so it looked like what was left
+/// over. Size and weight order that without a border, and the turn reads as a document:
+/// heading, then text.
 private struct QuestionHeading: View {
     let message: Message
     var onEdit: () -> Void = {}
 
-    /// Wie viel von einer Frage oben steht, bevor sie aufgeklappt werden muss.
+    /// How much of a question stands at the top before it has to be expanded.
     ///
-    /// Eine Frage ist die Überschrift ihres Zuges — und eine Überschrift, die den
-    /// halben Bildschirm füllt, ist keine mehr. Wer etwas Langes einwirft, einen
-    /// Textauszug oder eine Liste, bekommt sonst zwanzig Punkt Halbfett über die
-    /// ganze Seite und findet die Antwort nicht mehr, die darunter anfängt.
+    /// A question is the heading of its turn — and a heading that fills half the screen
+    /// is no longer one. Whoever pastes something long, an excerpt or a list, otherwise
+    /// gets twenty points of semibold across the whole page and can no longer find the
+    /// answer beginning below it.
     private static let collapsedLines = 3
 
     @State private var expanded = false
@@ -119,10 +119,9 @@ private struct QuestionHeading: View {
                     }
                 }
                 if !text.isEmpty {
-                    // Über den Zwischenspeicher, nicht frisch geparst: das Transkript
-                    // baut sich bei jedem gestreamten Token neu auf, und Markdown in
-                    // `body` zu zerlegen war schon einmal die Stelle, an der die CPU
-                    // beim Scrollen festhing.
+                    // Through the cache, not parsed anew: the transcript rebuilds
+                    // itself on every streamed token, and taking Markdown apart in
+                    // `body` was once the place where the CPU stalled on scrolling.
                     Text(MarkdownCache.shared.inline(text))
                         .font(EH.question)
                         .foregroundStyle(EH.navy)
@@ -151,13 +150,12 @@ private struct QuestionHeading: View {
         }
     }
 
-    /// Ob der Text in die drei Zeilen passt — gemessen, nicht geschätzt.
+    /// Whether the text fits into the three lines — measured, not estimated.
     ///
-    /// `ViewThatFits` bekommt hier den Platz angeboten, den die gekürzte Fassung
-    /// belegt, und nimmt den vollen Text nur, wenn er hineinpasst. Tut er es nicht,
-    /// greift die Ausweichfassung — und genau das ist die Antwort auf die Frage.
-    /// Über Zeichenzahl zu raten ginge daneben, sobald jemand die Textgröße ändert
-    /// oder das Gerät dreht.
+    /// `ViewThatFits` is offered the room the shortened version takes and only picks the
+    /// full text when it fits. If it does not, the fallback version applies — and that is
+    /// exactly the answer to the question. Guessing by character count would miss as soon
+    /// as somebody changes the text size or turns the device.
     private var measureOverflow: some View {
         ViewThatFits(in: .vertical) {
             Text(MarkdownCache.shared.inline(text))
@@ -234,10 +232,10 @@ private struct AssistantTurn: View {
             if !text.isEmpty {
                 MarkdownText(raw: text, onQuote: onQuote)
                     .font(EH.answer)
-                    // Die Palette weist Navy den Überschriften und Slate dem
-                    // Fließtext zu — die Antwort stand trotzdem in Navy, also in der
-                    // Überschriftenfarbe. Slate misst 5,88:1 auf dem Grund, trägt AA
-                    // mit Abstand und lässt der Frage die dunklere Stufe.
+                    // The palette assigns navy to headings and slate to body text —
+                    // the answer nevertheless stood in navy, that is, in the heading
+                    // colour. Slate measures 5.88:1 on the ground, carries AA with room
+                    // to spare and leaves the question the darker step.
                     .foregroundStyle(EH.slate)
                     .lineSpacing(EH.prose)
                     .textSelection(.enabled)

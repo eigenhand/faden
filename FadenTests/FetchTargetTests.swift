@@ -1,17 +1,16 @@
 import XCTest
 @testable import Faden
 
-/// Wohin `fetch_page` greifen darf.
+/// Where `fetch_page` may reach.
 ///
-/// Der Unterschied zum Suchanbieter ist der Anlass: dessen Adresse hat der Nutzer
-/// eingetragen und sie darf ins eigene Netz zeigen — bei einem selbst betriebenen
-/// SearXNG tut sie das. Die Adresse fuer `fetch_page` waehlt dagegen das Modell, nach
-/// dem, was in einem Suchergebnis oder auf einer Seite stand. Das ist eine Eingabe
-/// von aussen.
+/// The difference from the search provider is the occasion: its address was entered by
+/// the user and may point into their own network — with a self-hosted SearXNG it does.
+/// The address for `fetch_page`, by contrast, is chosen by the model, according to what
+/// stood in a search result or on a page. That is input from outside.
 ///
-/// Was sonst moeglich waere: eine praeparierte Seite nennt die Adresse des Routers,
-/// das Modell laedt sie und schreibt den Inhalt in die Antwort. Das Telefon steht im
-/// selben WLAN — es kommt dorthin, wo der Angreifer nicht hinkommt.
+/// What would otherwise be possible: a prepared page names the router's address, the
+/// model loads it and writes the contents into the answer. The phone sits on the same
+/// Wi-Fi — it reaches where the attacker cannot.
 final class FetchTargetTests: XCTestCase {
 
     private func allowed(_ s: String) -> Bool {
@@ -30,14 +29,14 @@ final class FetchTargetTests: XCTestCase {
         XCTAssertTrue(allowed("https://11.0.0.1/"), "Nur 10/8 ist privat, nicht 11/8.")
     }
 
-    /// Ein Name mit Ziffern ist kein Zahlengebilde: `192.168.example.com` ist eine
-    /// ganz gewoehnliche Domain und darf nicht an der IP-Pruefung haengenbleiben.
+    /// A name with digits is not a numeric construct: `192.168.example.com` is a
+    /// perfectly ordinary domain and must not get caught on the IP check.
     func testANameThatLooksNumericIsStillAName() {
         XCTAssertTrue(allowed("https://192.168.example.com/"))
         XCTAssertTrue(allowed("https://10.0.0.1.example.org/"))
     }
 
-    // MARK: Was nicht durchkommt
+    // MARK: What does not get through
 
     func testTheDeviceItself() {
         XCTAssertFalse(allowed("http://localhost:11434/api"))
@@ -55,9 +54,9 @@ final class FetchTargetTests: XCTestCase {
         XCTAssertFalse(allowed("http://nas.lan/"))
     }
 
-    /// 169.254.169.254 ist die Adresse, unter der Cloud-Anbieter ihre Zugangsdaten
-    /// herausgeben. Sie steht hier, weil sie das bekannteste Ziel dieser Angriffsart
-    /// ueberhaupt ist — auf einem Telefon harmlos, in einer Serverumgebung nicht.
+    /// 169.254.169.254 is the address at which cloud providers hand out their
+    /// credentials. It stands here because it is the best-known target of this kind of
+    /// attack — harmless on a phone, not in a server environment.
     func testTheLinkLocalRangeIncludingTheMetadataAddress() {
         XCTAssertFalse(allowed("http://169.254.169.254/latest/meta-data/"))
         XCTAssertFalse(allowed("http://169.254.0.1/"))
@@ -76,16 +75,16 @@ final class FetchTargetTests: XCTestCase {
         XCTAssertTrue(allowed("http://[2606:4700:4700::1111]/"), "Oeffentliches IPv6 darf.")
     }
 
-    /// Eine in IPv6 eingebettete private IPv4-Adresse ist derselbe Weg mit anderer
-    /// Schreibweise.
+    /// A private IPv4 address embedded in IPv6 is the same route in a different
+    /// spelling.
     func testAnIPv4AddressHiddenInsideIPv6() {
         XCTAssertFalse(allowed("http://[::ffff:192.168.0.1]/"))
     }
 
     // MARK: Die Begruendung
 
-    /// Das Modell bekommt den Satz als Werkzeugantwort. Ohne ihn versucht es dieselbe
-    /// Adresse noch dreimal, weil es wie ein Fehler der Seite aussaehe.
+    /// The model receives the sentence as a tool result. Without it, it tries the same
+    /// address three more times, because it would look like a fault of the page.
     func testTheRefusalSaysWhy() throws {
         let url = try XCTUnwrap(URL(string: "http://192.168.178.1/"))
         let reason = try XCTUnwrap(FetchTarget.refusal(for: url))

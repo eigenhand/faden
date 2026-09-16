@@ -61,10 +61,10 @@ struct ChatView: View {
             ScrollViewReader { proxy in
               GeometryReader { outer in
                 ScrollView {
-                    // Zehn Punkt innerhalb eines Zuges, vierundzwanzig zusätzlich
-                    // davor — siehe unten. Vorher standen überall 22: eine Frage war
-                    // von ihrer eigenen Antwort genauso weit weg wie vom vorigen
-                    // Gespräch, und damit gab es keine Gruppen, nur eine Liste.
+                    // Ten points within a turn, twenty-four extra in front of one —
+                    // see below. Before, 22 stood everywhere: a question was as far
+                    // from its own answer as from the previous exchange, so there were
+                    // no groups, only a list.
                     LazyVStack(alignment: .leading, spacing: 10) {
                         // Waits for the store: showing "not set up yet" for one
                         // frame and replacing it is worse than showing nothing.
@@ -90,11 +90,11 @@ struct ChatView: View {
                                         onStartVoice: { model.startVoiceConversation() })
                                 }
                             }
-                            // Fünfzig Punkt Luft über der Marke, dazu 52 für die
-                            // Knöpfe: 102, die im Standardfall fehlten. Ein leerer Chat
-                            // startet mit Tastatur, und dann endet das Sichtfenster bei
-                            // 471 — der vierte Vorschlag lag mit 50 Punkt teils hinter
-                            // der Eingabezeile.
+                            // Fifty points of air above the mark plus 52 for the
+                            // buttons: 102 that were missing in the default case. An
+                            // empty chat starts with the keyboard, and then the viewport
+                            // ends at 471 — the fourth suggestion lay 50 points partly
+                            // behind the composer.
                             .padding(.top, 26)
                         }
 
@@ -121,9 +121,9 @@ struct ChatView: View {
                                     inputFocused = true
                                 })
                                 .id(message.id)
-                                // Eine Frage beginnt einen Zug, also bekommt sie den
-                                // großen Abstand — außer der ersten, die keinen
-                                // vorigen Zug abzugrenzen hat.
+                                // A question begins a turn, so it gets the large
+                                // spacing — except the first, which has no previous
+                                // turn to set itself apart from.
                                 .padding(.top, message.role == .user && index > 0 ? 24 : 0)
                           }
                         }
@@ -131,7 +131,7 @@ struct ChatView: View {
                         if model.isStreaming { liveTurn }
 
                         if let note = model.note {
-                            // Kein Fehler: Der Zug läuft weiter, nur von vorn.
+                            // Not an error: the turn continues, just from the start.
                             HStack(alignment: .firstTextBaseline, spacing: 8) {
                                 Image(systemName: "arrow.clockwise")
                                     .font(.eh(11, .caption2))
@@ -165,17 +165,16 @@ struct ChatView: View {
                                 })
                     }
                     .padding(.horizontal, EH.gutter)
-                    // Platz für die schwebenden Knöpfe: der Inhalt beginnt darunter,
-                    // läuft beim Scrollen aber dahinter durch.
+                    // Room for the floating buttons: the content begins below them but
+                    // scrolls through behind them.
                     .padding(.top, Self.headerHeight)
                     .padding(.bottom, 12)
                 }
                 .scrollDismissesKeyboard(.interactively)
-                // Der Text läuft hinter den Knöpfen durch und löst sich nach oben
-                // auf, statt in die Statusleiste zu laufen. Ohne das kollidierte er
-                // mit der Uhr — beides unlesbar. Die Maske schneidet zugleich ab,
-                // was ein Rollbereich sonst in den Sicherheitsbereich hinein
-                // zeichnet.
+                // The text runs behind the buttons and dissolves upwards instead of
+                // running into the status bar. Without this it collided with the clock —
+                // both unreadable. The mask at the same time cuts off what a scroll view
+                // would otherwise draw into the safe area.
                 .mask(
                     LinearGradient(
                         stops: [
@@ -321,12 +320,11 @@ struct ChatView: View {
             guard !model.isStreaming else { return }
             inputFocused = true
         } else {
-            // Senken wiegt so schwer wie Heben, und das fehlte hier.
+            // Lowering weighs as much as raising, and that was missing here.
             //
-            // Wer aus einem leeren Chat — Tastatur oben — eine gespeicherte
-            // Unterhaltung öffnet, landete mit der Tastatur über genau dem Text,
-            // den er zum Lesen aufgerufen hat. Die Regel oben nennt beide
-            // Richtungen; umgesetzt war nur eine.
+            // Whoever opened a saved conversation from an empty chat — keyboard up —
+            // ended up with the keyboard over exactly the text they had called up to
+            // read. The rule above names both directions; only one was implemented.
             inputFocused = false
         }
     }
@@ -369,33 +367,32 @@ struct ChatView: View {
 
     // MARK: Header
 
-    /// Wie viel Raum die schwebenden Knöpfe oben einnehmen: 38 pt Kreis, 3 pt
-    /// Polster für das Antippziel, 4 pt Luft — beides mal zwei.
+    /// How much room the floating buttons take at the top: a 38 pt circle, 3 pt of
+    /// padding for the tap target, 4 pt of air — both times two.
     private static let headerHeight: CGFloat = 38 + 3 * 2 + 4 * 2
 
     private var header: some View {
-        // Nur die drei Knöpfe. Keine Marke, kein Titel.
+        // Only the three buttons. No mark, no title.
         //
-        // Die Leiste kostet 59 pt, oben drauf 59 pt Statusleiste — 13,5 % der
-        // Bildschirmhöhe, bevor ein Wort Inhalt beginnt. Die Knöpfe rechtfertigen
-        // ihren Anteil: Verlauf, neuer Chat und Einstellungen sind selten, für sie
-        // ist die schlecht erreichbare obere Ecke verkraftbar, und die häufigen
-        // Handlungen sitzen längst unten an der Eingabezeile.
+        // The bar costs 59 pt, plus 59 pt of status bar above it — 13.5 % of the screen
+        // height before a word of content begins. The buttons justify their share:
+        // history, new chat and settings are rare, for them the hard-to-reach top
+        // corner is bearable, and the frequent actions have long sat at the composer
+        // below.
         //
-        // Die Marke rechtfertigte ihren nicht. Ein Logo in der oberen Leiste ist
-        // dort begründet, wo eine Reise beginnt — Start- und Übersichtsbildschirme.
-        // Hier ist jeder Bildschirm der Inhalt, und man weiß, welche App man gerade
-        // geöffnet hat. Sie bleibt, wo sie wirkt: App-Symbol, Startbildschirm,
-        // leerer Chat.
-        // Abstand 4 plus 3 pt Polster je Knopf: sichtbar 38 pt, antippbar 44 —
-        // dieselbe Rechnung wie in der Eingabezeile, damit oben und unten dieselbe
-        // Formensprache steht.
+        // The mark did not justify its share. A logo in the top bar is warranted where
+        // a journey begins — home and overview screens. Here every screen is the
+        // content, and you know which app you just opened. It stays where it works: the
+        // app icon, the home screen, an empty chat.
+        // Spacing 4 plus 3 pt of padding per button: 38 pt visible, 44 pt tappable —
+        // the same arithmetic as in the composer, so that top and bottom speak the same
+        // formal language.
         HStack(spacing: 4) {
             Spacer(minLength: 0)
-            // Erst die Tastatur, dann das Blatt. Ein Sheet über einer Eingabezeile
-            // mit dem Fokus lässt die Tastatur stehen — sie liegt dann unter dem
-            // Verlauf und schiebt ihn hoch, und wer eine Unterhaltung sucht, hat
-            // eine halbe Liste und eine Tastatur, um die er nicht gebeten hat.
+            // The keyboard first, then the sheet. A sheet over a focused composer
+            // leaves the keyboard standing — it then lies under the history and pushes
+            // it up, and whoever is looking for a conversation gets half a list and a
+            // keyboard they did not ask for.
             headerButton("clock.arrow.circlepath", label: "Verlauf", shortcut: "y") {
                 inputFocused = false
                 showHistory = true
@@ -404,10 +401,10 @@ struct ChatView: View {
                 model.newConversation()
                 inputFocused = true      // a new chat is an invitation to type
             }
-            // Zahnrad, nicht Schieberegler: in Apples eigenen Apps steht
-            // `slider.horizontal.3` für Filter und Anpassungen. Damit war es ein
-            // app-eigenes Symbol, und für die wurde gemessen, dass nur 34 % richtig
-            // erraten, was ein Antippen tut — konventionell sind es 60 %.
+            // A gear, not sliders: in Apple's own apps `slider.horizontal.3` stands
+            // for filters and adjustments. That made it an app-specific symbol, and for
+            // those it has been measured that only 34 % correctly guess what a tap
+            // does — for conventional ones it is 60 %.
             headerButton("gearshape", label: "Einstellungen", shortcut: ",") {
                 inputFocused = false
                 showSettings = true
@@ -432,9 +429,9 @@ struct ChatView: View {
             Image(systemName: icon)
                 .font(.eh(15, .callout, weight: .regular))
                 .foregroundStyle(EH.slate)
-                // Sichtbarer Kreis mit Umrandung, 38 pt, in einem 44-pt-Ziel. Die
-                // Füllung ist deckend, weil ohne Leiste der Inhalt darunter
-                // durchscrollt — ein randloses Symbol über Text wäre unlesbar.
+                // A visible circle with a border, 38 pt, inside a 44 pt target. The
+                // fill is opaque, because without a bar the content scrolls through
+                // beneath it — a borderless symbol over text would be unreadable.
                 .frame(width: 38, height: 38)
                 .background(Circle().fill(EH.surface))
                 .overlay(Circle().stroke(EH.hairStrong, lineWidth: EH.hairWidth))
@@ -509,24 +506,21 @@ struct ChatView: View {
         }
     }
 
-    /// Die Herkunft, unter der Eingabezeile — in jedem Zustand dieselbe Stelle.
+    /// The attribution, under the composer — in the same place in every state.
     ///
-    /// Im Rollbereich ging es nicht. Gemessen: mit vier Vorschlägen und Tastatur —
-    /// dem Standardfall des Tester-Builds — endet das Sichtfenster bei 471 Punkt,
-    /// der Inhalt braucht bis 523. Die Zeile lag also 52 Punkt hinter der
-    /// Eingabezeile, unsichtbar. Mit drei Vorschlägen war die Hälfte des
-    /// Schriftzugs abgeschnitten (gemessen 5,4 von 10,7 Punkt Höhe). Und je kleiner
-    /// das Gerät, desto schlimmer.
+    /// In the scroll view it did not work. Measured: with four suggestions and the
+    /// keyboard — the default case of the tester build — the viewport ends at 471
+    /// points, the content needs until 523. The line therefore lay 52 points behind the
+    /// composer, invisible. With three suggestions half the lettering was cut off
+    /// (measured 5.4 of 10.7 points of height). And the smaller the device, the worse.
     ///
-    /// Hier kostet sie neun Punkt und steht immer: das Polster unter der
-    /// Eingabezeile geht von zehn auf vier zurück, die Zeile selbst trägt zwölf.
-    /// Die 34 Punkt darunter gehören dem Home-Indikator und bleiben frei — deshalb
-    /// sitzt sie über ihm, nicht in ihm.
+    /// Here it costs nine points and always stands: the padding under the composer goes
+    /// back from ten to four, the line itself carries twelve. The 34 points below belong
+    /// to the home indicator and stay free — which is why it sits above it, not in it.
     ///
-    /// Keine Schaltfläche. Zehn Punkt Text wären ein Ziel weit unter Apples 44, und
-    /// bei offener Tastatur liegt diese Stelle zwischen Eingabefeld und oberster
-    /// Tastenreihe — ein Fehlgriff dort öffnet Safari. Antippbar ist die Herkunft in
-    /// den Einstellungen.
+    /// Not a button. Ten points of text would be a target far below Apple's 44, and with
+    /// the keyboard open this spot lies between the input field and the top row of keys
+    /// — a mis-tap there opens Safari. The attribution is tappable in the settings.
     private var brandFooter: some View {
         Text("eigenhand.dev")
             .font(.eh(10, .caption2))
@@ -583,19 +577,19 @@ struct ChatView: View {
     }
 
     private var composerRow: some View {
-        // Acht Punkt zwischen den Bedienelementen, nicht vier.
+        // Eight points between the controls, not four.
         //
-        // Jeder Kreis misst 38 pt und sitzt mit 3 pt Polster in einem 44-pt-Ziel —
-        // das erfüllt Apples Mindestmaß. Die *Abstände* dazwischen taten es nicht:
-        // Materials Regel verlangt 8 dp zwischen benachbarten Bedienelementen, und
-        // bei vier Kreisen nebeneinander ist das der Unterschied zwischen Mikrofon
-        // und Senden. Die Forschung zu Trefferflächen beziffert 44–48 pt mit 60–80 %
-        // weniger Fehlgriffen; der Abstand gehört zu derselben Rechnung.
+        // Every circle measures 38 pt and sits with 3 pt of padding in a 44 pt target —
+        // that meets Apple's minimum. The *gaps* between them did not: Material's rule
+        // asks for 8 dp between adjacent controls, and with four circles side by side
+        // that is the difference between the microphone and send. The research on hit
+        // areas puts 44–48 pt at 60–80 % fewer mis-taps; the spacing belongs to the same
+        // calculation.
         //
-        // Die Zeile selbst wird animiert, nicht nur der Knopf: sonst würde das
-        // Textfeld in die frei werdende Breite springen, während der Knopf noch
-        // wegfährt. `draft.isEmpty` wechselt nur beim ersten und letzten Zeichen,
-        // also läuft das nicht bei jedem Tastendruck.
+        // The row itself is animated, not just the button: otherwise the text field
+        // would jump into the width being freed while the button was still moving away.
+        // `draft.isEmpty` flips only at the first and last character, so this does not
+        // run on every keystroke.
         HStack(alignment: .bottom, spacing: 8) {
             if model.visionAvailable {
                 // Where there is a camera, the plus asks which. Where there is none —
@@ -629,14 +623,15 @@ struct ChatView: View {
                 .focused($inputFocused)
                 .submitLabel(.send)
                 .padding(.horizontal, 14)
-                // 21 pt Zeilenhöhe plus zweimal 13 ergibt 47 pt. Vorher waren es
-                // zweimal 10 und damit 41 — das am häufigsten angetippte Element der
-                // App war das einzige unter Apples Mindestmaß von 44, während jeder
-                // Kreis daneben es erfüllte.
+                // A 21 pt line height plus twice 13 gives 47 pt. Before it was twice
+                // 10 and therefore 41 — the most frequently tapped element in the app
+                // was the only one below Apple's minimum of 44, while every circle
+                // beside it met it.
                 .padding(.vertical, 13)
-                // `.circular`, nicht `.continuous`: bei Radius gleich halber Höhe
-                // flacht Apples Squircle die Enden merklich ab, und daneben stehen
-                // vier echte Kreise. Überall sonst in der App bleibt `.continuous`.
+                // `.circular`, not `.continuous`: at a radius equal to half the
+                // height Apple's squircle flattens the ends noticeably, and four real
+                // circles stand beside it. Everywhere else in the app `.continuous`
+                // stays.
                 .background(
                     RoundedRectangle(cornerRadius: EH.radiusField, style: .circular)
                         .fill(EH.surface))
@@ -654,9 +649,9 @@ struct ChatView: View {
                     }
                 }
 
-            // Das freihändige Sprechen steht nur da, solange nichts getippt ist:
-            // wer angefangen hat zu schreiben, will nicht sprechen, und der Platz
-            // gehört dann dem Feld.
+            // Hands-free speaking only stands there while nothing is typed: whoever
+            // has begun to write does not want to speak, and the room then belongs to
+            // the field.
             if model.voiceInputAvailable, !model.isStreaming, !composerHasText {
                 Button {
                     model.startVoiceConversation()
@@ -672,8 +667,8 @@ struct ChatView: View {
                 }
                 .buttonStyle(EHTap())
                 .accessibilityLabel(Text("Sprachmodus"))
-                // Fährt zur Seite weg, statt zu verschwinden: ein Knopf, der beim
-                // ersten Buchstaben schlicht wegblinkt, liest sich wie ein Fehler.
+                // Slides aside rather than disappearing: a button that simply blinks
+                // away at the first letter reads like a bug.
                 .transition(.move(edge: .trailing).combined(with: .opacity))
             }
 
@@ -764,8 +759,8 @@ struct ChatView: View {
     }
 
     private func submit() {
-        // Erst leeren, wenn es angenommen wurde. Vorher war es umgekehrt, und jeder
-        // stille Ausstieg in `send` hat den getippten Text mitgenommen.
+        // Clear only once it has been accepted. It used to be the other way round,
+        // and every silent bail-out in `send` took the typed text with it.
         if model.send(draft) { draft = "" }
         // Keep the caret where the next question goes; sending from the keyboard
         // otherwise drops focus and the next keystroke goes nowhere.

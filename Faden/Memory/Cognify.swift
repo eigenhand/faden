@@ -134,9 +134,9 @@ struct Cognify {
         guard memory.isReady else { return 0 }
         await MemoryStore.shared.load()
 
-        // Fremde Vektoren zählen hier wie fehlende: sie sind vorhanden, aber im
-        // falschen Raum, und das Nachholen ist genau der Weg, auf dem sie ersetzt
-        // werden — ohne dass jemand etwas anstoßen muss.
+        // Foreign vectors count here like missing ones: they are present but in the
+        // wrong space, and the catch-up is exactly the route by which they are replaced
+        // — without anyone having to start anything.
         let nodes = await MemoryStore.shared.nodesNeedingEmbedding(model: memory.effectiveModel, limit: limit)
         let edges = await MemoryStore.shared.edgesNeedingEmbedding(model: memory.effectiveModel, limit: limit)
         guard !nodes.isEmpty || !edges.isEmpty else { return 0 }
@@ -172,8 +172,8 @@ struct Cognify {
         let embedder = Embedder(config: memory, apiKey: embeddingKey)
         let queryVector = try await embedder.embed(question)
 
-        // Nur Vektoren aus dem eingestellten Modell. Alles andere liegt in einem
-        // anderen Raum; ein Kosinus dagegen ist eine Zahl ohne Bedeutung.
+        // Only vectors from the configured model. Everything else lies in a different
+        // space; a cosine against it is a number without meaning.
         let nodes = await MemoryStore.shared.nodesWithEmbeddings(model: memory.effectiveModel)
         let edges = await MemoryStore.shared.edgesWithEmbeddings(model: memory.effectiveModel)
         let centroid = memory.needsCentering

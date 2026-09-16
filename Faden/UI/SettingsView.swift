@@ -22,12 +22,12 @@ struct SettingsView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 26) {
 
-                        // Frueher war dieser Abschnitt in Builds mit eingebautem
-                        // Anbieter ausgeblendet: es gab nichts zu waehlen, und die
-                        // Maschinerie zu zeigen lud nur dazu ein, eine funktionierende
-                        // Einrichtung kaputtzumachen. Seit Apples Modell im System
-                        // danebensteht, gibt es etwas zu waehlen — und ein Tester, der
-                        // genau das ausprobieren soll, kam nicht heran.
+                        // This section used to be hidden in builds with a bundled
+                        // provider: there was nothing to choose, and showing the
+                        // machinery only invited somebody to break a working setup.
+                        // Since Apple's model stands beside it in the system there is
+                        // something to choose — and a tester meant to try exactly that
+                        // could not reach it.
                         section("Anbieter") {
                             if model.settings.llms.isEmpty {
                                 emptyRow("Noch kein Anbieter hinterlegt.")
@@ -159,9 +159,9 @@ struct SettingsView: View {
                             }
                             .buttonStyle(EHTap())
 
-                            // Der einzige Weg zum Gemerkten. Vorher hing dafür ein
-                            // Symbol dauerhaft in der Kopfzeile — für etwas, das man
-                            // selten braucht und nie im Gespräch.
+                            // The only route to what has been remembered. A symbol
+                            // used to hang permanently in the header for it — for
+                            // something needed rarely and never mid-conversation.
                             NavigationLink {
                                 MemoryView()
                             } label: {
@@ -174,11 +174,10 @@ struct SettingsView: View {
                         }
 
                         section("Kontext") {
-                            // Stand und Verdichten von Hand — vorher trug das eine
-                            // Leiste am unteren Rand. Bei einem Fenster von einer
-                            // Million Token stand dort dauerhaft „0 %“, also ein
-                            // Streifen, der nie etwas sagte. Hier steht die Zahl,
-                            // wenn man sie sucht.
+                            // State and manual compaction — a bar at the bottom edge
+                            // used to carry this. With a window of a million tokens it
+                            // permanently read “0 %”, so a strip that never said
+                            // anything. Here the number stands when you look for it.
                             HStack {
                                 VStack(alignment: .leading, spacing: 3) {
                                     Text(model.usage.compacting ? "Verdichtet gerade …"
@@ -228,9 +227,9 @@ struct SettingsView: View {
                             .onChange(of: model.settings.showThinking) { _, _ in model.persist() }
                         }
 
-                        // Steht unten, nicht oben: wer die App zum ersten Mal
-                        // oeffnet, muss einen Anbieter einrichten, sonst tut sie
-                        // nichts. Die Sprache sucht man, wenn man sie sucht.
+                        // At the bottom, not the top: whoever opens the app for the
+                        // first time has to set up a provider or it does nothing. The
+                        // language is something you look for when you look for it.
                         section("Oberfläche") {
                             VStack(alignment: .leading, spacing: 6) {
                                 HStack {
@@ -244,10 +243,10 @@ struct SettingsView: View {
                                     .labelsHidden()
                                     .pickerStyle(.menu)
                                     .tint(EH.navy)
-                                    // Eine Kennung und kein Text: Der Beschriftung
-                                    // dieses Wählers steht seine eigene Auswahl an,
-                                    // und ein Test, der sie sucht, sucht nach dem
-                                    // Wechsel etwas anderes als vorher.
+                                    // An identifier and not text: this picker's label
+                                    // carries its own selection, and a test looking for
+                                    // it would be looking for something different after
+                                    // the switch.
                                     .accessibilityIdentifier("language-picker")
                                     .onChange(of: model.settings.language) { _, _ in model.persist() }
                                 }
@@ -277,9 +276,9 @@ struct SettingsView: View {
                                 .font(.eh(12, .caption))
                                 .foregroundStyle(EH.muted)
 
-                            // Die zweite Stelle für die Herkunft: hier sucht man sie,
-                            // wenn man sie sucht, und sie steht niemandem im Weg,
-                            // der gerade liest.
+                            // The second place for the attribution: here is where you
+                            // look for it when you look for it, and it is in nobody's
+                            // way who is reading.
                             Link(destination: URL(string: "https://eigenhand.dev")!) {
                                 HStack(spacing: 7) {
                                     Image("BrandMark")
@@ -339,12 +338,12 @@ struct SettingsView: View {
     }
 
     @ViewBuilder
-    /// Was in diesem Anbieter welche Rolle hat, in einer Zeile.
+    /// Which model holds which role in this provider, in one line.
     ///
-    /// Das Hauptmodell immer, das Bild-Modell nur, wenn es eines gibt — es ist die
-    /// Rolle, deren Fehlen man sonst erst merkt, wenn ein Bild abgewiesen wird. Das
-    /// Ausweichmodell bleibt draussen: es ist der Fall, der hoffentlich nie eintritt,
-    /// und eine Zeile fasst nicht alles.
+    /// The main model always, the image model only when there is one — it is the role
+    /// whose absence you otherwise notice only when an image is refused. The fallback
+    /// stays out: it is the case that hopefully never occurs, and one line does not hold
+    /// everything.
     private func roles(of c: LLMConfig) -> String {
         guard !c.model.isEmpty else { return "unvollständig" }
         let vision = c.visionModel.trimmingCharacters(in: .whitespaces)

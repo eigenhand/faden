@@ -25,13 +25,13 @@ final class TurnState {
     var liveTools: [ToolActivity] = []
     var errorMessage: String?
 
-    /// Ein Hinweis, der kein Fehler ist.
+    /// A note that is not an error.
     ///
-    /// Bisher gab es nur `errorMessage`, und damit nur zwei Zustände: Es lief, oder
-    /// es ging schief. Ein Zug, der noch einmal beginnt, weil der Vorrat nicht
-    /// gereicht hat, ist beides nicht — er läuft weiter, aber was eben zu sehen war,
-    /// gilt nicht mehr, und das muss dastehen. Sonst verschwindet ein halber
-    /// Gedankengang wortlos.
+    /// Until now there was only `errorMessage`, and therefore only two states: it was
+    /// running, or it went wrong. A turn that starts over because the budget was not
+    /// enough is neither — it carries on, but what was visible a moment ago no longer
+    /// holds, and that has to stand somewhere. Otherwise half a train of reasoning
+    /// disappears without a word.
     var note: String?
     /// Images staged for the next message in *this* conversation.
     var attachments: [ImageAttachment] = []

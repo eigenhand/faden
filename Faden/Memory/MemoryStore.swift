@@ -20,11 +20,11 @@ actor MemoryStore {
 
     init() {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        // „PerBu“ war der Arbeitsname, und dieser Ordner behält ihn. Ein
-        // anderer Name wäre auf jedem Gerät, auf dem die App schon liegt,
-        // ein leerer Ordner neben einem vollen — der ganze Wissensgraph weg.
-        // Umbenennen ginge nur mit einem Umzug beim ersten Start, und der
-        // hat einen Fehlerfall.
+        // “PerBu” was the working name, and this folder keeps it. A different
+        // name would be, on every device that already carries the app, an empty
+        // folder beside a full one — the whole knowledge graph gone. Renaming
+        // would only work with a migration on first launch, and that has a
+        // failure case.
         let dir = base.appendingPathComponent("PerBu", isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         url = dir.appendingPathComponent("memory.json")
@@ -169,19 +169,19 @@ actor MemoryStore {
 
     // MARK: Der Index
 
-    /// Wie der gespeicherte Index zum eingestellten Modell steht.
+    /// How the stored index stands in relation to the configured model.
     struct IndexStatus: Equatable {
-        /// Vektor vorhanden und vom eingestellten Modell — nutzbar.
+        /// Vector present and from the configured model — usable.
         var usable = 0
-        /// Vektor vorhanden, aber aus einem anderen Modell oder mit anderer
-        /// Dimension. Rechnerisch unbrauchbar, muss neu eingebettet werden.
+        /// Vector present, but from a different model or with a different dimension.
+        /// Useless arithmetically, has to be embedded again.
         var foreign = 0
-        /// Noch gar kein Vektor.
+        /// No vector at all yet.
         var missing = 0
-        /// Welche Modelle im Index stecken, mit Anzahl — damit sichtbar ist,
-        /// *was* da liegt, statt nur, dass etwas nicht passt.
+        /// Which models sit in the index, with counts — so that *what* lies there is
+        /// visible, rather than only that something does not fit.
         var byModel: [String: Int] = [:]
-        /// Die Dimension, auf die sich das eingestellte Modell eingependelt hat.
+        /// The dimension the configured model has settled on.
         var dimension: Int?
 
         var total: Int { usable + foreign + missing }
@@ -189,11 +189,11 @@ actor MemoryStore {
         var isClean: Bool { needsWork == 0 }
     }
 
-    /// Die Dimension, die das eingestellte Modell hier tatsächlich liefert.
+    /// The dimension the configured model actually delivers here.
     ///
-    /// Nicht aus einer Tabelle, sondern aus dem Bestand: Anbieter ändern die Länge
-    /// unter demselben Modellnamen. Die häufigste gewinnt; Ausreißer gelten damit
-    /// als fremd und werden neu geholt.
+    /// Not from a table but from what is stored: providers change the length under the
+    /// same model name. The most frequent one wins; outliers therefore count as foreign
+    /// and are fetched again.
     private func dominantDimension(for model: String) -> Int? {
         let wanted = EmbeddingStamp.normalise(model)
         var counts: [Int: Int] = [:]
@@ -222,8 +222,8 @@ actor MemoryStore {
                     status.foreign += 1
                 }
             } else {
-                // Vektor ohne Stempel: aus einer Fassung vor dieser Kennzeichnung.
-                // Unbekannte Herkunft ist so gut wie falsche Herkunft.
+                // A vector without a stamp: from a version before this marking.
+                // Unknown origin is as good as wrong origin.
                 status.byModel["unbekannt", default: 0] += 1
                 status.foreign += 1
             }
@@ -234,8 +234,8 @@ actor MemoryStore {
         return status
     }
 
-    /// Alles, was für das eingestellte Modell noch einen Vektor braucht — fehlend
-    /// wie fremd. Die Warteschlange des Nachholens.
+    /// Everything that still needs a vector for the configured model — missing as well
+    /// as foreign. The catch-up queue.
     func nodesNeedingEmbedding(model: String, limit: Int) -> [MemoryNode] {
         let dimension = dominantDimension(for: model)
         return Array(nodes.values
@@ -262,12 +262,11 @@ actor MemoryStore {
         indexStatus(model: model).needsWork
     }
 
-    /// Wirft Vektoren weg — entweder alle, oder alles außer dem einen Modell.
+    /// Throws vectors away — either all of them, or everything but the one model.
     ///
-    /// Weggeworfen statt aufgehoben, und zwar aus Platzgründen: ein Vektor mit 4096
-    /// Dimensionen belegt in dieser JSON-Datei rund 48 KB. Zwei Modelle nebeneinander
-    /// aufzuheben verdoppelt eine Datei, die ohnehin bei jedem Start vollständig
-    /// gelesen wird.
+    /// Thrown away rather than kept, and for reasons of space: a vector with 4096
+    /// dimensions takes about 48 KB in this JSON file. Keeping two models side by side
+    /// doubles a file that is read in full at every launch anyway.
     @discardableResult
     func dropEmbeddings(keeping model: String?) -> Int {
         let dimension = model.flatMap { dominantDimension(for: $0) }
@@ -301,11 +300,11 @@ actor MemoryStore {
         edges[id] = e
     }
 
-    /// Der Mittelvektor über alle nutzbaren Einbettungen.
+    /// The mean vector across all usable embeddings.
     ///
-    /// Wird für die Zentrierung der Vektoren vom Gerät gebraucht. Aus dem Bestand
-    /// gerechnet statt gespeichert: er ändert sich mit jeder neuen Erinnerung, und
-    /// über ein paar tausend Vektoren zu mitteln kostet weniger als eine Millisekunde.
+    /// Needed to centre the vectors from the device. Computed from what is stored rather
+    /// than saved: it changes with every new memory, and averaging over a few thousand
+    /// vectors costs less than a millisecond.
     func centroid(model: String) -> [Float]? {
         let dimension = dominantDimension(for: model)
         var sum: [Float] = []
@@ -321,7 +320,7 @@ actor MemoryStore {
         return sum.map { $0 / Float(count) }
     }
 
-    /// Was die Suche benutzen darf: nur Vektoren aus dem eingestellten Modell.
+    /// What the search may use: only vectors from the configured model.
     func nodesWithEmbeddings(model: String) -> [MemoryNode] {
         let dimension = dominantDimension(for: model)
         return nodes.values.filter { $0.isValid && usable($0.embedding, $0.embeddingStamp, model, dimension) }

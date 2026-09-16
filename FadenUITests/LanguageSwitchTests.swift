@@ -1,12 +1,12 @@
 import XCTest
 
-/// Der Sprachwechsel am laufenden Gerät.
+/// Switching the language on a running device.
 ///
-/// Die Unittests zeigen, dass beide Sprachen im Bundle liegen und dass der Lookup
-/// stimmt. Das ist nicht dasselbe wie die Frage, um die es geht: ob ein Wechsel in
-/// den Einstellungen die Oberfläche tatsächlich umstellt. Daran hängt genau eine
-/// Stelle — `AppLanguage.apply` an der Wurzel — und wenn sie jemand entfernt, bleibt
-/// alles grün, bis auf diesen Test.
+/// The unit tests show that both languages lie in the bundle and that the lookup is
+/// right. That is not the same as the question this is about: whether a switch in the
+/// settings actually changes the interface. Exactly one place carries that —
+/// `AppLanguage.apply` at the root — and if somebody removes it, everything stays green
+/// except this test.
 final class LanguageSwitchTests: XCTestCase {
 
     private var app: XCUIApplication!
@@ -17,12 +17,12 @@ final class LanguageSwitchTests: XCTestCase {
         app.launch()
     }
 
-    /// Lässt die App auf Deutsch zurück, egal woran der Test scheitert.
+    /// Leaves the app in German, whatever the test fails on.
     ///
-    /// Alle Tests teilen sich einen Simulator und einen Speicher, und die Wahl
-    /// überlebt einen Neustart — eine englische App wäre sonst das Erbe für jeden
-    /// folgenden Test. Genau das ist einmal passiert und hat eine halbe Stunde
-    /// Fehlersuche an der falschen Stelle gekostet.
+    /// All tests share one simulator and one store, and the choice survives a restart —
+    /// an English app would otherwise be the inheritance for every following test. That
+    /// is exactly what happened once and cost half an hour of debugging in the wrong
+    /// place.
     override func tearDownWithError() throws {
         continueAfterFailure = true
         guard app.state == .runningForeground else { return }
@@ -39,40 +39,39 @@ final class LanguageSwitchTests: XCTestCase {
         try choose("English", from: "Einstellungen")
         let picker = app.buttons["language-picker"]
 
-        // Geprüft wird am Wähler selbst, und das hat einen Grund, der in diesem
-        // Projekt noch Arbeit ist: Überschriften laufen durch `EH.label`, das den
-        // Text in Großbuchstaben setzt und ihn dabei aus der Übersetzung nimmt, und
-        // die Knöpfe der Kopfzeile tragen ihre Beschriftung als Barrierefreiheits-
-        // Text, der ebenfalls nicht im Katalog landet. Beide waren die ersten
-        // Kandidaten für diesen Test, und beide waren rot, obwohl der Code stimmte.
+        // The check is made on the picker itself, and there is a reason for that
+        // which is still work in this project: headings run through `EH.label`, which
+        // sets the text in capitals and in doing so takes it out of the translation,
+        // and the header buttons carry their label as accessibility text, which also
+        // never lands in the catalogue. Both were the first candidates for this test,
+        // and both were red although the code was right.
         XCTAssertTrue(label(of: picker).contains("English"),
                       "Der Wähler steht nicht auf English: \(label(of: picker))")
         XCTAssertTrue(label(of: picker).contains("Language"),
                       "Die Beschriftung ist weiterhin deutsch: \(label(of: picker))")
 
-        // Und die Kopfzeile dahinter. Sie trägt ihre Beschriftung als
-        // Barrierefreiheits-Text, und der ging bis zur Umstellung von
-        // `headerButton` auf `LocalizedStringKey` am Katalog vorbei — er blieb
-        // deutsch, während die App längst englisch war.
+        // And the header behind it. It carries its label as accessibility text, and
+        // until `headerButton` was switched to `LocalizedStringKey` that went past the
+        // catalogue — it stayed German while the app had long been English.
         XCTAssertTrue(app.buttons["History"].waitForExistence(timeout: 3),
                       "Der Verlaufs-Knopf heißt weiterhin „Verlauf“.")
         XCTAssertFalse(app.buttons["Verlauf"].exists)
 
-        // Und zurück, ohne die App neu zu starten: die Umstellung wirkt sofort.
+        // And back, without restarting the app: the switch takes effect at once.
         try choose("Deutsch", from: nil)
         XCTAssertTrue(label(of: picker).contains("Sprache"),
                       "Zurück auf Deutsch hat nicht gewirkt: \(label(of: picker))")
         XCTAssertTrue(app.buttons["Verlauf"].waitForExistence(timeout: 3))
     }
 
-    /// Die Wahl überlebt einen Neustart — sie liegt in den Einstellungen und nicht
-    /// nur in der Ansicht.
+    /// The choice survives a restart — it lies in the settings and not only in the
+    /// view.
     ///
-    /// Geprüft wird am Knopf der Kopfzeile und nicht noch einmal am Wähler: Der
-    /// steht unten in einer langen Liste hinter einem Blatt, das nach dem Neustart
-    /// erst wieder geöffnet und gescrollt werden müsste, und genau daran war dieser
-    /// Test zweimal rot, ohne dass am Code etwas falsch war. Der Knopf sagt
-    /// dasselbe und steht sofort da.
+    /// The check is made on the header button and not on the picker again: that one
+    /// sits at the bottom of a long list behind a sheet which would first have to be
+    /// opened and scrolled again after the restart, and on exactly that this test was
+    /// red twice without anything being wrong with the code. The button says the same
+    /// thing and stands there at once.
     func testTheChoiceSurvivesARestart() throws {
         try startInGerman()
         try choose("English", from: "Einstellungen")
@@ -84,20 +83,20 @@ final class LanguageSwitchTests: XCTestCase {
         XCTAssertFalse(app.buttons["Einstellungen"].exists)
     }
 
-    /// Stellt den Startzustand her, statt ihn anzunehmen.
+    /// Establishes the starting state rather than assuming it.
     ///
-    /// Die Wahl liegt in den Einstellungen und überlebt einen Neustart — also auch
-    /// den vorigen Test. Genau daran war dieser hier rot: Er begann mit „der Knopf
-    /// heißt Einstellungen“, und der Knopf hieß Settings, weil ein Lauf davor
-    /// abgebrochen war. Ein Test, der den Zustand seines Vorgängers erbt, prüft
-    /// nicht mehr, was er behauptet.
+    /// The choice lies in the settings and survives a restart — so the previous test as
+    /// well. On exactly that this one was red: it began with “the button is called
+    /// Einstellungen”, and the button was called Settings, because a run before it had
+    /// been cut short. A test that inherits its predecessor's state no longer checks
+    /// what it claims to.
     private func startInGerman() throws {
         if app.buttons["Einstellungen"].waitForExistence(timeout: 5) { return }
         XCTAssertTrue(app.buttons["Settings"].waitForExistence(timeout: 5),
                       "Weder „Einstellungen“ noch „Settings“ — die App ist nicht da.")
         try choose("Deutsch", from: "Settings")
-        // Neu starten statt das Blatt zu schließen: danach ist der Zustand derselbe
-        // wie bei einem ersten Lauf, und nicht „gerade umgestellt“.
+        // Restart rather than close the sheet: afterwards the state is the same as on
+        // a first run, and not “just switched”.
         app.terminate()
         app.launch()
         XCTAssertTrue(app.buttons["Einstellungen"].waitForExistence(timeout: 5))
@@ -108,11 +107,11 @@ final class LanguageSwitchTests: XCTestCase {
         return element.label
     }
 
-    /// Öffnet die Einstellungen (wenn nötig), stellt den Wähler auf `value` und
-    /// lässt das Blatt offen.
+    /// Opens the settings (if needed), sets the picker to `value` and leaves the sheet
+    /// open.
     ///
-    /// Angesteuert wird über eine Kennung, nicht über die Beschriftung: Die heißt
-    /// nach dem Wechsel anders, und ein Test, der sie sucht, prüfte sich selbst.
+    /// Addressed by an identifier, not by the label: the label is called something else
+    /// after the switch, and a test that looks for it would be testing itself.
     private func choose(_ value: String, from settingsButton: String?) throws {
         if let settingsButton {
             try open(settings: settingsButton)
@@ -120,8 +119,8 @@ final class LanguageSwitchTests: XCTestCase {
         let picker = app.buttons["language-picker"]
         XCTAssertTrue(picker.waitForExistence(timeout: 5), "Kein Sprachwähler.")
 
-        // Der Abschnitt steht unten in einer langen Liste — vorhanden ist er sofort,
-        // antippbar erst, wenn er auch auf dem Schirm steht.
+        // The section stands at the bottom of a long list — it exists at once, but is
+        // only tappable when it is actually on screen.
         for _ in 0..<8 where !picker.isHittable { app.swipeUp() }
         XCTAssertTrue(picker.isHittable, "Sprachwähler nicht erreichbar.")
         picker.tap()

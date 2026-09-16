@@ -1,18 +1,17 @@
 import XCTest
 @testable import Faden
 
-/// Die Antwortlänge, die aus der Nutzung wächst.
+/// The answer length that grows out of use.
 ///
-/// Der Anlass war ein Fehler, den niemand als Fehler sah: Ein Denkmodell an einer
-/// schweren Aufgabe brauchte mehr als die voreingestellten 4 096 Token, brauchte sie
-/// im Nachdenken auf, und der Zug endete. Ohne Fehlermeldung — die App hat einen Zug
-/// aus lauter Gedankengang als fertige Antwort verbucht. Für den Leser hörte das
-/// Denken mitten im Satz auf.
+/// The occasion was a bug nobody saw as a bug: a reasoning model on a hard task needed
+/// more than the preset 4,096 tokens, spent them on thinking, and the turn ended. With
+/// no error message — the app booked a turn made of nothing but reasoning as a finished
+/// answer. To the reader the thinking stopped mid-sentence.
 final class OutputBudgetTests: XCTestCase {
 
     // MARK: Erkennen
 
-    /// Der Anbieter sagt es, wenn er kann.
+    /// The provider says so when it can.
     func testAStatedReasonIsEnough() {
         for reason in ["max_tokens", "length"] {
             XCTAssertTrue(AgentRunner.ranOutOfRoom(stopReason: reason, text: "etwas",
@@ -21,8 +20,8 @@ final class OutputBudgetTests: XCTestCase {
         }
     }
 
-    /// Der Fall, um den es geht, und den bisher niemand bemerkt hat: Der Anbieter
-    /// sagt nichts, und zurück kommt ein Zug, der nur aus Nachdenken besteht.
+    /// The case this is about, and the one nobody noticed so far: the provider says
+    /// nothing, and back comes a turn made of nothing but reasoning.
     func testOnlyThinkingAndNothingElseCountsAsRunOut() {
         XCTAssertTrue(AgentRunner.ranOutOfRoom(stopReason: nil, text: "",
                                                thinking: "lange nachgedacht …", toolCalls: 0))
@@ -30,9 +29,9 @@ final class OutputBudgetTests: XCTestCase {
                                                thinking: "lange nachgedacht …", toolCalls: 0))
     }
 
-    /// Ein Zug mit Werkzeugaufruf hat oft keinen Text, und das ist der Normalfall
-    /// einer Runde, in der das Modell erst etwas nachsehen will. Zählte er mit, würde
-    /// jede Suche die Antwortlänge verdoppeln.
+    /// A turn with a tool call often has no text, and that is the normal case of a
+    /// round in which the model wants to look something up first. If it counted, every
+    /// search would double the answer length.
     func testATurnThatCallsAToolIsNotOutOfRoom() {
         XCTAssertFalse(AgentRunner.ranOutOfRoom(stopReason: nil, text: "",
                                                 thinking: "kurz überlegt", toolCalls: 1))
@@ -45,8 +44,8 @@ final class OutputBudgetTests: XCTestCase {
                                                 thinking: "überlegt", toolCalls: 0))
     }
 
-    /// Ein leerer Zug ohne alles ist ein anderer Fehler — dafür gibt es eine eigene
-    /// Meldung, und mehr Vorrat hilft dagegen nicht.
+    /// An empty turn with nothing in it is a different error — there is a message of
+    /// its own for that, and more budget does not help against it.
     func testAnEmptyTurnIsNotARoomProblem() {
         XCTAssertFalse(AgentRunner.ranOutOfRoom(stopReason: nil, text: "",
                                                 thinking: "", toolCalls: 0))
@@ -59,23 +58,22 @@ final class OutputBudgetTests: XCTestCase {
         XCTAssertEqual(AgentRunner.nextOutputBudget(after: 8_192, ceiling: nil), 16_384)
     }
 
-    /// Die genannte Grenze des Anbieters ist die Grenze — und sie wird getroffen,
-    /// nicht übersprungen. Verdoppeln von 4 000 bei einer Grenze von 6 000 ergibt
-    /// 6 000 und nicht 8 000.
+    /// The limit the provider names is the limit — and it is met, not overshot.
+    /// Doubling 4,000 with a limit of 6,000 gives 6,000 and not 8,000.
     func testAReportedLimitIsMetExactly() {
         XCTAssertEqual(AgentRunner.nextOutputBudget(after: 4_000, ceiling: 6_000), 6_000)
     }
 
-    /// Steht der Regler schon auf der Grenze, gibt es nichts mehr zu holen. Dann ist
-    /// die Aufgabe zu groß für dieses Modell, und ein weiterer Versuch kostet nur
-    /// noch einmal die ganze Anfrage.
+    /// If the slider already stands at the limit, there is nothing left to get. The
+    /// task is then too large for this model, and a further attempt only costs the whole
+    /// request once more.
     func testAtTheLimitThereIsNoNextStep() {
         XCTAssertNil(AgentRunner.nextOutputBudget(after: 6_000, ceiling: 6_000))
         XCTAssertNil(AgentRunner.nextOutputBudget(after: 9_000, ceiling: 6_000))
     }
 
-    /// Ohne genannte Grenze trägt die letzte Schranke. Sie ist da, damit das
-    /// Verdoppeln nicht ins Absurde läuft — die App probiert keine Grenzen mehr aus.
+    /// Without a stated limit the last barrier carries. It is there so the doubling
+    /// does not run into the absurd — the app no longer probes for limits.
     func testWithoutAReportedLimitTheLastFloorHolds() {
         XCTAssertEqual(AgentRunner.nextOutputBudget(after: AgentRunner.outputCeiling / 2,
                                                     ceiling: nil),
@@ -83,8 +81,8 @@ final class OutputBudgetTests: XCTestCase {
         XCTAssertNil(AgentRunner.nextOutputBudget(after: AgentRunner.outputCeiling, ceiling: nil))
     }
 
-    /// Drei Verdopplungen in einer Runde, aus 4 096 also höchstens 32 768. Jede
-    /// kostet die ganze Anfrage noch einmal.
+    /// Three doublings in one round, so from 4,096 at most 32,768. Each one costs the
+    /// whole request again.
     func testThreeGrowthsReachThirtyTwoThousand() {
         var budget = 4_096
         for _ in 0..<AgentRunner.maxGrowths {
@@ -93,14 +91,14 @@ final class OutputBudgetTests: XCTestCase {
         XCTAssertEqual(budget, 32_768)
     }
 
-    // MARK: Wer die Zahl gesetzt hat
+    // MARK: Who set the number
 
     func testAFreshConfigGrowsByItself() {
         XCTAssertFalse(LLMConfig().maxOutputTokensIsCustom)
     }
 
-    /// Eine Einstellung von vor dieser Funktion weiß nicht, ob jemand die Zahl
-    /// angefasst hat. Steht dort noch die Vorgabe, hat es niemand getan.
+    /// A settings file from before this feature does not know whether anyone touched
+    /// the number. If the default still stands there, nobody did.
     func testAnOlderSettingsFileIsReadByItsValue() throws {
         let untouched = Data(#"{"maxOutputTokens":4096}"#.utf8)
         XCTAssertFalse(try JSONDecoder().decode(LLMConfig.self, from: untouched)
@@ -121,19 +119,19 @@ final class OutputBudgetTests: XCTestCase {
     }
 }
 
-// MARK: - Noch einmal fragen oder nicht
+// MARK: - Asking again or not
 
 extension OutputBudgetTests {
 
-    /// Der Fall, für den die Funktion da ist: nur Gedankengang, kein Text.
+    /// The case the function exists for: only reasoning, no text.
     func testWithNothingOnScreenTheTurnStartsOver() {
         XCTAssertTrue(AgentRunner.shouldAskAgain(text: "", toolCalls: 0, alreadyGrew: 0))
         XCTAssertTrue(AgentRunner.shouldAskAgain(text: "  \n ", toolCalls: 0, alreadyGrew: 0))
     }
 
-    /// Steht schon Text da, wäre ein neuer Anlauf ein Rückschritt: Der Leser sähe
-    /// seine halbe Antwort verschwinden und wartete von vorn. Die Antwortlänge wächst
-    /// trotzdem — nur eben für den nächsten Zug.
+    /// If text already stands there, a fresh attempt would be a step backwards: the
+    /// reader would watch half an answer disappear and wait from the beginning. The
+    /// answer length grows all the same — just for the next turn.
     func testHalfAnAnswerIsWorthMoreThanAFreshStart() {
         XCTAssertFalse(AgentRunner.shouldAskAgain(text: "Die Antwort beginnt …",
                                                   toolCalls: 0, alreadyGrew: 0))
@@ -143,8 +141,8 @@ extension OutputBudgetTests {
         XCTAssertFalse(AgentRunner.shouldAskAgain(text: "", toolCalls: 1, alreadyGrew: 0))
     }
 
-    /// Jeder Anlauf kostet die ganze Anfrage noch einmal — der Verlauf geht jedes Mal
-    /// mit. Deshalb eine Grenze und nicht „so lange, bis es passt".
+    /// Every attempt costs the whole request again — the history travels with it every
+    /// time. Hence a limit and not “until it fits”.
     func testAfterThreeTriesItStops() {
         XCTAssertTrue(AgentRunner.shouldAskAgain(text: "", toolCalls: 0,
                                                  alreadyGrew: AgentRunner.maxGrowths - 1))

@@ -20,12 +20,12 @@ struct ModelEditor: View {
 
     /// Result of the image check, shown next to the vision switch.
     @State private var visionNote: (text: String, good: Bool)?
-    /// Dasselbe für Werkzeuge und Gedankengang.
+    /// The same for tools and reasoning.
     @State private var toolNote: (text: String, good: Bool)?
-    /// Ob die beiden Bild-Felder ausgeklappt sind.
+    /// Whether the two image fields are expanded.
     ///
-    /// Eigener Zustand und nicht `!visionModel.isEmpty`: wer den Haken setzt, sieht
-    /// sonst ein leeres Feld, das sich selbst sofort wieder zuklappt.
+    /// State of its own and not `!visionModel.isEmpty`: whoever ticks the box would
+    /// otherwise see an empty field that immediately collapses itself again.
     @State private var separateVisionModel = false
     @State private var limitNote: String?
 
@@ -156,9 +156,9 @@ struct ModelEditor: View {
                                     get: { separateVisionModel },
                                     set: { on in
                                         separateVisionModel = on
-                                        // Ausgeschaltet heisst ausgeschaltet: ein Modellname,
-                                        // der unsichtbar stehen bleibt und weiter Züge umleitet,
-                                        // waere die schlimmere Art von Einstellung.
+                                        // Off means off: a model name that stays
+                                        // invisibly in place and keeps redirecting
+                                        // turns would be the worse kind of setting.
                                         if !on {
                                             model.settings.llms[i].visionModel = ""
                                             model.settings.llms[i].visionFallbackModel = ""
@@ -217,11 +217,11 @@ struct ModelEditor: View {
                                 range: 4_000...contextCeiling(model.settings.llms[i]),
                                 footnote: contextFootnote(model.settings.llms[i]))
 
-                            // Eine eigene Bindung und kein `onChange` auf dem Wert:
-                            // Auch die App schreibt diese Zahl — beim Lernen einer
-                            // Grenze und beim Wachsen —, und ein `onChange` könnte
-                            // nicht unterscheiden, wer sie gerade gesetzt hat. Hier
-                            // kommt nur durch, was ein Finger bewegt hat.
+                            // A binding of its own and not an `onChange` on the
+                            // value: the app writes this number too — when learning a
+                            // limit and when growing — and an `onChange` could not tell
+                            // who had just set it. Only what a finger moved gets
+                            // through here.
                             TokenSlider(
                                 title: "Maximale Antwortlänge",
                                 value: Binding(
@@ -346,11 +346,10 @@ struct ModelEditor: View {
         return max(c.observedMaxPromptTokens * 2, 1_000_000)
     }
 
-    /// Was unter dem Regler steht.
+    /// What stands under the slider.
     ///
-    /// Solange niemand die Zahl angefasst hat, ist sie keine Einstellung, sondern
-    /// ein Stand — und das gehört dahin, sonst wundert sich jemand, warum sie sich
-    /// von selbst bewegt hat.
+    /// As long as nobody has touched the number it is not a setting but a state — and
+    /// that belongs there, or somebody will wonder why it moved by itself.
     private func outputFootnote(_ c: LLMConfig) -> String? {
         let reported = c.reportedOutputLimit.map {
             String(localized: "vom Anbieter: \(RemoteModel.compact($0))")
@@ -373,13 +372,12 @@ struct ModelEditor: View {
         return "Anbieter nennt keine Grenze"
     }
 
-    /// Was statt Adresse, Schlüssel und Modellname dasteht.
+    /// What stands there instead of an address, a key and a model name.
     ///
-    /// Zwei Dinge, und das zweite ist das wichtigere: ob das System das Modell
-    /// gerade hergibt, und was es nicht kann. Ein Modell ohne Werkzeuge als
-    /// gleichwertige Wahl neben einem großen Endpoint anzubieten, ohne das
-    /// dazuzusagen, würde bei der ersten Frage enttäuschen, die eine Websuche
-    /// gebraucht hätte.
+    /// Two things, and the second is the more important: whether the system is handing
+    /// the model out right now, and what it cannot do. Offering a model without tools
+    /// as an equal choice beside a large endpoint, without saying so, would disappoint
+    /// on the first question that would have needed a web search.
     private var appleBlock: some View {
         let status = AppleModel.status
         return VStack(alignment: .leading, spacing: 18) {
@@ -445,9 +443,9 @@ struct ModelEditor: View {
                     system: "Du antwortest knapp.",
                     config: config, apiKey: key, maxTokens: 3000)
                 let trimmed = reply.trimmingCharacters(in: .whitespacesAndNewlines)
-                // „Verbindung“ waere bei Apples Modell gelogen — es gibt keine. Der
-                // Test ist derselbe und pruefte dort, ob das System das Modell
-                // hergibt und ob es antwortet.
+                // “Connection” would be a lie for Apple's model — there is none. The
+                // test is the same one and checks there whether the system hands the
+                // model out and whether it answers.
                 connectionLine = config.wireFormat.needsEndpoint
                     ? "Verbindung steht. Antwort: „\(trimmed.prefix(60))“"
                     : "Das Modell antwortet: „\(trimmed.prefix(60))“"
@@ -457,13 +455,14 @@ struct ModelEditor: View {
                 return
             }
 
-            // Was der Anbieter selbst nennt, steht schon in der Konfiguration — es
-            // kam mit der Modellliste. Hier wird nur gesagt, woran man ist.
+            // What the provider names itself already stands in the configuration — it
+            // came with the model list. All that happens here is saying where one
+            // stands.
             //
-            // Frueher stand an dieser Stelle ein Test, der eine absurde Obergrenze
-            // schickte und die echte aus der Absage las. Der ist weg: die App
-            // erfindet keine Zahlen, um Grenzen auszuloten. Was fehlt, lernt sie aus
-            // einer Absage, die wirklich jemand kassiert hat.
+            // There used to be a test in this place that sent an absurd upper bound and
+            // read the real one out of the refusal. That is gone: the app invents no
+            // numbers to sound out limits. What is missing it learns from a refusal
+            // somebody really collected.
             if let i = index {
                 var known: [String] = []
                 if let c = model.settings.llms[i].reportedContextLimit {
@@ -499,8 +498,8 @@ struct ModelEditor: View {
                 visionNote = ("Nicht feststellbar: \(why) Der Schalter bleibt, wie er ist.", false)
             }
 
-            // Werkzeuge und Gedankengang in einem Aufruf — beides steht in derselben
-            // Antwort, und eine zweite Anfrage würde nur ein zweites Mal kosten.
+            // Tools and reasoning in one call — both stand in the same answer, and a
+            // second request would only cost a second time.
             testState = .running("Werkzeuge …")
             let reading = await CapabilityProbe.toolsAndReasoning(config: config, apiKey: key)
             guard let i = index else { return }
@@ -519,8 +518,8 @@ struct ModelEditor: View {
             case .inconclusive(let why):
                 toolNote = ("Werkzeuge nicht feststellbar: \(why)", false)
             }
-            // Ein gesehener Gedankengang ist ein Ja. Keiner gesehen ist kein Nein —
-            // die meisten Anbieter halten ihn zurück, solange man nicht darum bittet.
+            // Reasoning seen is a yes. None seen is not a no — most providers hold it
+            // back unless you ask for it.
             if reading.reasoning == true { model.settings.llms[i].supportsReasoning = true }
 
             model.persist()
@@ -529,17 +528,17 @@ struct ModelEditor: View {
     }
 
 
-    /// Ein Feld für einen Modellnamen, mit den bekannten Namen als Vorschlag daneben.
+    /// A field for a model name, with the known names offered beside it.
     ///
-    /// Der Vorschlag ist der halbe Punkt: „anbieter/modell-name" tippt man einmal
-    /// falsch und sucht den Fehler dann beim Schlüssel. Was hier steht, ist bereits
-    /// eingerichtet, gehört zu diesem Anbieter, und beim Vision-Feld ist obendrein
-    /// gemessen, dass es Bilder sieht.
-    /// Wie ein Modell im Auswahlmenü heisst: Name, und was es kann.
+    /// The suggestion is half the point: “provider/model-name” gets typed wrong once and
+    /// then the error is hunted at the key. What stands here is already set up, belongs
+    /// to this provider, and for the vision field it has been measured on top of that
+    /// that it sees images.
+    /// What a model is called in the picker menu: the name, and what it can do.
     ///
-    /// Eine Zeile und nicht zwei, weil ein Systemmenü die zweite abschneidet. Was
-    /// dasteht, entscheidet die Wahl — „sieht es Bilder" ist beim Vision-Feld die
-    /// ganze Frage.
+    /// One line and not two, because a system menu cuts the second off. What stands
+    /// there decides the choice — “does it see images” is the whole question at the
+    /// vision field.
     private func menuLabel(_ m: RemoteModel) -> String {
         var marks: [String] = []
         if m.capabilities.vision == true { marks.append("Vision") }
@@ -586,14 +585,15 @@ struct ModelEditor: View {
         }
     }
 
-    /// Die Liste des Anbieters — die Quelle, aus der die Rollen besetzt werden.
+    /// The provider's list — the source the roles are filled from.
     ///
-    /// Sie kommt aus dem Eintrag und nicht aus dem Netz. Wer im Keller steht und das
-    /// Vision-Modell umstellen will, soll nicht auf eine Abfrage warten, die dort
-    /// ohnehin nicht durchkommt. Aktualisiert wird sie über „vom Endpoint laden".
+    /// It comes from the entry and not from the network. Whoever is standing in a
+    /// basement wanting to change the vision model should not wait for a request that
+    /// will not get through there anyway. It is refreshed through “load from the
+    /// endpoint”.
     private func allModels(_ config: LLMConfig) -> [RemoteModel] { config.knownModels }
 
-    /// Davon die, die für Bilder in Frage kommen.
+    /// Of those, the ones that come into question for images.
     private func visionCandidates(_ config: LLMConfig) -> [RemoteModel] {
         config.imageCapableModels
     }

@@ -1,17 +1,17 @@
 import XCTest
 @testable import Faden
 
-/// Die mitgelieferten Anbieter-Vorlagen.
+/// The shipped provider presets.
 ///
-/// Eine Vorlage ist ein Versprechen: „diese Adresse stimmt, tipp sie nicht selbst".
-/// Eine falsche Vorlage ist deshalb schlimmer als keine — der Nutzer traegt seinen
-/// Schluessel ein, bekommt einen 404 und sucht den Fehler bei sich.
+/// A preset is a promise: “this address is right, do not type it yourself”. A wrong
+/// preset is therefore worse than none — the user enters their key, receives a 404 and
+/// looks for the mistake in themselves.
 ///
-/// Dass die elf Adressen wirklich stehen, ist vor dem Eintragen gemessen worden: ein
-/// POST ohne Schluessel muss 401 oder 400 liefern, nicht 404 und keinen DNS-Fehler.
-/// Das laesst sich hier nicht wiederholen, ohne bei jedem Testlauf elf fremde Dienste
-/// anzufragen. Was hier steht, ist der Teil, der ohne Netz pruefbar ist — und es ist
-/// genau der Teil, an dem ein spaeterer Eintrag danebengreift.
+/// That the eleven addresses really stand was measured before they were entered: a POST
+/// without a key has to return 401 or 400, not 404 and no DNS error. That cannot be
+/// repeated here without asking eleven foreign services on every test run. What stands
+/// here is the part that is testable without a network — and it is exactly the part a
+/// later entry gets wrong.
 final class BuiltinsTests: XCTestCase {
 
     func testEveryProviderExceptTheBlankOneHasAnAddress() {
@@ -22,9 +22,9 @@ final class BuiltinsTests: XCTestCase {
         XCTAssertEqual(Builtins.models.filter { $0.baseURL.isEmpty }.count, 1)
     }
 
-    /// `endpointURL` klebt Adresse und Pfad zusammen. Ein fehlender Schraegstrich am
-    /// Pfad oder einer zu viel am Ende der Adresse ergibt eine URL, die aussieht wie
-    /// eine und nicht die gemeinte ist.
+    /// `endpointURL` glues the address and the path together. A missing slash on the
+    /// path or one too many at the end of the address produces a URL that looks like one
+    /// and is not the intended one.
     func testEveryProviderProducesAUsableEndpoint() throws {
         for provider in Builtins.models where !provider.baseURL.isEmpty {
             XCTAssertTrue(provider.baseURL.hasPrefix("https://"),
@@ -38,8 +38,8 @@ final class BuiltinsTests: XCTestCase {
         }
     }
 
-    /// Der eine Eintrag mit einem anderen Format. Faellt er auf OpenAI zurueck,
-    /// schickt die App Anthropic-Adressen ein Format, das sie nicht sprechen.
+    /// The one entry with a different format. If it falls back to OpenAI, the app sends
+    /// Anthropic addresses a format they do not speak.
     func testAnthropicKeepsItsOwnFormatAndPath() throws {
         let anthropic = try XCTUnwrap(Builtins.models.first { $0.name == "Anthropic" })
         XCTAssertEqual(anthropic.wireFormat, .anthropic)
@@ -49,9 +49,9 @@ final class BuiltinsTests: XCTestCase {
                        + "Formatwechsel in der Oberflaeche.")
     }
 
-    /// Aus einer Vorlage wird eine Konfiguration ohne Modell und ohne Schluessel —
-    /// beides gehoert dem Nutzer, und eine Vorlage, die hier etwas vorgibt, waere
-    /// wieder der mitgelieferte Anbieter.
+    /// A preset becomes a configuration without a model and without a key — both belong
+    /// to the user, and a preset that set something here would be the bundled provider
+    /// all over again.
     func testAConfigFromATemplateCarriesNoModelAndNoKey() throws {
         let groq = try XCTUnwrap(Builtins.models.first { $0.name == "Groq" })
         let config = groq.config()

@@ -54,9 +54,9 @@ struct MarkdownText: View {
 
                 case .heading(let s, let level):
                     inline(s)
-                        // Stile statt fester Größen: eine Überschrift, die nicht
-                        // mitwächst, während der Absatz darunter es tut, kehrt die
-                        // Hierarchie bei großer Schrift um.
+                        // Styles instead of fixed sizes: a heading that does not grow
+                        // along while the paragraph beneath it does inverts the
+                        // hierarchy at large type sizes.
                         .font(.system(level <= 1 ? .title3 : level == 2 ? .headline : .subheadline,
                                       weight: .semibold))
                         .padding(.top, 4)
@@ -121,9 +121,9 @@ struct MarkdownText: View {
                                 .font(EH.mono)
                                 .foregroundStyle(EH.navy)
                                 .textSelection(.enabled)
-                                // Prosa-Durchschuss gilt für Prosa. Code hat seine
-                                // eigene Zeilenlogik, und fünf Punkt dazwischen
-                                // zerreißen einen Block, den man als Form liest.
+                                // Prose leading is for prose. Code has a line logic of
+                                // its own, and five points between the lines tear apart
+                                // a block that is read as a shape.
                                 .lineSpacing(1)
                                 .padding(.vertical, 2)
                         }

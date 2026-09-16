@@ -10,20 +10,19 @@ struct FadenApp: App {
                 .environment(model)
                 .task { await model.load() }
                 .tint(EH.navy)
-                // Zwei Zeilen, und beide werden gebraucht.
+                // Two lines, and both are needed.
                 //
-                // `apply` leitet das Nachschlagen auf die gewaehlte Sprache um — das
-                // ist die Umstellung selbst. Die Locale darunter macht nicht die
-                // Uebersetzung, sondern zweierlei anderes: Zahlen und Daten sehen
-                // aus wie in dieser Sprache, und ihre Aenderung ist der Anstoss, auf
-                // den SwiftUI die Ansichten neu baut. Ohne sie bliebe die alte
-                // Sprache stehen, bis der Nutzer irgendwohin tippt.
+                // `apply` redirects the lookup to the chosen language — that is the
+                // switch itself. The locale below it does not do the translating but two
+                // other things: numbers and dates look the way they do in that language,
+                // and its change is the nudge on which SwiftUI rebuilds the views.
+                // Without it the old language would stand until the user tapped
+                // somewhere.
                 .onChange(of: model.settings.language, initial: true) { _, language in
                     AppLanguage.apply(language)
                 }
                 .environment(\.locale, model.settings.language.locale ?? .autoupdatingCurrent)
-                // `nil` heisst: das Geraet entscheidet — und wechselt zur Daemmerung
-                // von selbst mit.
+                // `nil` means: the device decides — and switches at dusk by itself.
                 .preferredColorScheme(model.settings.appearance.scheme)
         }
     }

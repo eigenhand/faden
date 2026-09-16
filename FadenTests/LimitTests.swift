@@ -1,17 +1,16 @@
 import XCTest
 @testable import Faden
 
-/// Grenzen, die ein Anbieter in einer Absage nennt.
+/// Limits a provider names in a refusal.
 ///
-/// Bis eben hat die App danach gefragt: eine Anfrage mit `max_tokens: 99999999`,
-/// und aus der Absage liess sich die echte Grenze lesen. Das funktionierte — und ist
-/// weg, weil die App keine Zahlen erfinden soll, um Grenzen auszuloten.
+/// Until just now the app asked for them: a request with `max_tokens: 99999999`, and the
+/// real limit could be read out of the refusal. That worked — and is gone, because the
+/// app should not invent numbers to sound out limits.
 ///
-/// Damit wird dieses Auslesen wichtiger statt unwichtiger: es ist jetzt der einzige
-/// Weg, auf dem ein Anbieter ohne veroeffentlichte Grenzen der App seine mitteilt.
-/// Die Vorlagen unten sind echte Fehlertexte in den Formulierungen, die im Umlauf
-/// sind — die Stelle, an der ein zu strenger regulaerer Ausdruck still nichts mehr
-/// findet und niemandem auffaellt.
+/// That makes this reading more important rather than less: it is now the only route by
+/// which a provider without published limits tells the app its own. The samples below
+/// are real error texts in the wordings that are in circulation — the place where a
+/// regular expression that is too strict quietly finds nothing and nobody notices.
 final class LimitTests: XCTestCase {
 
     func testOpenAIStyleContextMessage() {
@@ -41,24 +40,24 @@ final class LimitTests: XCTestCase {
         XCTAssertEqual(ModelCatalog.extractLimits(from: body).context, 32_768)
     }
 
-    /// Ein Fehler ohne Zahl darf nichts setzen. Waere das anders, schriebe der erste
-    /// Netzausfall eine erfundene Grenze in die Einstellungen.
+    /// An error without a number must set nothing. Were that otherwise, the first
+    /// network outage would write an invented limit into the settings.
     func testAMessageWithoutNumbersChangesNothing() {
         let limits = ModelCatalog.extractLimits(from: "Internal server error")
         XCTAssertNil(limits.context)
         XCTAssertNil(limits.output)
     }
 
-    /// Zahlen ausserhalb jeder plausiblen Groesse sind keine Grenzen, sondern
-    /// Zeitstempel, Fehlernummern oder Kennungen, die zufaellig danebenstehen.
+    /// Numbers outside any plausible size are not limits but timestamps, error numbers
+    /// or identifiers that happen to stand beside them.
     func testImplausibleNumbersAreIgnored() {
         XCTAssertNil(ModelCatalog.extractLimits(from: "max_tokens 12").output,
-                     "Zwoelf Token ist keine Grenze, das ist ein Tippfehler.")
+                     "Twelve tokens is not a limit, that is a typo.")
         XCTAssertNil(ModelCatalog.extractLimits(from: "max_tokens 99999999999").output,
-                     "Hundert Milliarden auch nicht.")
+                     "Nor is a hundred billion.")
     }
 
-    /// Die Absage nennt beides — dann wird auch beides gelernt.
+    /// The refusal names both — then both are learned.
     func testBothCeilingsAtOnce() {
         let body = """
         {"error": {"message": "max_tokens must be <= 4096; this model's maximum \

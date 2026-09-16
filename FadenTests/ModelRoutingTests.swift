@@ -1,16 +1,15 @@
 import XCTest
 @testable import Faden
 
-/// Welches Modell einen Zug bearbeitet, und worauf es ausweicht.
+/// Which model handles a turn, and what it falls back to.
 ///
-/// Vier Felder, die gegeneinander abgewogen werden, und der Anlass ist gemessen:
-/// `z-ai/glm-5.3` kann alles besser als sein `-flash`-Geschwister, ausser sehen. Auf
-/// ein Bild antwortet es mit HTTP 400, „Model only supports text input". Ohne diese
-/// Weiche muesste man sich entscheiden — das bessere Modell oder Bilder.
+/// Four fields weighed against each other, and the occasion is measured: `z-ai/glm-5.3`
+/// does everything better than its `-flash` sibling, except see. To an image it answers
+/// with HTTP 400, “Model only supports text input”. Without this switch you would have
+/// to choose — the better model or images.
 ///
-/// Der Fehler, den diese Tests festhalten, waere kein Absturz, sondern etwas
-/// Schlimmeres: ein Bild, das an ein blindes Modell geht, und ein Nutzer, der die
-/// Bilderkennung fuer kaputt haelt.
+/// The bug these tests hold down would be no crash but something worse: an image going
+/// to a blind model, and a user who thinks image recognition is broken.
 final class ModelRoutingTests: XCTestCase {
 
     private func config(model: String = "haupt", fallback: String = "",
@@ -35,9 +34,9 @@ final class ModelRoutingTests: XCTestCase {
         XCTAssertEqual(c.model(forImages: true), "sieht")
     }
 
-    /// Ohne eingetragenes Vision-Modell macht das Hauptmodell es mit. Es faellt dann
-    /// unter den Schalter „Bilder anhaengen erlauben" — und der steht nur an, wenn es
-    /// sie wirklich sieht.
+    /// Without a vision model entered, the main model handles it too. It then falls
+    /// under the “allow image attachments” switch — and that is only on when it really
+    /// sees them.
     func testWithoutAVisionModelTheMainModelKeepsTheImage() {
         let c = config()
         XCTAssertEqual(c.model(forImages: true), "haupt")
@@ -48,7 +47,7 @@ final class ModelRoutingTests: XCTestCase {
         XCTAssertEqual(c.model(forImages: true), "haupt")
     }
 
-    // MARK: Worauf ausgewichen wird
+    // MARK: What it falls back to
 
     func testTheOrdinaryFallback() {
         let c = config(fallback: "ersatz")
@@ -59,34 +58,34 @@ final class ModelRoutingTests: XCTestCase {
         XCTAssertNil(config().fallback(forImages: false, after: "haupt"))
     }
 
-    /// Auf dasselbe Modell auszuweichen waere keine zweite Chance, sondern derselbe
-    /// Fehler noch einmal — und eine Wartezeit obendrauf.
+    /// Falling back to the same model would be no second chance but the same mistake
+    /// again — with a wait on top.
     func testItNeverFallsBackToTheModelThatJustFailed() {
         let c = config(fallback: "ersatz")
         XCTAssertNil(c.fallback(forImages: false, after: "ersatz"))
     }
 
-    /// Der Kern: haengt ein Bild am Zug, gilt zuerst das Bild-Ausweichmodell.
+    /// The core: if an image hangs on the turn, the image fallback applies first.
     func testAnImageTurnPrefersTheVisionFallback() {
         let c = config(fallback: "blind", vision: "sieht", visionFallback: "sieht-auch")
         XCTAssertEqual(c.fallback(forImages: true, after: "sieht"), "sieht-auch")
     }
 
-    /// Und wenn keines eingetragen ist, ist das allgemeine besser als gar keines —
-    /// die Alternative waere, den Zug ohne zweiten Versuch scheitern zu lassen.
+    /// And if none is entered, the general one is better than none — the alternative
+    /// would be letting the turn fail without a second attempt.
     func testAnImageTurnFallsBackToTheOrdinaryOneWhenNoVisionFallbackIsSet() {
         let c = config(fallback: "ersatz", vision: "sieht")
         XCTAssertEqual(c.fallback(forImages: true, after: "sieht"), "ersatz")
     }
 
-    /// Beide eingetragen, aber das Bild-Ausweichmodell ist gerade das gescheiterte:
-    /// dann das allgemeine, statt aufzugeben.
+    /// Both entered, but the image fallback is the one that has just failed: then the
+    /// general one, rather than giving up.
     func testItSkipsPastTheCandidateThatJustFailed() {
         let c = config(fallback: "ersatz", vision: "sieht", visionFallback: "sieht-auch")
         XCTAssertEqual(c.fallback(forImages: true, after: "sieht-auch"), "ersatz")
     }
 
-    // MARK: Ob das Pluszeichen erscheint
+    // MARK: Whether the plus sign appears
 
     func testTheAttachButtonFollowsEitherRoute() {
         var c = config()
@@ -102,13 +101,13 @@ final class ModelRoutingTests: XCTestCase {
 
     // MARK: Welche Modelle zur Auswahl stehen
 
-    /// Die Auswahl fuer Bilder zeigt alles ausser dem, was nachweislich blind ist.
+    /// The picker for images shows everything except what is demonstrably blind.
     ///
-    /// Bewusst nicht „nur was nachweislich sieht": die meisten Anbieter schweigen zu
-    /// Bildern, und eine Auswahl, die deshalb leer bliebe, hilft niemandem. Der
-    /// Unterschied ist genau der zwischen `nil` und `false`, und er ist heute Vormittag
-    /// teuer gewesen — `z-ai/glm-5.3` hat gar kein Feld fuer Bilder, `z-ai/glm-5-turbo`
-    /// hat eines und es steht auf falsch.
+    /// Deliberately not “only what demonstrably sees”: most providers say nothing about
+    /// images, and a picker that stayed empty because of it helps nobody. The difference
+    /// is exactly the one between `nil` and `false`, and it was expensive this morning —
+    /// `z-ai/glm-5.3` has no field for images at all, `z-ai/glm-5-turbo` has one and it
+    /// says false.
     func testTheImagePickerHidesOnlyWhatIsProvablyBlind() {
         var c = LLMConfig()
         c.knownModels = [
@@ -121,15 +120,16 @@ final class ModelRoutingTests: XCTestCase {
         XCTAssertFalse(offered.contains("blind"), "Ein Vorschlag, der ein blindes Modell nennt, waere schlimmer als keiner.")
     }
 
-    /// Ohne geladene Liste steht nichts zur Auswahl — dann bleibt das Feld ein Feld.
+    /// Without a loaded list there is nothing to choose — the field then stays a
+    /// field.
     func testWithoutAListThereIsNothingToChooseFrom() {
         XCTAssertTrue(LLMConfig().imageCapableModels.isEmpty)
     }
 
-    // MARK: Woran ein Bild erkannt wird
+    // MARK: How an image is recognised
 
-    /// Ueber die ganze Historie und nicht nur die letzte Nachricht: bei jeder Anfrage
-    /// geht die ganze Unterhaltung mit, also auch das Bild von vor zehn Zuegen.
+    /// Across the whole history and not only the last message: every request carries the
+    /// entire conversation, so the image from ten turns ago as well.
     func testAnImageAnywhereInTheHistoryCounts() {
         let withImage = Message(role: .user, blocks: [
             .image(data: "AAAA", mediaType: "image/jpeg"),

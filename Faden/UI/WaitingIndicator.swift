@@ -98,10 +98,10 @@ struct PromptSuggestions: View {
         if memoryEnabled {
             out.append(.ask(icon: "brain", question: "Was weißt du bislang über mich?"))
         }
-        // Der eine beschriftete Weg zum Sprachmodus. In der Eingabezeile steht dafür
-        // ein nacktes `waveform` direkt neben einem `mic` — zwei Audio-Symbole
-        // nebeneinander, eines für „halten und diktieren“, eines für „freihändig
-        // reden“. Hier ist Platz für die Worte, und hier wird das Symbol gelernt.
+        // The one labelled route into voice mode. In the composer a bare `waveform`
+        // stands for it right beside a `mic` — two audio symbols side by side, one for
+        // “hold and dictate”, one for “speak hands-free”. Here there is room for the
+        // words, and here the symbol is learned.
         if voiceAvailable {
             out.append(.voice(icon: "waveform", label: "Freihändig sprechen"))
         }

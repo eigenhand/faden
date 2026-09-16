@@ -1,32 +1,32 @@
 import Foundation
 
-/// Wohin `fetch_page` greifen darf — und wohin nicht.
+/// Where `fetch_page` may reach — and where not.
 ///
-/// Der Unterschied zum Suchanbieter ist der ganze Grund, warum es diese Datei gibt.
-/// Die Adresse des Suchanbieters hat der Nutzer eingetragen; sie darf ins eigene
-/// Netz zeigen, und bei einem selbst betriebenen SearXNG tut sie das auch. Die
-/// Adresse, die `fetch_page` bekommt, wählt dagegen **das Modell** — nach dem, was in
-/// einem Suchergebnis oder auf einer Seite stand. Damit ist sie eine Eingabe von
-/// aussen, und eine Eingabe von aussen darf nicht ins Heimnetz zeigen.
+/// The difference from the search provider is the whole reason this file exists. The
+/// search provider's address was entered by the user; it may point into their own
+/// network, and with a self-hosted SearXNG it does. The address `fetch_page` receives,
+/// by contrast, is chosen by **the model** — according to what stood in a search result
+/// or on a page. That makes it input from outside, and input from outside must not point
+/// into the home network.
 ///
-/// Was sonst möglich wäre: eine präparierte Seite nennt `https://192.168.178.1/status`
-/// oder die Adresse des Druckers, das Modell lädt sie und schreibt den Inhalt in die
-/// Antwort. Das Telefon steht im selben WLAN wie der Router — es kommt dort hin, wo
-/// der Angreifer nicht hinkommt. Genau das ist der Witz an dieser Angriffsart.
+/// What would otherwise be possible: a prepared page names `https://192.168.178.1/status`
+/// or the printer's address, the model loads it and writes the contents into the answer.
+/// The phone sits on the same Wi-Fi as the router — it reaches where the attacker cannot.
+/// That is precisely the point of this kind of attack.
 ///
-/// **Was das hier nicht löst**, und das gehört dazu: Ein Name, der öffentlich
-/// aussieht und auf eine private Adresse zeigt, kommt durch. Dagegen hilft nur ein
-/// eigener Namensauflöser, der die Adresse prüft und dann *diese* verwendet — sonst
-/// bleibt zwischen Prüfung und Verbindung ein Spalt, in dem sich die Antwort ändern
-/// kann. Das wäre eine eigene Netzwerkschicht. Was hier steht, deckt den Fall ab, der
-/// ohne Aufwand funktioniert: die Adresse direkt hinschreiben.
+/// **What this does not solve**, and that belongs here: a name that looks public and
+/// points at a private address gets through. Only a resolver of our own would help — one
+/// that checks the address and then uses *that* one — because otherwise a gap remains
+/// between the check and the connection in which the answer can change. That would be a
+/// network layer of its own. What stands here covers the case that works without effort:
+/// writing the address down directly.
 enum FetchTarget {
 
-    /// Der Grund, warum diese Adresse nicht geladen wird — oder nil, wenn sie darf.
+    /// The reason this address is not loaded — or nil when it may be.
     ///
-    /// Gibt einen Satz zurück und nicht nur ja/nein: Das Modell bekommt ihn als
-    /// Werkzeugantwort und soll wissen, dass es an der Adresse lag und nicht an der
-    /// Seite. Sonst versucht es dieselbe noch dreimal.
+    /// Returns a sentence and not just yes/no: the model receives it as a tool result
+    /// and should know that it was down to the address and not to the page. Otherwise it
+    /// tries the same one three more times.
     static func refusal(for url: URL) -> String? {
         guard let scheme = url.scheme?.lowercased(), scheme == "http" || scheme == "https" else {
             return "Nur http und https."
@@ -42,7 +42,7 @@ enum FetchTarget {
 
     static func isAllowed(_ url: URL) -> Bool { refusal(for: url) == nil }
 
-    /// Namen, die per Definition auf das eigene Gerät oder das eigene Netz zeigen.
+    /// Names that by definition point at this device or this network.
     static func isLocalName(_ host: String) -> Bool {
         if host == "localhost" { return true }
         for suffix in [".localhost", ".local", ".internal", ".home", ".lan"]
@@ -50,20 +50,20 @@ enum FetchTarget {
         return false
     }
 
-    /// Adressen, die nicht im öffentlichen Netz liegen.
+    /// Addresses that do not lie on the public network.
     ///
-    /// Geprüft wird die geschriebene Adresse, nicht das Ergebnis einer Namensauflösung
-    /// — siehe oben, warum das die halbe Miete ist und warum die andere Hälfte eine
-    /// eigene Netzwerkschicht wäre.
+    /// What is checked is the written address, not the result of a name resolution — see
+    /// above for why that is half the job and why the other half would be a network
+    /// layer of its own.
     static func isPrivateAddress(_ host: String) -> Bool {
-        // IPv6 steht in URLs in eckigen Klammern; `URL.host` gibt sie ohne zurück.
+        // IPv6 stands in URLs in square brackets; `URL.host` returns it without them.
         if host.contains(":") { return isPrivateIPv6(host) }
         guard let v4 = ipv4(host) else { return false }
         return isPrivateIPv4(v4)
     }
 
-    /// Vier Zahlen, sonst nichts. „1.2.3" oder „foo.bar" sind keine Adresse, sondern
-    /// ein Name — und Namen entscheidet diese Funktion nicht.
+    /// Four numbers and nothing else. “1.2.3” or “foo.bar” are not an address but a
+    /// name — and names are not this function's decision.
     static func ipv4(_ host: String) -> (UInt8, UInt8, UInt8, UInt8)? {
         let parts = host.split(separator: ".", omittingEmptySubsequences: false)
         guard parts.count == 4 else { return nil }
@@ -94,7 +94,7 @@ enum FetchTarget {
 
     static func isPrivateIPv6(_ host: String) -> Bool {
         let h = host.hasPrefix("[") ? String(host.dropFirst().dropLast()) : host
-        // Ein Zonenindex („%en0") gehört zum lokalen Netz, sonst stünde er nicht da.
+        // A zone index (“%en0”) belongs to the local network, or it would not be there.
         if h.contains("%") { return true }
         let bare = h.lowercased()
         if bare == "::1" || bare == "::" { return true }
@@ -110,12 +110,12 @@ enum FetchTarget {
     }
 }
 
-/// Prüft jede Weiterleitung noch einmal.
+/// Checks every redirect again.
 ///
-/// Ohne das wäre die Prüfung oben ein Türsteher, der nur den ersten Gast anschaut:
-/// eine öffentliche Adresse antwortet mit „301 nach 192.168.178.1", und `URLSession`
-/// folgt von sich aus. Der Rückgabewert nil bricht die Weiterleitung ab; die Antwort
-/// bleibt dann der 3xx-Status, und der Aufrufer sagt dem Modell, was passiert ist.
+/// Without this the check above would be a doorman who only looks at the first guest: a
+/// public address answers with “301 to 192.168.178.1”, and `URLSession` follows of its
+/// own accord. Returning nil aborts the redirect; the response then stays the 3xx
+/// status, and the caller tells the model what happened.
 final class RedirectGuard: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
     func urlSession(_ session: URLSession, task: URLSessionTask,
                     willPerformHTTPRedirection response: HTTPURLResponse,

@@ -60,7 +60,7 @@ final class AppModel {
         get { turn.errorMessage }
         set { turn.errorMessage = newValue }
     }
-    /// Ein Hinweis, der kein Fehler ist — siehe `TurnState.note`.
+    /// A note that is not an error — see `TurnState.note`.
     var note: String? {
         get { turn.note }
         set { turn.note = newValue }
@@ -248,10 +248,10 @@ final class AppModel {
     @discardableResult
     func importConversation(from url: URL) -> Bool {
         guard let raw = try? ConversationTransfer.read(url) else { return false }
-        // Eine Datei aus fremder Hand wird hier zur eigenen Vorgeschichte: ab dem
-        // ersten weitergeschriebenen Zug geht sie bei jeder Anfrage mit, und was
-        // darin als Assistentenzug steht, liest das Modell als seine eigene frühere
-        // Ausgabe. Was dabei nicht mitdarf, steht in `ImportGuard`.
+        // A file from someone else's hand becomes your own prehistory here: from the
+        // first turn written on it travels with every request, and what stands in it as
+        // an assistant turn is read by the model as its own earlier output. What may not
+        // come along is in `ImportGuard`.
         let checked = ImportGuard.sanitised(raw)
         var incoming = checked.conversation
         incoming.id = UUID()
@@ -261,8 +261,8 @@ final class AppModel {
             return copy
         }
         incoming.updatedAt = Date()
-        // Gesagt und nicht verschwiegen: wer eine Unterhaltung übernimmt und danach
-        // merkt, dass die Hälfte fehlt, sucht den Fehler bei sich.
+        // Said and not kept quiet: whoever takes over a conversation and then notices
+        // half of it is missing looks for the mistake in themselves.
         if let note = checked.note { errorMessage = note }
         conversations.insert(incoming, at: 0)
         switchTo(incoming.id)
@@ -346,22 +346,21 @@ final class AppModel {
 
     // MARK: Sending
 
-    /// Nimmt eine Nachricht an — oder sagt, warum nicht.
+    /// Accepts a message — or says why not.
     ///
-    /// Der Rückgabewert ist der Grund, warum es einen gibt: die Eingabezeile leerte
-    /// ihr Feld, *bevor* sie hier fragte, und dieses Verfahren hat drei stille
-    /// Ausstiege. Traf einer zu, war der getippte Text weg und nichts sagte warum —
-    /// „die Nachricht geht nicht durch". Wer den Text zerstört, muss vorher wissen,
-    /// dass er angekommen ist.
+    /// The return value is the reason there is one: the composer used to clear its field
+    /// *before* asking here, and this procedure has three silent bail-outs. If one
+    /// applied, the typed text was gone and nothing said why — “the message does not go
+    /// through”. Whoever destroys the text has to know beforehand that it arrived.
     @discardableResult
     func send(_ text: String) -> Bool {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         let staged = attachments
         guard !trimmed.isEmpty || !staged.isEmpty else { return false }
         guard !isStreaming else {
-            // Ein laufender Zug kann acht Werkzeugrunden lang dauern — bei einer
-            // Antwort mit mehreren Quellen ist das der Normalfall, nicht die
-            // Ausnahme. Das ist die Erklärung, die vorher fehlte.
+            // A running turn can last eight tool rounds — with an answer carrying
+            // several sources that is the normal case, not the exception. This is the
+            // explanation that used to be missing.
             errorMessage = String(localized: "Die Antwort läuft noch. Stoppe sie, wenn du etwas anderes fragen willst.")
             return false
         }
@@ -528,13 +527,13 @@ final class AppModel {
                 }
             }
         case .learnedLimits(let context, let output):
-            // Der Anbieter hat gerade selbst gesagt, wo seine Grenze liegt. Das ist
-            // belastbarer als jede Schätzung — und es ist der Weg, auf dem die App
-            // Grenzen erfährt, seit sie keine mehr ausprobiert.
+            // The provider has just said where its limit lies. That is more solid
+            // than any estimate — and it is the route by which the app learns limits,
+            // now that it no longer probes for them.
             //
-            // Nach unten wird nur der Regler gezogen, nie nach oben: wer bewusst
-            // weniger eingestellt hat, wollte weniger. Die genannte Obergrenze steht
-            // trotzdem daneben, denn sie bestimmt, wie weit der Regler reicht.
+            // The slider is only pulled down, never up: whoever deliberately set less
+            // wanted less. The stated ceiling stands beside it all the same, because it
+            // decides how far the slider reaches.
             if let id = settings.activeLLM?.id,
                let i = settings.llms.firstIndex(where: { $0.id == id }) {
                 if let context {
@@ -548,8 +547,8 @@ final class AppModel {
                 persist()
             }
         case .grewOutputBudget(let tokens):
-            // Bleibt stehen: Der nächste Zug fängt oben an, statt dieselbe Grenze
-            // noch einmal zu finden.
+            // Stays put: the next turn starts high instead of finding the same limit
+            // all over again.
             if let id = settings.activeLLM?.id,
                let i = settings.llms.firstIndex(where: { $0.id == id }),
                !settings.llms[i].maxOutputTokensIsCustom,
@@ -558,7 +557,7 @@ final class AppModel {
                 persist()
             }
         case .restarted(let reason):
-            // Was zu sehen war, gehört zu einem Zug, den es nicht mehr gibt.
+            // What was visible belongs to a turn that no longer exists.
             state.liveThinking = ""
             state.pendingText = ""
             state.liveTools.removeAll()
@@ -792,8 +791,8 @@ final class AppModel {
     /// Called when the user stops mid-stream: keep what already arrived.
     private func flushLiveIntoTranscript(_ state: TurnState) {
         guard var conversation = current else { return }
-        // Was noch im Puffer liegt, gehört in die Antwort — sonst fehlen die letzten
-        // Worte, wenn der Strom endet, bevor der Puffer leer ist.
+        // What is still in the buffer belongs in the answer — otherwise the last words
+        // are missing when the stream ends before the buffer is empty.
         if !state.pendingText.isEmpty {
             state.liveText += state.pendingText
             state.pendingText = ""
@@ -828,10 +827,10 @@ final class AppModel {
         }()
         guard let config = settings.activeLLM else { state.usage.used = 0; return }
         state.usage.window = config.contextWindow
-        // Dieselben Angaben, die der Zug wirklich schickt. Sonst zeigt der Balken bei
-        // Apples Modell rund 2 500 Zeichen Prompt und eine Handvoll Werkzeuge an, die
-        // gar nicht mitgehen — bei einem Kontextfenster von 4 000 Token ist das der
-        // Unterschied zwischen „halb voll" und „fast leer".
+        // The same figures the turn really sends. Otherwise, with Apple's model, the
+        // bar shows around 2,500 characters of prompt and a handful of tools that do not
+        // travel at all — with a context window of 4,000 tokens that is the difference
+        // between “half full” and “nearly empty”.
         let onDevice = config.wireFormat == .appleOnDevice
         let tools = onDevice ? [] : Tools.available(
             searchEnabled: settings.searchEnabled && settings.activeRecipe != nil,
