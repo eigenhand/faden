@@ -15,29 +15,48 @@ import UIKit
 enum EH {
 
     // MARK: Palette
-    static let navy    = Color(hex: 0x374559)   // 8.84:1 — headings
-    static let slate   = Color(hex: 0x525F73)   // 5.88:1 — body
-    static let bg      = Color(hex: 0xFAFBFC)
-    static let muted   = Color(hex: 0x636C7E)   // 4.80:1 — captions (site: #8A93A3, 2.99:1)
-    static let hair    = Color(hex: 0xD9DEE6)   // decorative rules and card edges only
+    //
+    // Zwei Werte je Token. Die dunklen sind nicht gegriffen, sondern gerechnet: Zu
+    // jedem hellen Ton wurde der Farbton behalten, die Sättigung gesenkt und die
+    // Helligkeit so gesucht, dass das Kontrastverhältnis gegen den dunklen Grund
+    // **dasselbe** ist wie im Hellen gegen den hellen. Darum geht es — nicht um
+    // möglichst viel Kontrast. Weiße Schrift auf Schwarz misst 21:1 und blendet
+    // nachts; diese Palette misst dieselben 9.7 / 6.5 / 5.3, die tagsüber
+    // angenehm sind. Ohne gesenkte Sättigung wäre aus `navy` ein kräftiges
+    // #9EC6FF geworden: derselbe Farbton, hell gelesen aber viel bunter.
+    static let navy    = Color(light: 0x374559, dark: 0xC0CFE3)   // 9.73 · 9.74 — headings
+    static let slate   = Color(light: 0x525F73, dark: 0x9FA9B7)   // 6.48 · 6.48 — body
+    static let bg      = Color(light: 0xFAFBFC, dark: 0x151A22)
+    static let muted   = Color(light: 0x636C7E, dark: 0x9197A4)   // 5.28 · 5.26 — captions
+    static let hair    = Color(light: 0xD9DEE6, dark: 0x2A313C)   // decorative rules and card edges only
 
     /// The same hairline where it is the *only* thing marking the edge of a control —
     /// a button, the composer, a checkmark's off state. WCAG 1.4.11 asks 3:1 for
     /// those; `hair` gives 1.30, which is a border you can see only if you know it
     /// is there. 3.12:1, still a hairline.
-    static let hairStrong = Color(hex: 0x828B9B)
+    static let hairStrong = Color(light: 0x828B9B, dark: 0x73777E)   // 3.43 · 3.43
 
     /// Slightly recessed surface for assistant bubbles / cards
-    static let surface     = Color(hex: 0xFFFFFF)
-    static let surfaceSunk = Color(hex: 0xF2F4F8)
-    static let accent      = Color(hex: 0x374559)
+    static let surface     = Color(light: 0xFFFFFF, dark: 0x1E2530)
+    static let surfaceSunk = Color(light: 0xF2F4F8, dark: 0x10141A)
+    static let accent      = Color(light: 0x374559, dark: 0xC0CFE3)
+
+
+    /// Was **auf** einer gefüllten Fläche aus `navy` oder `accent` steht.
+    ///
+    /// Der Grund, warum es diesen Token gibt: Im Hellen ist `navy` dunkel, und Weiß
+    /// darauf ist richtig. Im Dunklen ist `navy` hell — und dasselbe Weiß
+    /// verschwindet. Ein Kamera-Knopf mit weißem Symbol auf hellem Grund war das
+    /// erste, was auf dem ersten dunklen Screenshot auffiel; ein fest verdrahtetes
+    /// `.white` ist in einer Palette mit zwei Fassungen immer eine halbe Annahme.
+    static let onAccent = Color(light: 0xFFFFFF, dark: 0x151A22)
 
     /// Semantic tints, kept desaturated to stay inside the brand's quiet register
     /// Nudged down from #4F7A66 / #9A7B4F / #9A5F5F, which measured 4.43 / 3.58 / 4.57
     /// against the sunk surface. These clear 4.5:1 on all three grounds.
-    static let good = Color(hex: 0x4B7461)   // 4.80:1
-    static let warn = Color(hex: 0x826843)   // 4.76:1
-    static let bad  = Color(hex: 0x965C5C)   // 4.79:1
+    static let good = Color(light: 0x4B7461, dark: 0x73A18C)   // 5.29 · 5.29
+    static let warn = Color(light: 0x826843, dark: 0xAE926B)   // 5.24 · 5.23
+    static let bad  = Color(light: 0x965C5C, dark: 0xC48787)   // 5.27 · 5.26
 
     // MARK: The scene gradient (radial, from the site's --scene)
     static var scene: some View {
@@ -45,9 +64,9 @@ enum EH {
             let d = max(geo.size.width, geo.size.height) * 1.4
             RadialGradient(
                 gradient: Gradient(stops: [
-                    .init(color: Color(hex: 0xFFFFFF), location: 0.00),
-                    .init(color: Color(hex: 0xFAFBFC), location: 0.48),
-                    .init(color: Color(hex: 0xEFF2F6), location: 1.00),
+                    .init(color: Color(light: 0xFFFFFF, dark: 0x1D242E), location: 0.00),
+                    .init(color: Color(light: 0xFAFBFC, dark: 0x151A22), location: 0.48),
+                    .init(color: Color(light: 0xEFF2F6, dark: 0x0E1219), location: 1.00),
                 ]),
                 center: UnitPoint(x: 0.5, y: 0.34),
                 startRadius: 0,
@@ -186,6 +205,20 @@ extension Font {
 }
 
 extension Color {
+    /// Zwei Werte, einer je Erscheinungsbild.
+    ///
+    /// Ein `UIColor` mit Anbieter statt zweier `Color`-Konstanten und einer Abfrage
+    /// an jeder Fundstelle: Das System fragt ihn beim Zeichnen und noch einmal, wenn
+    /// der Nutzer umschaltet — auch in einem Blatt, einem Menü oder einer Vorschau,
+    /// wo eine Umgebung nicht immer ankommt. Die Aufrufer merken davon nichts:
+    /// `EH.navy` bleibt `EH.navy`.
+    init(light: UInt32, dark: UInt32, alpha: Double = 1) {
+        self.init(uiColor: UIColor { traits in
+            UIColor(Color(hex: traits.userInterfaceStyle == .dark ? dark : light,
+                          alpha: alpha))
+        })
+    }
+
     init(hex: UInt32, alpha: Double = 1) {
         self.init(
             .sRGB,

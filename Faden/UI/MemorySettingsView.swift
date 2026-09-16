@@ -208,7 +208,7 @@ struct MemorySettingsView: View {
                             Text(loadingAssets ? "Lädt … das dauert" : "Modell laden · 108 MB")
                                 .font(.eh(13, .footnote))
                         }
-                        .foregroundStyle(.white)
+                        .foregroundStyle(EH.onAccent)
                         .padding(.horizontal, 14).padding(.vertical, 10)
                         .background(RoundedRectangle(cornerRadius: EH.radius, style: .continuous)
                             .fill(EH.navy))

@@ -537,7 +537,7 @@ struct ChatView: View {
                         } label: {
                             Image(systemName: "xmark")
                                 .font(.eh(9, .caption2, weight: .bold))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(EH.onAccent)
                                 .frame(width: 20, height: 20)
                                 .background(Circle().fill(EH.navy.opacity(0.9)))
                                 // 20 pt drawn, 32 pt tappable. The old 17 pt target
@@ -684,7 +684,7 @@ struct ChatView: View {
                 Button { model.stop() } label: {
                     Image(systemName: "stop.fill")
                         .font(.eh(13, .footnote))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(EH.onAccent)
                         .frame(width: 38, height: 38)
                         .background(Circle().fill(EH.navy))
                         .padding(3)
@@ -697,7 +697,7 @@ struct ChatView: View {
                 Button { submit() } label: {
                     Image(systemName: "arrow.up")
                         .font(.eh(14, .footnote, weight: .medium))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(EH.onAccent)
                         .frame(width: 38, height: 38)
                         .background(Circle().fill(canSend ? EH.navy : EH.muted.opacity(0.4)))
                         .padding(3)

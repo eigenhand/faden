@@ -351,6 +351,7 @@ struct AppSettings: Codable, Equatable {
     var autoCompactEnabled: Bool = true
     var showThinking: Bool = true
     var language: AppLanguage = .system
+    var appearance: AppAppearance = .system
 
     init() {}
 
@@ -370,6 +371,7 @@ struct AppSettings: Codable, Equatable {
         autoCompactEnabled  = try c.decodeIfPresent(Bool.self, forKey: .autoCompactEnabled) ?? d.autoCompactEnabled
         showThinking        = try c.decodeIfPresent(Bool.self, forKey: .showThinking) ?? d.showThinking
         language            = try c.decodeIfPresent(AppLanguage.self, forKey: .language) ?? d.language
+        appearance          = try c.decodeIfPresent(AppAppearance.self, forKey: .appearance) ?? d.appearance
     }
 
     var activeLLM: LLMConfig? {

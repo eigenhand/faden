@@ -253,6 +253,21 @@ struct SettingsView: View {
                                 }
                                 Text("Gilt für die Oberfläche. Systemdialoge — etwa die Frage nach Kamera oder Mikrofon — folgen weiterhin der Spracheinstellung des Geräts.")
                                     .font(.eh(12, .caption)).foregroundStyle(EH.muted)
+
+                                HStack {
+                                    Text("Erscheinungsbild").font(EH.body).foregroundStyle(EH.navy)
+                                    Spacer()
+                                    Picker("Erscheinungsbild", selection: $model.settings.appearance) {
+                                        ForEach(AppAppearance.allCases) { appearance in
+                                            Text(appearance.label).tag(appearance)
+                                        }
+                                    }
+                                    .labelsHidden()
+                                    .pickerStyle(.menu)
+                                    .tint(EH.navy)
+                                    .accessibilityIdentifier("appearance-picker")
+                                    .onChange(of: model.settings.appearance) { _, _ in model.persist() }
+                                }
                             }
                         }
 

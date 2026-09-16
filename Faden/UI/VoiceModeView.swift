@@ -89,7 +89,7 @@ struct VoiceModeView: View {
                 } label: {
                     Text("Beenden")
                         .font(.eh(15, .callout, weight: .medium))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(EH.onAccent)
                         .padding(.horizontal, 34)
                         .padding(.vertical, 13)
                         .background(Capsule().fill(EH.navy))

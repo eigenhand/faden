@@ -1,109 +1,107 @@
 {
-  "sourceLanguage": "de",
-  "strings": {
-    "CFBundleDisplayName": {
-      "comment": "Bundle display name",
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Faden"
+  "sourceLanguage" : "de",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "comment" : "Bundle display name",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faden"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Faden"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faden"
           }
         }
       }
     },
-    "CFBundleName": {
-      "comment": "Bundle name",
-      "extractionState": "extracted_with_value",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Faden"
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faden"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Faden"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faden"
           }
         }
       }
     },
-    "Faden-Unterhaltung": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Faden-Unterhaltung"
+    "Faden-Unterhaltung" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faden-Unterhaltung"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Faden conversation"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faden conversation"
           }
         }
       }
     },
-    "NSCameraUsageDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zum Fotografieren einer Vorlage, die du dem Modell zeigen möchtest. Das Bild geht nur an den Endpoint, den du eingerichtet hast."
+    "NSCameraUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zum Fotografieren einer Vorlage, die du dem Modell zeigen möchtest. Das Bild geht nur an den Endpoint, den du eingerichtet hast."
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "To photograph something you want to show the model. The picture goes only to the endpoint you set up."
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To photograph something you want to show the model. The picture goes only to the endpoint you set up."
           }
         }
       }
     },
-    "NSMicrophoneUsageDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zum Diktieren und für den Sprachmodus nimmt Faden auf, während du die Taste hältst."
+    "NSMicrophoneUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zum Diktieren und für den Sprachmodus nimmt Faden auf, während du die Taste hältst."
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Faden records while you hold the button, for dictation and for voice mode."
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faden records while you hold the button, for dictation and for voice mode."
           }
         }
       }
     },
-    "NSSpeechRecognitionUsageDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Für das Diktat wandelt Faden deine Aufnahme in Text um — mit Apples Spracherkennung auf dem Gerät, sofern verfügbar."
+    "NSSpeechRecognitionUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für das Diktat wandelt Faden deine Aufnahme in Text um — mit Apples Spracherkennung auf dem Gerät, sofern verfügbar."
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "For dictation Faden turns your recording into text — with Apple's speech recognition on the device where available."
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For dictation Faden turns your recording into text — with Apple's speech recognition on the device where available."
           }
         }
       }
     }
   },
-  "version": "1.0"
+  "version" : "1.0"
 }

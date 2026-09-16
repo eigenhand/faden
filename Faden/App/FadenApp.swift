@@ -22,6 +22,9 @@ struct FadenApp: App {
                     AppLanguage.apply(language)
                 }
                 .environment(\.locale, model.settings.language.locale ?? .autoupdatingCurrent)
+                // `nil` heisst: das Geraet entscheidet — und wechselt zur Daemmerung
+                // von selbst mit.
+                .preferredColorScheme(model.settings.appearance.scheme)
         }
     }
 }
