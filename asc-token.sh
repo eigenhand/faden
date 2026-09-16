@@ -1,5 +1,8 @@
 #!/bin/bash
-cd /Users/christophguk/PerBu
+# Relativ zur eigenen Lage und nicht zu einem Pfad auf einem bestimmten Rechner:
+# Das Skript wird aus assign-build.sh und release.sh heraus aufgerufen, und ein
+# geklontes Repo liegt woanders.
+cd "$(dirname "${BASH_SOURCE[0]}")"
 . ./.release.env
 KEY_ID="${ASC_KEY_ID:?ASC_KEY_ID fehlt — in .release.env eintragen}"
 python3 - "$KEY_ID" "$ASC_ISSUER_ID" <<'PY'
