@@ -171,16 +171,18 @@ einem frischen Turn, damit kein Werkzeugergebnis von seinem Aufruf getrennt wird
 
 ```bash
 xcodegen generate
-open PerBu.xcodeproj
+open Faden.xcodeproj
 ```
 
 Braucht Xcode 16+ und zielt auf iOS 17. Keine externen Abhängigkeiten.
 
-Das Xcode-Projekt, der Quellordner und die Bundle-ID heißen weiterhin `PerBu` — das
-war der Arbeitsname. Umbenannt wurde nur, was Nutzer sehen. Die Bundle-ID ist die
-Identität der App in App Store Connect: eine neue wäre eine neue App, mit neuem
-TestFlight und neu einzuladenden Testern. Der Datenordner trägt denselben Namen, und
-ein anderer würde jede gespeicherte Unterhaltung verwaisen lassen.
+Zwei Dinge heißen weiterhin `perbu` beziehungsweise `PerBu`, und beide mit Absicht.
+Die **Bundle-ID** `dev.eigenhand.perbu` ist die Identität der App in App Store
+Connect und auf jedem Gerät, auf dem sie liegt: eine neue wäre eine neue App, mit
+neuem TestFlight, neu einzuladenden Testern und einem zweiten Icon statt eines
+Updates. Der **Datenordner** in Application Support trägt denselben Namen; ein
+anderer würde jede gespeicherte Unterhaltung und den Wissensgraphen verwaisen
+lassen. Alles übrige — Projekt, Ziele, Quellordner, Typen — heißt Faden.
 
 ## Auf ein Gerät bringen
 

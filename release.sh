@@ -1,5 +1,5 @@
 #!/bin/bash
-# Builds PerBu and uploads it to TestFlight.
+# Builds Faden and uploads it to TestFlight.
 #
 # Prerequisites (one-off, in App Store Connect / the Developer Portal):
 #   1. Bundle-ID dev.eigenhand.perbu registriert
@@ -18,7 +18,7 @@ set -euo pipefail
 KEY_ID="${ASC_KEY_ID:?ASC_KEY_ID fehlt. In .release.env eintragen; die ID ist Teil des Dateinamens unter ~/.appstoreconnect/private_keys/AuthKey_<ID>.p8}"
 : "${ASC_ISSUER_ID:?Issuer ID fehlt. Entweder in .release.env eintragen oder ASC_ISSUER_ID=... voranstellen. Zu finden in App Store Connect > Users and Access > Integrations > App Store Connect API, ueber der Key-Liste.}"
 
-ARCHIVE="build/PerBu.xcarchive"
+ARCHIVE="build/Faden.xcarchive"
 EXPORT="build/export"
 
 # App Store Connect lehnt Uploads ab, die mit einer Xcode-Beta gebaut wurden
@@ -35,10 +35,10 @@ xcodegen generate
 
 echo "==> Build-Nummer hochzählen"
 BUILD=$(date +%Y%m%d%H%M)
-/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD" PerBu/Info.plist 2>/dev/null || true
+/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD" Faden/Info.plist 2>/dev/null || true
 
 echo "==> Archivieren"
-xcodebuild -project PerBu.xcodeproj -scheme PerBu \
+xcodebuild -project Faden.xcodeproj -scheme Faden \
   -sdk iphoneos -destination 'generic/platform=iOS' \
   -archivePath "$ARCHIVE" \
   -derivedDataPath build/dd \
@@ -72,11 +72,11 @@ xcodebuild -exportArchive \
 unset DEVELOPER_DIR
 
 echo "==> Vorab pruefen"
-xcrun altool --validate-app -f "$EXPORT/PerBu.ipa" -t ios \
+xcrun altool --validate-app -f "$EXPORT/Faden.ipa" -t ios \
   --apiKey "$KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
 
 echo "==> Zu TestFlight hochladen"
-xcrun altool --upload-app -f "$EXPORT/PerBu.ipa" -t ios \
+xcrun altool --upload-app -f "$EXPORT/Faden.ipa" -t ios \
   --apiKey "$KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
 
 echo "==> Warte auf Apples Verarbeitung und weise der internen Gruppe zu"

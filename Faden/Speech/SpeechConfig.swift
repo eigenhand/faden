@@ -28,7 +28,7 @@ enum TTSSource: String, Codable, CaseIterable, Identifiable {
     }
 }
 
-/// Speech settings. Like everything else in PerBu, the endpoints are the user's.
+/// Speech settings. Like everything else in Faden, the endpoints are the user's.
 struct SpeechConfig: Codable, Equatable {
     var sttSource: STTSource = .apple
     var ttsSource: TTSSource = .off

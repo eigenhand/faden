@@ -1,5 +1,5 @@
 import XCTest
-@testable import PerBu
+@testable import Faden
 
 /// Grenzen, die ein Anbieter in einer Absage nennt.
 ///

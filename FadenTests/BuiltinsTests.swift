@@ -1,5 +1,5 @@
 import XCTest
-@testable import PerBu
+@testable import Faden
 
 /// Die mitgelieferten Anbieter-Vorlagen.
 ///

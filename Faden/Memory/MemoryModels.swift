@@ -99,7 +99,7 @@ struct MemoryNode: Identifiable, Codable, Equatable {
 /// An edge, stored as its own searchable object.
 ///
 /// cognee embeds edges as well as nodes, and it matters: "Christoph arbeitet an
-/// PerBu" is a sentence a question can match against, while the two endpoint names
+/// Faden" is a sentence a question can match against, while the two endpoint names
 /// on their own are not.
 struct MemoryEdge: Identifiable, Codable, Equatable {
     var id: UUID

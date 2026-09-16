@@ -20,6 +20,11 @@ actor MemoryStore {
 
     init() {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        // „PerBu“ war der Arbeitsname, und dieser Ordner behält ihn. Ein
+        // anderer Name wäre auf jedem Gerät, auf dem die App schon liegt,
+        // ein leerer Ordner neben einem vollen — der ganze Wissensgraph weg.
+        // Umbenennen ginge nur mit einem Umzug beim ersten Start, und der
+        // hat einen Fehlerfall.
         let dir = base.appendingPathComponent("PerBu", isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         url = dir.appendingPathComponent("memory.json")

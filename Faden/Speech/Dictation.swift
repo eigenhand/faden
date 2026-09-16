@@ -251,11 +251,11 @@ final class Dictation {
 
     private func requestPermissions() async -> Bool {
         guard await Self.askSpeechPermission() == .authorized else {
-            state = .denied("Die Spracherkennung ist nicht erlaubt. In den iOS-Einstellungen unter PerBu freigeben.")
+            state = .denied("Die Spracherkennung ist nicht erlaubt. In den iOS-Einstellungen unter Faden freigeben.")
             return false
         }
         guard await Self.askMicrophonePermission() else {
-            state = .denied("Das Mikrofon ist nicht erlaubt. In den iOS-Einstellungen unter PerBu freigeben.")
+            state = .denied("Das Mikrofon ist nicht erlaubt. In den iOS-Einstellungen unter Faden freigeben.")
             return false
         }
         return true

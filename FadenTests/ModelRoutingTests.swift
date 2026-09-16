@@ -1,5 +1,5 @@
 import XCTest
-@testable import PerBu
+@testable import Faden
 
 /// Welches Modell einen Zug bearbeitet, und worauf es ausweicht.
 ///

@@ -23,7 +23,7 @@ final class IntentInbox {
 /// declared in the app itself, and in return the app appears in the places people
 /// reach for when they are not already looking at it — which is the whole problem
 /// with an app that only exists once you have found and tapped it.
-struct AskPerBu: AppIntent {
+struct AskFaden: AppIntent {
     static let title: LocalizedStringResource = "Faden fragen"
     static let description = IntentDescription(
         "Stellt Faden eine Frage und öffnet die Antwort in der App.")
@@ -49,7 +49,7 @@ struct AskPerBu: AppIntent {
 }
 
 /// Opens the app on an empty chat, ready to type.
-struct NewPerBuChat: AppIntent {
+struct NewFadenChat: AppIntent {
     static let title: LocalizedStringResource = "Neue Unterhaltung"
     static let description = IntentDescription("Öffnet Faden mit einem leeren Chat.")
     static let openAppWhenRun = true
@@ -61,10 +61,10 @@ struct NewPerBuChat: AppIntent {
     }
 }
 
-struct PerBuShortcuts: AppShortcutsProvider {
+struct FadenShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
-            intent: AskPerBu(),
+            intent: AskFaden(),
             phrases: [
                 "Frag \(.applicationName)",
                 "\(.applicationName) fragen",
@@ -74,7 +74,7 @@ struct PerBuShortcuts: AppShortcutsProvider {
             systemImageName: "bubble.left.and.text.bubble.right")
 
         AppShortcut(
-            intent: NewPerBuChat(),
+            intent: NewFadenChat(),
             phrases: [
                 "Neue Unterhaltung in \(.applicationName)",
                 "\(.applicationName) öffnen"

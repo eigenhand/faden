@@ -1,5 +1,5 @@
 import XCTest
-@testable import PerBu
+@testable import Faden
 
 /// Was aus einer geteilten Datei in den eigenen Verlauf darf.
 ///

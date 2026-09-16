@@ -10,6 +10,11 @@ actor Store {
 
     init() {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        // „PerBu“ war der Arbeitsname, und dieser Ordner behält ihn. Ein
+        // anderer Name wäre auf jedem Gerät, auf dem die App schon liegt,
+        // ein leerer Ordner neben einem vollen — Einstellungen und alle Unterhaltungen weg.
+        // Umbenennen ginge nur mit einem Umzug beim ersten Start, und der
+        // hat einen Fehlerfall.
         dir = base.appendingPathComponent("PerBu", isDirectory: true)
         settingsURL = dir.appendingPathComponent("settings.json")
         conversationsURL = dir.appendingPathComponent("conversations.json")

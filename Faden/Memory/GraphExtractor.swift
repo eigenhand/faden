@@ -19,7 +19,7 @@ struct GraphExtractor {
     Jede Kante bekommt eine Beschreibung, wenn der Text etwas über die Verbindung hergibt. \
     Die Beschreibung nennt die beiden Endpunkte beim Namen, bleibt knapp und sachlich und \
     darf Angaben aus dem Text übernehmen. Füge kein Wissen von außen hinzu.
-      - Gut: Christoph arbeitet an PerBu, einer Chat-App für das iPhone.
+      - Gut: Christoph arbeitet an Faden, einer Chat-App für das iPhone.
       - Schlecht: Diese Kante beschreibt eine Arbeitsbeziehung.
 
     Ziel ist ein einfacher, klarer Graph.
@@ -32,7 +32,7 @@ struct GraphExtractor {
     **Knoten-IDs**: Niemals Zahlen als ID.
       - IDs sind Namen oder lesbare Bezeichner, die im Text vorkommen.
     **Namen**: Jeder Knoten braucht ein Feld "name" mit dem vollständigsten lesbaren Namen \
-    (etwa "Christoph Lindl-Guk", "PerBu").
+    (etwa "Christoph Lindl-Guk", "Faden").
 
     # 2. Zahlen und Daten
       - Ein Datum bekommt den Typ **"Datum"**.

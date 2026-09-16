@@ -1,4 +1,4 @@
-name: PerBu
+name: Faden
 options:
   bundleIdPrefix: dev.eigenhand
   deploymentTarget:
@@ -12,22 +12,28 @@ settings:
     MARKETING_VERSION: "1.0"
     CURRENT_PROJECT_VERSION: "1"
 targets:
-  PerBu:
+  Faden:
     type: application
     platform: iOS
     sources:
-      - path: PerBu
+      - path: Faden
     settings:
       base:
+        # Bleibt „perbu“, und das ist kein Rest vom Umbenennen. Die Bundle-ID
+        # ist die Identität der App in App Store Connect und auf jedem Gerät, auf
+        # dem sie liegt: eine neue wäre eine neue App — neues TestFlight, neu
+        # einzuladende Tester, und bestehende Installationen bekämen ein zweites
+        # Icon statt eines Updates. Daran hängt zudem die Schlüsselbundgruppe.
+        # Eine Kennung ist kein Name; zu sehen bekommt sie niemand.
         PRODUCT_BUNDLE_IDENTIFIER: dev.eigenhand.perbu
-        PRODUCT_NAME: PerBu
-        INFOPLIST_FILE: PerBu/Info.plist
+        PRODUCT_NAME: Faden
+        INFOPLIST_FILE: Faden/Info.plist
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ENABLE_USER_SCRIPT_SANDBOXING: NO
         SWIFT_STRICT_CONCURRENCY: minimal
         TARGETED_DEVICE_FAMILY: "1"
         GENERATE_INFOPLIST_FILE: NO
-        CODE_SIGN_ENTITLEMENTS: PerBu/PerBu.entitlements
+        CODE_SIGN_ENTITLEMENTS: Faden/Faden.entitlements
       # Nur das Archiv signiert von Hand. Der Grund steht nicht in Xcode, also hier:
       # auf diesem Rechner ist kein Apple-Konto in Xcode hinterlegt, weshalb die
       # automatische Signierung kein Profil erneuern kann. Seit die App Group in den
@@ -45,46 +51,46 @@ targets:
   # wie „bei einer Drosselung sofort auf das langsamere Modell ausweichen" jahrelang
   # unbemerkt danebenliegen konnte: sie stand nirgends geschrieben, wo sie jemand
   # nachlesen musste.
-  PerBuTests:
+  FadenTests:
     type: bundle.unit-test
     platform: iOS
     sources:
-      - path: PerBuTests
+      - path: FadenTests
     dependencies:
-      - target: PerBu
+      - target: Faden
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: dev.eigenhand.perbu.tests
         GENERATE_INFOPLIST_FILE: YES
-        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/PerBu.app/PerBu"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Faden.app/Faden"
         BUNDLE_LOADER: "$(TEST_HOST)"
 
-  PerBuUITests:
+  FadenUITests:
     type: bundle.ui-testing
     platform: iOS
     sources:
-      - path: PerBuUITests
+      - path: FadenUITests
     dependencies:
-      - target: PerBu
+      - target: Faden
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: dev.eigenhand.perbu.uitests
         GENERATE_INFOPLIST_FILE: YES
-        TEST_TARGET_NAME: PerBu
+        TEST_TARGET_NAME: Faden
         SWIFT_STRICT_CONCURRENCY: minimal
 schemes:
-  PerBu:
+  Faden:
     build:
       targets:
-        PerBu: all
-        PerBuTests: [test]
-        PerBuUITests: [test]
+        Faden: all
+        FadenTests: [test]
+        FadenUITests: [test]
     run:
       config: Debug
     test:
       config: Debug
       targets:
-        - PerBuTests
-        - PerBuUITests
+        - FadenTests
+        - FadenUITests
     archive:
       config: Release

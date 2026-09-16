@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct PerBuApp: App {
+struct FadenApp: App {
     @State private var model = AppModel()
 
     var body: some Scene {

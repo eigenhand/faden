@@ -55,11 +55,11 @@ jobs:
       - name: Unittests
         run: |
           xcodebuild test \
-            -project PerBu.xcodeproj \
-            -scheme PerBu \
+            -project Faden.xcodeproj \
+            -scheme Faden \
             -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' \
             -derivedDataPath build/dd \
-            -only-testing:PerBuTests \
+            -only-testing:FadenTests \
             CODE_SIGNING_ALLOWED=NO
 
       - name: Testbericht aufheben

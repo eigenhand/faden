@@ -27,7 +27,7 @@ struct TripletSearch {
     }
 
     /// Stage one, cognee's vector pass: score every node *and* every edge against
-    /// the question. Edges are searched too because "Christoph arbeitet an PerBu"
+    /// the question. Edges are searched too because "Christoph arbeitet an Faden"
     /// is a sentence a question can match, while the bare endpoint names are not.
     ///
     /// All scores are kept, not just the top ones: ranking a triplet needs the
@@ -150,7 +150,7 @@ struct TripletSearch {
     }
 
     /// Renders the retrieved triplets the way cognee hands them to the model: as
-    /// plain statements, not as JSON. A model reads "Christoph arbeitet an PerBu"
+    /// plain statements, not as JSON. A model reads "Christoph arbeitet an Faden"
     /// better than it reads a serialised node object.
     static func context(from triplets: [Triplet]) -> String {
         guard !triplets.isEmpty else { return "" }
