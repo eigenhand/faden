@@ -60,8 +60,17 @@ enum EH {
 
     // MARK: Type scale
     /// Wide-tracked uppercase micro label — the site's signature (`DEMNÄCHST`)
-    static func label(_ s: String) -> some View {
-        Text(s.uppercased())
+    /// Eine Abschnittsüberschrift.
+    ///
+    /// `LocalizedStringKey` und nicht `String`, und `.textCase` statt
+    /// `.uppercased()`: Ein `String` geht am Stringkatalog vorbei — Xcode trägt nur
+    /// ein, was als Schlüssel dasteht. Jede Überschrift dieser App war deshalb
+    /// unübersetzbar, ohne dass irgendwo etwas rot wurde. `.textCase(.uppercase)`
+    /// macht dieselben Großbuchstaben, aber erst beim Zeichnen und damit nach dem
+    /// Nachschlagen.
+    static func label(_ key: LocalizedStringKey) -> some View {
+        Text(key)
+            .textCase(.uppercase)
             .font(.eh(10, .caption2, weight: .medium))
             .tracking(4.2)
             .foregroundStyle(EH.muted)

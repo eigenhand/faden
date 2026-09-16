@@ -289,7 +289,7 @@ struct MemorySettingsView: View {
                 // Drei große Zahlen mit winzigen Kleinversalien darunter liest eine
                 // Sprachausgabe als Zahlenfolge vor. Zusammengefasst ist es ein Satz.
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel("\(index.usable) nutzbar, \(index.foreign) fremd, \(index.missing) offen")
+                .accessibilityLabel(Text("\(index.usable) nutzbar, \(index.foreign) fremd, \(index.missing) offen"))
                 .accessibilityIdentifier("indexStatus")
 
                 if let dimension = index.dimension {
@@ -350,7 +350,7 @@ struct MemorySettingsView: View {
         }
     }
 
-    private func zahl(_ n: Int, _ wort: String, _ farbe: Color) -> some View {
+    private func zahl(_ n: Int, _ wort: LocalizedStringKey, _ farbe: Color) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text("\(n)").font(.eh(20, .title3, weight: .semibold)).foregroundStyle(farbe)
             EH.label(wort)
@@ -412,7 +412,7 @@ struct MemorySettingsView: View {
         }
     }
 
-    private func field(_ label: String, text: Binding<String>, placeholder: String) -> some View {
+    private func field(_ label: LocalizedStringKey, text: Binding<String>, placeholder: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             EH.label(label)
             TextField(placeholder, text: text)

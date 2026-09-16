@@ -336,7 +336,7 @@ struct SettingsView: View {
         return vision.isEmpty ? c.model : "\(c.model) · Bilder: \(vision)"
     }
 
-    private func section<C: View>(_ title: String, @ViewBuilder content: () -> C) -> some View {
+    private func section<C: View>(_ title: LocalizedStringKey, @ViewBuilder content: () -> C) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             EH.label(title)
             content()

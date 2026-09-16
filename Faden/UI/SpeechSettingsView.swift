@@ -191,7 +191,7 @@ struct SpeechSettingsView: View {
 
     // MARK: Fields
 
-    private func field(_ label: String, text: Binding<String>, placeholder: String, mono: Bool = false) -> some View {
+    private func field(_ label: LocalizedStringKey, text: Binding<String>, placeholder: String, mono: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             EH.label(label)
             TextField(placeholder, text: text)
@@ -207,7 +207,7 @@ struct SpeechSettingsView: View {
         }
     }
 
-    private func keyField(_ label: String, text: Binding<String>, stored: Bool,
+    private func keyField(_ label: LocalizedStringKey, text: Binding<String>, stored: Bool,
                           account: String, onStore: @escaping () -> Void) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             EH.label(label)

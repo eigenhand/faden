@@ -369,7 +369,7 @@ struct ProviderSetupView: View {
         id.split(separator: "/").last.map(String.init) ?? id
     }
 
-    private func field(_ label: String, text: Binding<String>, placeholder: String, mono: Bool = false) -> some View {
+    private func field(_ label: LocalizedStringKey, text: Binding<String>, placeholder: String, mono: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             EH.label(label)
             TextField(placeholder, text: text)

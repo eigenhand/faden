@@ -66,7 +66,7 @@ struct ContextBar: View {
                             .foregroundStyle(EH.muted)
                     }
                     .buttonStyle(EHTap())
-                    .accessibilityLabel("Kontext jetzt verdichten")
+                    .accessibilityLabel(Text("Kontext jetzt verdichten"))
                 }
             }
             .padding(.horizontal, EH.gutter)
@@ -75,6 +75,6 @@ struct ContextBar: View {
         }
         .background(.ultraThinMaterial)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Kontext zu \(usage.percent) Prozent genutzt, \(usage.remaining) Token frei")
+        .accessibilityLabel(Text("Kontext zu \(usage.percent) Prozent genutzt, \(usage.remaining) Token frei"))
     }
 }

@@ -117,7 +117,7 @@ struct MessageActions: View {
                     .lineLimit(1)
                     .truncationMode(.tail)
                     .layoutPriority(-1)
-                    .accessibilityLabel("beantwortet von \(attribution)")
+                    .accessibilityLabel(Text("beantwortet von \(attribution)"))
             }
         }
     }

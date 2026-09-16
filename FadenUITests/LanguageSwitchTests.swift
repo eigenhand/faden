@@ -34,7 +34,7 @@ final class LanguageSwitchTests: XCTestCase {
     }
 
     func testSwitchingToEnglishRelabelsTheInterface() throws {
-        XCTAssertTrue(app.buttons["Einstellungen"].waitForExistence(timeout: 5))
+        try startInGerman()
 
         try choose("English", from: "Einstellungen")
         let picker = app.buttons["language-picker"]
@@ -50,24 +50,57 @@ final class LanguageSwitchTests: XCTestCase {
         XCTAssertTrue(label(of: picker).contains("Language"),
                       "Die Beschriftung ist weiterhin deutsch: \(label(of: picker))")
 
+        // Und die Kopfzeile dahinter. Sie trägt ihre Beschriftung als
+        // Barrierefreiheits-Text, und der ging bis zur Umstellung von
+        // `headerButton` auf `LocalizedStringKey` am Katalog vorbei — er blieb
+        // deutsch, während die App längst englisch war.
+        XCTAssertTrue(app.buttons["History"].waitForExistence(timeout: 3),
+                      "Der Verlaufs-Knopf heißt weiterhin „Verlauf“.")
+        XCTAssertFalse(app.buttons["Verlauf"].exists)
+
         // Und zurück, ohne die App neu zu starten: die Umstellung wirkt sofort.
         try choose("Deutsch", from: nil)
         XCTAssertTrue(label(of: picker).contains("Sprache"),
                       "Zurück auf Deutsch hat nicht gewirkt: \(label(of: picker))")
+        XCTAssertTrue(app.buttons["Verlauf"].waitForExistence(timeout: 3))
     }
 
     /// Die Wahl überlebt einen Neustart — sie liegt in den Einstellungen und nicht
     /// nur in der Ansicht.
+    ///
+    /// Geprüft wird am Knopf der Kopfzeile und nicht noch einmal am Wähler: Der
+    /// steht unten in einer langen Liste hinter einem Blatt, das nach dem Neustart
+    /// erst wieder geöffnet und gescrollt werden müsste, und genau daran war dieser
+    /// Test zweimal rot, ohne dass am Code etwas falsch war. Der Knopf sagt
+    /// dasselbe und steht sofort da.
     func testTheChoiceSurvivesARestart() throws {
+        try startInGerman()
         try choose("English", from: "Einstellungen")
         app.terminate()
         app.launch()
 
-        XCTAssertTrue(app.buttons["Settings"].waitForExistence(timeout: 5)
-                      || app.buttons["Einstellungen"].waitForExistence(timeout: 5))
-        try open(settings: app.buttons["Settings"].exists ? "Settings" : "Einstellungen")
-        XCTAssertTrue(label(of: app.buttons["language-picker"]).contains("English"),
-                      "Nach dem Neustart steht die Wahl nicht mehr auf English.")
+        XCTAssertTrue(app.buttons["Settings"].waitForExistence(timeout: 5),
+                      "Nach dem Neustart steht die App wieder auf Deutsch.")
+        XCTAssertFalse(app.buttons["Einstellungen"].exists)
+    }
+
+    /// Stellt den Startzustand her, statt ihn anzunehmen.
+    ///
+    /// Die Wahl liegt in den Einstellungen und überlebt einen Neustart — also auch
+    /// den vorigen Test. Genau daran war dieser hier rot: Er begann mit „der Knopf
+    /// heißt Einstellungen“, und der Knopf hieß Settings, weil ein Lauf davor
+    /// abgebrochen war. Ein Test, der den Zustand seines Vorgängers erbt, prüft
+    /// nicht mehr, was er behauptet.
+    private func startInGerman() throws {
+        if app.buttons["Einstellungen"].waitForExistence(timeout: 5) { return }
+        XCTAssertTrue(app.buttons["Settings"].waitForExistence(timeout: 5),
+                      "Weder „Einstellungen“ noch „Settings“ — die App ist nicht da.")
+        try choose("Deutsch", from: "Settings")
+        // Neu starten statt das Blatt zu schließen: danach ist der Zustand derselbe
+        // wie bei einem ersten Lauf, und nicht „gerade umgestellt“.
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(app.buttons["Einstellungen"].waitForExistence(timeout: 5))
     }
 
     private func label(of element: XCUIElement) -> String {

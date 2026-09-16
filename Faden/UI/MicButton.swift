@@ -53,6 +53,6 @@ struct MicButton: View {
                 }
         )
         .disabled(transcribing)
-        .accessibilityLabel("Zum Sprechen gedrückt halten")
+        .accessibilityLabel(Text("Zum Sprechen gedrückt halten"))
     }
 }

@@ -558,7 +558,7 @@ struct ModelEditor: View {
                         .background(RoundedRectangle(cornerRadius: EH.radiusSmall, style: .continuous)
                             .fill(EH.surfaceSunk))
                 }
-                .accessibilityLabel("Eingerichtete Modelle")
+                .accessibilityLabel(Text("Eingerichtete Modelle"))
             }
         }
     }
@@ -577,7 +577,7 @@ struct ModelEditor: View {
 
     // MARK: Field helpers
 
-    private func field(_ label: String, text: Binding<String>, placeholder: String,
+    private func field(_ label: LocalizedStringKey, text: Binding<String>, placeholder: String,
                        mono: Bool = false, url: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             EH.label(label)

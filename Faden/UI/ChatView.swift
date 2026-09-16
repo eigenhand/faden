@@ -407,7 +407,7 @@ struct ChatView: View {
     /// Header actions carry their keyboard shortcut themselves, which is also how
     /// they end up in the list iOS shows when ⌘ is held down — so someone on an
     /// external keyboard can find them instead of having to be told.
-    private func headerButton(_ icon: String, label: String,
+    private func headerButton(_ icon: String, label: LocalizedStringKey,
                               shortcut: KeyEquivalent? = nil,
                               action: @escaping () -> Void) -> some View {
         Button(action: action) {
@@ -548,7 +548,7 @@ struct ChatView: View {
                         }
                         .buttonStyle(EHTap())
                         .offset(x: 11, y: -11)
-                        .accessibilityLabel("Bild entfernen")
+                        .accessibilityLabel(Text("Bild entfernen"))
                     }
                     .padding(.top, 11)
                     .padding(.trailing, 11)
@@ -594,13 +594,13 @@ struct ChatView: View {
                     } label: {
                         attachButton
                     }
-                    .accessibilityLabel("Bild hinzufügen")
+                    .accessibilityLabel(Text("Bild hinzufügen"))
                 } else {
                     PhotosPicker(selection: $pickerItems, maxSelectionCount: 4,
                                  matching: .images, photoLibrary: .shared()) {
                         attachButton
                     }
-                    .accessibilityLabel("Bild hinzufügen")
+                    .accessibilityLabel(Text("Bild hinzufügen"))
                 }
             }
 
@@ -653,7 +653,7 @@ struct ChatView: View {
                         .contentShape(Circle())
                 }
                 .buttonStyle(EHTap())
-                .accessibilityLabel("Sprachmodus")
+                .accessibilityLabel(Text("Sprachmodus"))
                 // Fährt zur Seite weg, statt zu verschwinden: ein Knopf, der beim
                 // ersten Buchstaben schlicht wegblinkt, liest sich wie ein Fehler.
                 .transition(.move(edge: .trailing).combined(with: .opacity))
@@ -692,7 +692,7 @@ struct ChatView: View {
                 }
                 .buttonStyle(EHTap())
                 .keyboardShortcut(.escape, modifiers: [])
-                .accessibilityLabel("Antwort stoppen")
+                .accessibilityLabel(Text("Antwort stoppen"))
             } else {
                 Button { submit() } label: {
                     Image(systemName: "arrow.up")
@@ -707,7 +707,7 @@ struct ChatView: View {
                 .disabled(!canSend)
                 // Return still makes a new line — the field is multi-line on purpose.
                 .keyboardShortcut(.return, modifiers: .command)
-                .accessibilityLabel("Senden")
+                .accessibilityLabel(Text("Senden"))
             }
         }
     }

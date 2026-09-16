@@ -96,7 +96,7 @@ struct MarkdownText: View {
                         // handle — so it scrolls sideways, and can be taken whole
                         // without selecting three lines by hand on a phone.
                         HStack(spacing: 8) {
-                            if let lang, !lang.isEmpty { EH.label(lang) }
+                            if let lang, !lang.isEmpty { EH.label(LocalizedStringKey(lang)) }
                             Spacer(minLength: 0)
                             Button {
                                 UIPasteboard.general.string = s
@@ -113,7 +113,7 @@ struct MarkdownText: View {
                                     .contentShape(Rectangle())
                             }
                             .buttonStyle(EHTap())
-                            .accessibilityLabel(copiedCode == s ? "Code kopiert" : "Code kopieren")
+                            .accessibilityLabel(Text(copiedCode == s ? "Code kopiert" : "Code kopieren"))
                         }
                         .padding(.trailing, -8)
                         ScrollView(.horizontal, showsIndicators: true) {

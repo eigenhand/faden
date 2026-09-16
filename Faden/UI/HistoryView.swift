@@ -70,7 +70,7 @@ struct HistoryView: View {
                     LazyVStack(alignment: .leading, spacing: 10) {
                       ForEach(Array(grouped.enumerated()), id: \.element.0) { index, pair in
                         let (bucket, list) = pair
-                        EH.label(bucket.title)
+                        EH.label(LocalizedStringKey(bucket.title))
                             .padding(.top, index == 0 ? 0 : 18)
                             .padding(.bottom, 2)
 

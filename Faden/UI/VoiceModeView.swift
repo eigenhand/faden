@@ -8,7 +8,7 @@ struct VoiceModeView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private var caption: String {
+    private var caption: LocalizedStringKey {
         switch model.voiceStage {
         case .off:          return ""
         case .listening:    return model.silence.heardSpeech ? "hört zu" : "sprich einfach"

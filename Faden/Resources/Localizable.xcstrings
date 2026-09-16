@@ -41,6 +41,22 @@
         }
       }
     },
+    "%@ nutzbar, %@ fremd, %@ offen": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ nutzbar, %2$@ fremd, %3$@ offen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ usable, %@ foreign, %@ open"
+          }
+        }
+      }
+    },
     "%@ warten auf Einbettung": {
       "localizations": {
         "en": {
@@ -67,6 +83,22 @@
         }
       }
     },
+    "%@, %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@, %2$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, %@"
+          }
+        }
+      }
+    },
     "%@.": {
       "localizations": {
         "en": {
@@ -83,6 +115,50 @@
           "stringUnit": {
             "state": "translated",
             "value": "compacted %@×"
+          }
+        }
+      }
+    },
+    "API-Key": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API key"
+          }
+        }
+      }
+    },
+    "Ablauf": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sequence"
+          }
+        }
+      }
+    },
+    "Aktiv": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Active"
+          }
+        }
+      }
+    },
+    "Aktivieren": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activate"
           }
         }
       }
@@ -107,6 +183,17 @@
         }
       }
     },
+    "Anbieter": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Providers"
+          }
+        }
+      }
+    },
     "Anbieter entfernen": {
       "localizations": {
         "en": {
@@ -123,6 +210,49 @@
           "stringUnit": {
             "state": "translated",
             "value": "Add provider"
+          }
+        }
+      }
+    },
+    "Anrede": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Form of address"
+          }
+        }
+      }
+    },
+    "Anthropic": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anthropic"
+          }
+        }
+      }
+    },
+    "Antwort": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Answer"
+          }
+        }
+      }
+    },
+    "Antwort stoppen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop the answer"
           }
         }
       }
@@ -157,6 +287,17 @@
         }
       }
     },
+    "Apples Spracherkennung, wo möglich auf dem Gerät — dann verlässt nichts das iPhone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple's speech recognition, on the device where possible — then nothing leaves the iPhone."
+          }
+        }
+      }
+    },
     "Auf dem Gerät": {
       "localizations": {
         "en": {
@@ -173,6 +314,72 @@
           "stringUnit": {
             "state": "translated",
             "value": "From a different source: %@"
+          }
+        }
+      }
+    },
+    "Ausführlichkeit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Length"
+          }
+        }
+      }
+    },
+    "Ausprobieren": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try it"
+          }
+        }
+      }
+    },
+    "Ausweichmodell": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fallback model"
+          }
+        }
+      }
+    },
+    "Auszug-Feld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snippet field"
+          }
+        }
+      }
+    },
+    "Authentifizierung": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Authentication"
+          }
+        }
+      }
+    },
+    "Automatisch eingerichtet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up automatically"
           }
         }
       }
@@ -197,12 +404,65 @@
         }
       }
     },
+    "Bereit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready"
+          }
+        }
+      }
+    },
+    "Bild entfernen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove image"
+          }
+        }
+      }
+    },
+    "Bild hinzufügen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add image"
+          }
+        }
+      }
+    },
+    "Bilder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Images"
+          }
+        }
+      }
+    },
     "Bilder anhängen erlauben": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Allow image attachments"
+          }
+        }
+      }
+    },
+    "Body-Vorlage": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Body template"
           }
         }
       }
@@ -243,6 +503,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Your endpoint"
+          }
+        }
+      }
+    },
+    "Denkt nach": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thinking"
           }
         }
       }
@@ -313,6 +584,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "The entire knowledge graph is deleted. The conversations themselves stay."
+          }
+        }
+      }
+    },
+    "Details": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Details"
           }
         }
       }
@@ -397,6 +679,17 @@
         }
       }
     },
+    "Eigene Anweisungen": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your own instructions"
+          }
+        }
+      }
+    },
     "Eigenes Modell für Bilder": {
       "localizations": {
         "en": {
@@ -417,6 +710,27 @@
         }
       }
     },
+    "Einbettungen": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Embeddings"
+          }
+        }
+      }
+    },
+    "Eingerichtete Modelle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Models that are set up"
+          }
+        }
+      }
+    },
     "Einstellungen": {
       "extractionState": "manual",
       "localizations": {
@@ -424,6 +738,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Settings"
+          }
+        }
+      }
+    },
+    "Endpoint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Endpoint"
           }
         }
       }
@@ -458,12 +783,56 @@
         }
       }
     },
+    "Faden schreibt weiter": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faden keeps writing"
+          }
+        }
+      }
+    },
     "Fasst den älteren Verlauf im Hintergrund zusammen, sobald die Schwelle erreicht ist.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Summarises the older history in the background once the threshold is reached."
+          }
+        }
+      }
+    },
+    "Format": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Format"
+          }
+        }
+      }
+    },
+    "Frage den Endpoint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ask the endpoint"
+          }
+        }
+      }
+    },
+    "Freihändig sprechen": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speak hands-free"
           }
         }
       }
@@ -488,12 +857,45 @@
         }
       }
     },
+    "Für diese Sprache steht keine Erkennung bereit. Ein eigener Endpoint funktioniert trotzdem.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No recognition is available for this language. Your own endpoint still works."
+          }
+        }
+      }
+    },
+    "Gedankengang": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reasoning"
+          }
+        }
+      }
+    },
     "Gedankengang anzeigen": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Show reasoning"
+          }
+        }
+      }
+    },
+    "Gedächtnis": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memory"
           }
         }
       }
@@ -528,12 +930,45 @@
         }
       }
     },
+    "Grenzen": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limits"
+          }
+        }
+      }
+    },
     "Header": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Headers"
+          }
+        }
+      }
+    },
+    "Im System": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In the system"
+          }
+        }
+      }
+    },
+    "Index": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Index"
           }
         }
       }
@@ -548,12 +983,82 @@
         }
       }
     },
+    "Kontext": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Context"
+          }
+        }
+      }
+    },
+    "Kontext jetzt verdichten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compact the context now"
+          }
+        }
+      }
+    },
+    "Kontext zu %@ Prozent genutzt, %@ Token frei": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Kontext zu %1$@ Prozent genutzt, %2$@ Token frei"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Context %@ percent used, %@ tokens free"
+          }
+        }
+      }
+    },
     "Liest jede fertige Antwort automatisch vor.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Reads every finished answer aloud automatically."
+          }
+        }
+      }
+    },
+    "Liste neu laden": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reload the list"
+          }
+        }
+      }
+    },
+    "Liste nicht abrufbar": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The list cannot be fetched"
+          }
+        }
+      }
+    },
+    "Lädt … das dauert": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading … this takes a while"
           }
         }
       }
@@ -578,12 +1083,34 @@
         }
       }
     },
+    "Modell": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Model"
+          }
+        }
+      }
+    },
     "Modell entfernen": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Remove model"
+          }
+        }
+      }
+    },
+    "Modell laden · 108 MB": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Download the model · 108 MB"
           }
         }
       }
@@ -598,12 +1125,78 @@
         }
       }
     },
+    "Modell testen": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Test the model"
+          }
+        }
+      }
+    },
+    "Modelle laden": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Load the models"
+          }
+        }
+      }
+    },
+    "Nach ein paar Gesprächen steht hier, was Faden über dich weiß.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After a few conversations, what Faden knows about you stands here."
+          }
+        }
+      }
+    },
     "Nach jedem Austausch wird still im Hintergrund abgeleitet, was Bestand hat.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "After every exchange, what holds up is derived quietly in the background."
+          }
+        }
+      }
+    },
+    "Name": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        }
+      }
+    },
+    "Name des Anbieters": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name of the provider"
+          }
+        }
+      }
+    },
+    "Neue Unterhaltung": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New conversation"
           }
         }
       }
@@ -638,7 +1231,30 @@
         }
       }
     },
+    "Noch nichts eingerichtet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing set up yet"
+          }
+        }
+      }
+    },
+    "Noch nichts gemerkt.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing remembered yet."
+          }
+        }
+      }
+    },
     "Oberfläche": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -678,6 +1294,28 @@
         }
       }
     },
+    "Pfad": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Path"
+          }
+        }
+      }
+    },
+    "Pfad zu den Treffern": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Path to the results"
+          }
+        }
+      }
+    },
     "Platzhalter: {{query}}, {{key}}, {{count}}": {
       "localizations": {
         "en": {
@@ -708,12 +1346,56 @@
         }
       }
     },
+    "Quelle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Source"
+          }
+        }
+      }
+    },
+    "Quellen": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sources"
+          }
+        }
+      }
+    },
     "Query": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Query"
+          }
+        }
+      }
+    },
+    "Query-Parameter": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Query parameter"
+          }
+        }
+      }
+    },
+    "Richte unter Einstellungen › Gedächtnis einen Einbettungs-Endpoint ein.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up an embedding endpoint under Settings › Memory."
           }
         }
       }
@@ -728,6 +1410,27 @@
         }
       }
     },
+    "Senden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send"
+          }
+        }
+      }
+    },
+    "So wird es dem Modell gesagt": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is how the model is told"
+          }
+        }
+      }
+    },
     "Sprache": {
       "localizations": {
         "en": {
@@ -738,12 +1441,67 @@
         }
       }
     },
+    "Sprache (optional)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Language (optional)"
+          }
+        }
+      }
+    },
     "Sprache des Geräts": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Device language"
+          }
+        }
+      }
+    },
+    "Sprache zu Text": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speech to text"
+          }
+        }
+      }
+    },
+    "Sprachmodus": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voice mode"
+          }
+        }
+      }
+    },
+    "Stand": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "State"
+          }
+        }
+      }
+    },
+    "Stimme": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voice"
           }
         }
       }
@@ -788,12 +1546,177 @@
         }
       }
     },
+    "Testanfrage": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Test request"
+          }
+        }
+      }
+    },
+    "Text zu Sprache": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Text to speech"
+          }
+        }
+      }
+    },
+    "Titel-Feld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Title field"
+          }
+        }
+      }
+    },
+    "Ton": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tone"
+          }
+        }
+      }
+    },
+    "URL": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "URL"
+          }
+        }
+      }
+    },
+    "URL-Feld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "URL field"
+          }
+        }
+      }
+    },
+    "Verbindung testen": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Test the connection"
+          }
+        }
+      }
+    },
+    "Verhalten": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Behaviour"
+          }
+        }
+      }
+    },
+    "Verlauf": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "History"
+          }
+        }
+      }
+    },
+    "Vision-Ausweichmodell": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vision fallback model"
+          }
+        }
+      }
+    },
+    "Vision-Modell": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vision model"
+          }
+        }
+      }
+    },
     "Von selbst merken": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Remember on its own"
+          }
+        }
+      }
+    },
+    "Was es nicht kann": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What it cannot do"
+          }
+        }
+      }
+    },
+    "Websuche": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Web search"
+          }
+        }
+      }
+    },
+    "Welches Modell soll das übernehmen?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Which model should take this on?"
+          }
+        }
+      }
+    },
+    "Werkzeuge und Gedankengang": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tools and reasoning"
           }
         }
       }
@@ -838,12 +1761,65 @@
         }
       }
     },
+    "Zum Ende": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To the end"
+          }
+        }
+      }
+    },
+    "Zum Sprechen gedrückt halten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hold to speak"
+          }
+        }
+      }
+    },
+    "beantwortet von %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "answered by %@"
+          }
+        }
+      }
+    },
     "eigenhand.dev": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "eigenhand.dev"
+          }
+        }
+      }
+    },
+    "fremd": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "foreign"
+          }
+        }
+      }
+    },
+    "leer: gar nicht ausweichen": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "empty: do not fall back at all"
           }
         }
       }
@@ -858,12 +1834,67 @@
         }
       }
     },
+    "noch nichts gemerkt": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "nothing remembered yet"
+          }
+        }
+      }
+    },
+    "nutzbar": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "usable"
+          }
+        }
+      }
+    },
+    "offen": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "open"
+          }
+        }
+      }
+    },
+    "spricht — antippen zum Stoppen": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "speaking — tap to stop"
+          }
+        }
+      }
+    },
     "vom Endpoint laden": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "load from the endpoint"
+          }
+        }
+      }
+    },
+    "z. B. anbieter/modell-name": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "e.g. provider/model-name"
           }
         }
       }
