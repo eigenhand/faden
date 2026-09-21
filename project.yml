@@ -45,16 +45,26 @@ targets:
         GENERATE_INFOPLIST_FILE: NO
         CODE_SIGN_ENTITLEMENTS: Faden/Faden.entitlements
       # Only the archive is signed manually. The reason is not written down in Xcode,
-      # so it stands here: no Apple account is registered in Xcode on this machine,
-      # which is why automatic signing cannot renew a profile. Since the App Group
-      # went into the entitlements, the old cached profile is no longer enough. The
-      # named profile was issued through the App Store Connect API and sits locally.
+      # so it stands here: no Apple account is registered on this machine, and the App
+      # Store Connect API key cannot stand in for one. The key issues development
+      # certificates and profiles happily — try automatic signing and the archive
+      # succeeds, signed for development, which is not something that can be shipped.
+      # For a distribution profile it answers "you haven't been given access to
+      # cloud-managed distribution certificates". So the profile is made in the portal
+      # by hand and named here.
+      #
+      # A profile names the certificates allowed to use it, so replacing the signing
+      # certificate — a new Mac, an expiry — means making the profile again and
+      # changing the name below. That is the price of this route, and it is written
+      # down because the error it produces ("doesn't include signing certificate")
+      # names the certificate and not the profile, and sends people looking in the
+      # wrong place.
       # Debug stays automatic so that the simulator and the tests run untouched.
       configs:
         Release:
           CODE_SIGN_STYLE: Manual
           CODE_SIGN_IDENTITY: "Apple Distribution"
-          PROVISIONING_PROFILE_SPECIFIER: "Faden App Store (API)"
+          PROVISIONING_PROFILE_SPECIFIER: "Faden App Store - (API)"
   # Fadens erste Unittests.
   #
   # There used to be only a UI test target, and that is why a decision like "on a
