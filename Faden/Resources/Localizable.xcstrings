@@ -185,16 +185,6 @@
         }
       }
     },
-    "%lld gelesen, %lld schon aktuell, %lld übersprungen.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld read, %lld already current, %lld skipped."
-          }
-        }
-      }
-    },
     "%lld neu einbetten": {
       "localizations": {
         "en": {
@@ -1173,16 +1163,6 @@
         }
       }
     },
-    "Dokumente einlesen": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Read the documents"
-          }
-        }
-      }
-    },
     "Dunkel": {
       "extractionState": "manual",
       "localizations": {
@@ -1912,16 +1892,6 @@
         }
       }
     },
-    "Liest …": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reading …"
-          }
-        }
-      }
-    },
     "Liste neu laden": {
       "extractionState": "manual",
       "localizations": {
@@ -2223,12 +2193,12 @@
         }
       }
     },
-    "Noch nichts eingelesen. Bis dahin findet die Inhaltssuche nichts — einzelne Dateien liest der Assistent trotzdem auf Zuruf.": {
+    "Noch nichts eingelesen. Der Assistent liest die Dokumente, sobald er das erste Mal im Inhalt sucht.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nothing read yet. Until then the content search finds nothing — single files the assistant still reads on request."
+            "value": "Nothing read yet. The assistant reads the documents the first time it searches their contents."
           }
         }
       }

@@ -6,6 +6,12 @@ enum TurnEvent {
     case text(String)
     case toolStarted(id: String, name: String, summary: String)
     case toolFinished(id: String, ok: Bool, summary: String)
+    /// A tool that takes long enough to be worth watching says how far it is.
+    ///
+    /// Only reading documents does this. The others are one request each and finish
+    /// before a bar would have drawn; reading a folder is minutes, and a spinner that
+    /// says nothing for minutes is indistinguishable from a hang.
+    case toolProgress(id: String, done: Int, total: Int)
     case usage(input: Int?, output: Int?)
     /// The provider named its own limits in a refusal.
     ///
@@ -212,7 +218,9 @@ struct AgentRunner {
 
     // MARK: Tool execution
 
-    private func execute(name: String, input: JSONValue) async -> (text: String, ok: Bool, summary: String) {
+    private func execute(name: String, input: JSONValue,
+                         onProgress: @escaping @Sendable (Int, Int) async -> Void = { _, _ in })
+    async -> (text: String, ok: Bool, summary: String) {
         switch name {
         case "web_search":
             guard let query = input["query"]?.stringValue, !query.isEmpty else {
@@ -265,7 +273,8 @@ struct AgentRunner {
                 return ("Fehler: Es ist kein Ordner freigegeben.", false, "nicht eingerichtet")
             }
             return await FolderReader.shared.run(input, bookmark: bookmark,
-                                                 name: settings.folder.name)
+                                                 name: settings.folder.name,
+                                                 onProgress: onProgress)
 
         case "remember":
             guard let note = input["note"]?.stringValue, !note.isEmpty else {
@@ -753,8 +762,11 @@ struct AgentRunner {
             var results = [ContentBlock?](repeating: nil, count: pendingCalls.count)
             await withTaskGroup(of: (Int, ContentBlock, Bool, String).self) { group in
                 for (i, call) in pendingCalls.enumerated() {
+                    let callID = call.id
                     group.addTask {
-                        let r = await execute(name: call.name, input: call.input)
+                        let r = await execute(name: call.name, input: call.input) { done, total in
+                            await onEvent(.toolProgress(id: callID, done: done, total: total))
+                        }
                         return (i, .toolResult(toolUseID: call.id, content: r.text, isError: !r.ok),
                                 r.ok, r.summary)
                     }

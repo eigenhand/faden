@@ -265,9 +265,17 @@ whether anything changed.
 Reading one named document parses on demand and caches. Searching contents answers from
 the index and never parses — a question is not the moment to read four hundred files,
 so the answer says how many documents it looked through and what to do when the miss
-means "not read yet". Filling the index is a third thing, started from the settings
-rather than on its own: reading a folder fetches files that are not downloaded, which
-on a metered connection is the user's decision.
+means "not read yet". Filling the index is a third thing, and it happens when the model
+runs a content search — not on a background timer, and not from a button.
+
+That placement is the decision the feature turns on. A timer would fetch files over the
+network that nobody asked about. A button in the settings would make a search answer
+silently from whatever somebody last remembered to press. On the search it is the model
+asking, on behalf of a question that was just typed, and the user watches it happen: the
+tool reports progress through `TurnEvent.toolProgress`, which is why that case exists
+and why no other tool uses it. The read runs against a wall clock, and when the clock
+wins the answer says so — a search over half a folder that claims to be a search over
+the folder is the one outcome nobody can tell from the real thing.
 
 Two details that are easy to get wrong and expensive to find. Apple's HTML reader is
 built on WebKit and puts itself on the main queue whatever thread called it, so parsing
@@ -299,7 +307,7 @@ the reason.
 
 ## Testing
 
-223 unit tests, all of them without a network, plus UI tests that drive the real app in
+234 unit tests, all of them without a network, plus UI tests that drive the real app in
 the simulator. The split is on purpose: everything decidable from values is a unit
 test; everything that needs a screen is a UI test; everything else is not tested and
 says so.

@@ -284,6 +284,9 @@ struct ToolChip: View {
     let detail: String
     var finished: Bool
     var ok: Bool
+    /// Set only while a long step runs. Reading a folder is the one tool that takes
+    /// long enough for a spinner to become indistinguishable from a hang.
+    var progress: ToolActivity.Progress?
 
     private var icon: String {
         switch name {
@@ -291,6 +294,8 @@ struct ToolChip: View {
         case "fetch_page": return "doc.text"
         case "remember":   return "bookmark"
         case "memory":     return "brain"
+        case "inventory":  return "shippingbox"
+        case "files":      return "folder"
         default:           return "wrench.adjustable"
         }
     }
@@ -300,6 +305,8 @@ struct ToolChip: View {
         case "fetch_page": return "Gelesen"
         case "remember":   return "Notiert"
         case "memory":     return "Gedächtnis"
+        case "inventory":  return "Bestand"
+        case "files":      return progress == nil ? "Ordner" : "Liest ein"
         default:           return name
         }
     }
@@ -317,7 +324,19 @@ struct ToolChip: View {
                 .font(.eh(11, .caption, weight: .medium))
                 .tracking(0.6)
                 .foregroundStyle(EH.muted)
-            if !detail.isEmpty {
+            if let progress, !finished {
+                // A number beside the bar, because a bar alone answers "how far" and
+                // not "how much is there" — and for a folder the second is the
+                // question somebody actually has.
+                ProgressView(value: progress.fraction)
+                    .progressViewStyle(.linear)
+                    .tint(EH.navy)
+                    .frame(width: 64)
+                Text("\(progress.done)/\(progress.total)")
+                    .font(.eh(11, .caption))
+                    .monospacedDigit()
+                    .foregroundStyle(EH.muted)
+            } else if !detail.isEmpty {
                 Text(detail)
                     .font(.eh(11, .caption))
                     .foregroundStyle(EH.muted)

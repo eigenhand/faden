@@ -105,8 +105,10 @@ Numbers, Keynote, OpenDocument, EPUB, RTF, HTML, text and source files, and text
 images. Everything goes through an Apple framework — PDFKit, `NSAttributedString`,
 Vision, `XMLParser` — and what comes out is kept in a local SQLite index against the
 file and its modification date, so a document is read once and re-read when it changes.
-The assistant can then search the *contents* of the whole folder and gets back the
-document, the page or sheet, and the passage — so an answer can cite "page 3 of the
+The reading happens when the assistant first searches the contents — not on a timer and
+not on a button — and a progress bar shows it working. After that it can search the
+*contents* of the whole folder and gets back the document, the page or sheet, and the
+passage — so an answer can cite "page 3 of the
 assessment" instead of "somewhere in that file".
 
 **Resilient.** Embedding endpoints are often rate-limited, and that is the normal case,

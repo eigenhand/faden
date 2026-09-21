@@ -459,7 +459,7 @@ struct ChatView: View {
 
             ToolTrace(steps: model.liveTools.map {
                 ToolStep(id: $0.id, name: $0.name, detail: $0.summary,
-                         finished: $0.finished, ok: $0.ok)
+                         finished: $0.finished, ok: $0.ok, progress: $0.progress)
             }, running: true)
 
             if !model.liveText.isEmpty {

@@ -24,7 +24,8 @@ actor FolderReader {
     /// system there is.
     private static let origin = "aus einer Datei im freigegebenen Ordner"
 
-    func run(_ input: JSONValue, bookmark: Data, name folderName: String) async
+    func run(_ input: JSONValue, bookmark: Data, name folderName: String,
+             onProgress: @escaping @Sendable (Int, Int) async -> Void = { _, _ in }) async
     -> (text: String, ok: Bool, summary: String) {
         let action = input["action"]?.stringValue ?? "list"
         let path = input["path"]?.stringValue ?? ""
@@ -45,7 +46,8 @@ actor FolderReader {
         let label = folderName.isEmpty ? root.lastPathComponent : folderName
 
         switch action {
-        case "search": return await search(query, label: label)
+        case "search": return await search(query, root: root, label: label,
+                                           onProgress: onProgress)
         case "list":   return list(path, root: root, label: label)
         case "find":   return find(query, root: root, label: label)
         case "read":   return await read(path, block: block, root: root, label: label)
@@ -134,34 +136,36 @@ actor FolderReader {
 
     // MARK: search — in the contents
 
-    /// The index, and only the index.
+    /// Reads what has changed, then searches.
     ///
-    /// Nothing is parsed here, which is the point: a question is not the moment to read
-    /// four hundred files. The price is that a miss has two meanings — not in the
-    /// documents, or not read yet — so the answer says how many documents it looked
-    /// through and what to do about the second case.
-    private func search(_ query: String, label: String) async
+    /// The reading happens here and nowhere else, and that is the decision this whole
+    /// feature turns on. Doing it in the background on a timer would fetch files over
+    /// the network that nobody asked about; doing it from a button in the settings
+    /// makes a search silently answer from whatever somebody last remembered to press.
+    /// Here it is the model asking, on behalf of a question that was just typed, and
+    /// the user watches it happen.
+    ///
+    /// The budget is a wall clock. A folder read from cold can be minutes, and a turn
+    /// that hangs for minutes is worse than an answer over part of the folder that says
+    /// so — which is what `stoppedEarly` is for.
+    private func search(_ query: String, root: URL, label: String,
+                        onProgress: @escaping @Sendable (Int, Int) async -> Void) async
     -> (text: String, ok: Bool, summary: String) {
         let q = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !q.isEmpty else {
             return ("Fehler: Es wurde keine Suchanfrage übergeben.", false, "ohne Anfrage")
         }
+        let read = await DocumentLibrary.shared.index(root: root, budget: 45,
+                                                      onProgress: onProgress)
         let result = await DocumentLibrary.shared.search(q)
 
         guard !result.hits.isEmpty else {
-            let body = result.indexed == 0
-                ? """
-                  Es ist noch kein Dokument eingelesen, deshalb findet die Inhaltssuche \
-                  nichts. Such mit „find" nach dem Dateinamen und lies die Datei mit \
-                  „read" — das liest sie ein und beim nächsten Mal wird sie gefunden.
-                  """
-                : """
-                  Keines der \(result.indexed) eingelesenen Dokumente enthält „\(q)".
-
-                  Das kann zweierlei heißen: es steht nirgends, oder das betreffende \
-                  Dokument ist noch nicht eingelesen. Nimm ein anderes Wort, oder such \
-                  mit „find" nach dem Dateinamen.
-                  """
+            var body = result.indexed == 0
+                ? "Im Ordner „\(label)“ ist kein lesbares Dokument."
+                : "Keines der \(result.indexed) Dokumente im Ordner enthält „\(q)“."
+            body += Self.coverage(read)
+            body += "\n\nNimm ein anderes Wort, bevor du sagst, es stehe nirgends — "
+                + "gesucht wird nach ganzen Wörtern und deren Anfängen."
             return (Self.fence(body, source: label), true, "0× \(q)")
         }
 
@@ -172,7 +176,8 @@ actor FolderReader {
                                              : "\(hit.locator), Abschnitt \(hit.block)"
             body += "\n\(hit.path) · \(where_)\n  \(hit.snippet)"
         }
-        body += "\n\n[Mehr davon: „read\" mit dem Pfad und der Abschnittsnummer.]"
+        body += Self.coverage(read)
+        body += "\n\n[Mehr davon: „read“ mit dem Pfad und der Abschnittsnummer.]"
         return (Self.fence(body, source: label), true, "\(result.hits.count)× \(q)")
     }
 
@@ -250,6 +255,21 @@ actor FolderReader {
         gelesen. Nur was unterhalb dieses Ordners liegt, ist zugänglich — eine andere \
         Schreibweise ändert daran nichts.
         """
+    }
+
+    /// What the search actually looked at, when that is not the whole folder.
+    ///
+    /// Silent on the ordinary case — everything was already current, nothing to report
+    /// — and explicit on the two that change what an absence of hits means.
+    private static func coverage(_ read: DocumentLibrary.Progress) -> String {
+        var notes: [String] = []
+        if read.parsed > 0 { notes.append("\(read.parsed) neu eingelesen") }
+        if read.stoppedEarly {
+            notes.append("**nicht zu Ende gelesen** — die Zeit lief ab, ein Teil des "
+                       + "Ordners ist noch nicht durchsucht")
+        }
+        guard !notes.isEmpty else { return "" }
+        return "\n\n(" + notes.joined(separator: ", ") + ")"
     }
 
     private static func fence(_ text: String, source: String) -> String {

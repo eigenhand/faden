@@ -275,9 +275,18 @@ schnell. Ein benanntes Dokument zu lesen parst bei Bedarf und merkt sich das Erg
 Die Inhaltssuche antwortet aus dem Index und parst nie — eine Frage ist nicht der
 Moment, vierhundert Dateien zu lesen; deshalb sagt die Antwort, wie viele Dokumente sie
 durchsucht hat und was zu tun ist, wenn der Fehlschlag „noch nicht eingelesen" bedeutet.
-Das Füllen des Index ist das dritte und wird aus den Einstellungen angestoßen: Einen
-Ordner einzulesen holt Dateien, die noch nicht heruntergeladen sind, und das ist bei
-getaktetem Netz die Entscheidung des Nutzers.
+Das Füllen des Index ist das dritte und geschieht, wenn das Modell im Inhalt sucht —
+nicht auf einem Zeitgeber und nicht auf Knopfdruck.
+
+An dieser Einordnung hängt die ganze Funktion. Ein Zeitgeber holte Dateien übers Netz,
+nach denen niemand gefragt hat. Ein Knopf in den Einstellungen ließe eine Suche
+stillschweigend aus dem beantworten, was zuletzt jemand zu drücken dachte. Bei der Suche
+fragt das Modell, im Auftrag einer gerade getippten Frage, und der Nutzer sieht dabei zu:
+Das Werkzeug meldet den Fortschritt über `TurnEvent.toolProgress` — deshalb gibt es
+diesen Fall, und deshalb nutzt ihn kein anderes Werkzeug. Gelesen wird gegen eine Uhr,
+und gewinnt die Uhr, sagt die Antwort das — eine Suche über den halben Ordner, die
+vorgibt, eine Suche über den Ordner zu sein, ist das Einzige, was sich vom Echten nicht
+unterscheiden lässt.
 
 Zwei Einzelheiten, die leicht falsch werden und teuer zu finden sind. Apples HTML-Leser
 steht auf WebKit und setzt sich auf die Hauptwarteschlange, egal von welchem Thread er
@@ -310,7 +319,7 @@ Begründung dabei.
 
 ## Prüfen
 
-223 Unittests, alle ohne Netz, dazu UI-Tests, die die echte App im Simulator fahren. Die
+234 Unittests, alle ohne Netz, dazu UI-Tests, die die echte App im Simulator fahren. Die
 Teilung ist Absicht: Was sich aus Werten entscheiden lässt, ist ein Unittest; was einen
 Bildschirm braucht, ist ein UI-Test; alles andere ist nicht geprüft und sagt das.
 

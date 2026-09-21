@@ -8,6 +8,15 @@ struct ToolActivity: Identifiable, Equatable {
     var summary: String
     var finished: Bool = false
     var ok: Bool = true
+    /// How far a long step is, when it knows. `nil` for everything that finishes
+    /// before a bar would have drawn.
+    var progress: Progress?
+
+    struct Progress: Equatable {
+        var done: Int
+        var total: Int
+        var fraction: Double { total > 0 ? min(1, Double(done) / Double(total)) : 0 }
+    }
 }
 
 /// Progress reported from background embedding work.
@@ -502,11 +511,16 @@ final class AppModel {
             if !state.liveTools.contains(where: { $0.id == id }) {
                 state.liveTools.append(ToolActivity(id: id, name: name, summary: "läuft"))
             }
+        case .toolProgress(let id, let done, let total):
+            if let i = state.liveTools.firstIndex(where: { $0.id == id }) {
+                state.liveTools[i].progress = .init(done: done, total: total)
+            }
         case .toolFinished(let id, let ok, let summary):
             if let i = state.liveTools.firstIndex(where: { $0.id == id }) {
                 state.liveTools[i].finished = true
                 state.liveTools[i].ok = ok
                 state.liveTools[i].summary = summary
+                state.liveTools[i].progress = nil
             }
         case .usage(let input, _):
             // The provider's own count beats the estimate.

@@ -23,8 +23,6 @@ struct SettingsView: View {
     @State private var folderError: String?
     /// How much of the folder has been read. `nil` until counted once.
     @State private var indexed: DocumentIndex.Summary?
-    @State private var reading = false
-    @State private var readProgress: DocumentLibrary.Progress?
 
     var body: some View {
         @Bindable var model = model
@@ -229,12 +227,6 @@ struct SettingsView: View {
                                         .buttonStyle(EHButtonStyle())
 
                                         if model.settings.folder.isSet {
-                                            Button(reading ? "Liest …" : "Dokumente einlesen") {
-                                                readDocuments()
-                                            }
-                                            .buttonStyle(EHButtonStyle())
-                                            .disabled(reading || !folderReachable)
-
                                             Button("Trennen") { disconnectFolder() }
                                                 .buttonStyle(EHButtonStyle())
                                         }
@@ -465,33 +457,16 @@ struct SettingsView: View {
     }
 
     /// What of the folder has been read into the index, in one sentence.
+    ///
+    /// A statement and not a button. Reading happens when the assistant is asked
+    /// something that needs it — that is the moment the work is worth doing, and the
+    /// moment somebody is watching. A button here would mean a search silently
+    /// answering from whatever was last read, however long ago that was.
     private var indexState: String {
-        if let readProgress {
-            return String(localized: "\(readProgress.parsed) gelesen, \(readProgress.skipped) schon aktuell, \(readProgress.failed) übersprungen.")
-        }
         guard let indexed, indexed.documents > 0 else {
-            return String(localized: "Noch nichts eingelesen. Bis dahin findet die Inhaltssuche nichts — einzelne Dateien liest der Assistent trotzdem auf Zuruf.")
+            return String(localized: "Noch nichts eingelesen. Der Assistent liest die Dokumente, sobald er das erste Mal im Inhalt sucht.")
         }
         return String(localized: "\(indexed.documents) Dokumente eingelesen und durchsuchbar.")
-    }
-
-    /// Reads what has changed since the last time.
-    ///
-    /// Started here and not on its own in the background: reading a folder fetches
-    /// files that are not downloaded yet, which on a metered connection is the user's
-    /// decision and not the app's.
-    private func readDocuments() {
-        guard let bookmark = model.settings.folder.bookmark,
-              let resolved = SharedFolder.resolve(bookmark) else { return }
-        reading = true
-        Task {
-            let root = resolved.url
-            let opened = root.startAccessingSecurityScopedResource()
-            defer { if opened { root.stopAccessingSecurityScopedResource() } }
-            readProgress = await DocumentLibrary.shared.index(root: root)
-            indexed = await DocumentLibrary.shared.summary()
-            reading = false
-        }
     }
 
     /// Disconnecting throws the index away with the folder.
@@ -503,7 +478,6 @@ struct SettingsView: View {
     private func disconnectFolder() {
         model.settings.folder = FolderConfig()
         folderError = nil
-        readProgress = nil
         indexed = nil
         model.persist()
         model.recomputeUsage()
@@ -539,7 +513,6 @@ struct SettingsView: View {
                 model.recomputeUsage()
                 // The index is keyed by paths relative to a root. A different root
                 // makes every one of them name something else.
-                readProgress = nil
                 indexed = nil
                 Task { await DocumentLibrary.shared.clear() }
             } catch {

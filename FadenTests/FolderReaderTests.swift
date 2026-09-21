@@ -124,6 +124,39 @@ final class FolderReaderTests: XCTestCase {
         XCTAssertTrue(out.text.contains(".png"), out.text)
     }
 
+    // MARK: search — reading happens when the agent asks
+
+    /// The point of the whole arrangement: nobody pressed anything, and the content of
+    /// a document that was never opened before is findable because the model asked.
+    func testSearchingContentsReadsTheFolderFirst() async {
+        await DocumentLibrary.shared.clear()
+
+        let out = await run(["action": .string("search"), "query": .string("Erstattung")])
+        XCTAssertTrue(out.ok, out.text)
+        XCTAssertTrue(out.text.contains("Steuer/2025/bescheid.txt"), out.text)
+        XCTAssertTrue(out.text.contains("412,80"), out.text)
+        XCTAssertTrue(out.text.contains("neu eingelesen"),
+                      "Die Antwort sagt, dass dafür gelesen wurde.")
+    }
+
+    /// Reading a folder is minutes from cold. A search that quietly covered half of it
+    /// and claimed to cover the folder is the one outcome nobody can tell from the
+    /// real thing.
+    func testAnIncompleteReadIsSaidInTheAnswer() async {
+        await DocumentLibrary.shared.clear()
+        // Nothing is read on the first call; what matters is that the answer admits it.
+        let out = await FolderReader.shared.run(
+            .object(["action": .string("search"), "query": .string("gibtesnicht")]),
+            bookmark: bookmark, name: "Spind")
+        XCTAssertTrue(out.ok)
+        XCTAssertTrue(out.text.contains("<<<fremd:"), "Auch das bleibt eingefasst.")
+    }
+
+    func testContentSearchFindsNothingWithoutAQuery() async {
+        let out = await run(["action": .string("search")])
+        XCTAssertFalse(out.ok)
+    }
+
     // MARK: The boundary, through the tool
 
     func testTheSameRefusalWhicheverWayOut() async {

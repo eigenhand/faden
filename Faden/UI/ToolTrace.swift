@@ -7,6 +7,9 @@ struct ToolStep: Identifiable, Equatable {
     var detail: String
     var finished: Bool = true
     var ok: Bool = true
+    /// How far a long step is. `nil` for everything that finishes before a bar would
+    /// have drawn — which is every tool but reading a folder.
+    var progress: ToolActivity.Progress?
 
     /// What to show beside a step's name — the query, the address, the note.
     static func detail(for name: String, input: JSONValue) -> String {
@@ -103,7 +106,8 @@ struct ToolTrace: View {
                         }
                         ForEach(steps) { step in
                             ToolChip(name: step.name, detail: step.detail,
-                                     finished: step.finished, ok: step.ok)
+                                     finished: step.finished, ok: step.ok,
+                                     progress: step.progress)
                         }
                     }
                     .transition(.opacity)

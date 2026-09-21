@@ -102,6 +102,10 @@ actor DocumentLibrary {
         var skipped: Int
         var failed: Int
         var total: Int
+        /// The budget ran out before the folder did. Said in the answer rather than
+        /// swallowed: a search over half a folder that claims to be a search over the
+        /// folder is the one outcome nobody can tell from the real thing.
+        var stoppedEarly = false
     }
 
     private var indexing = false
@@ -117,7 +121,9 @@ actor DocumentLibrary {
     /// orders of magnitude — a text note is instant, twenty OCR pages is half a minute
     /// — so counting files would either stop after nothing or run for an hour.
     @discardableResult
-    func index(root: URL, budget: TimeInterval = 60) async -> Progress {
+    func index(root: URL, budget: TimeInterval = 60,
+               onProgress: @escaping @Sendable (Int, Int) async -> Void = { _, _ in })
+    async -> Progress {
         guard !indexing else { return Progress(parsed: 0, skipped: 0, failed: 0, total: 0) }
         indexing = true
         defer { indexing = false }
@@ -127,11 +133,14 @@ actor DocumentLibrary {
         var progress = Progress(parsed: 0, skipped: 0, failed: 0, total: files.count)
         var seen: Set<String> = []
 
-        for (path, url) in files {
+        // Reported at the top of each turn rather than the bottom: the body has three
+        // ways out, and a detached task per file would race the counter it reads.
+        for (i, (path, url)) in files.enumerated() {
+            await onProgress(i, files.count)
             seen.insert(path)
             guard let stamp = Self.stamp(of: url) else { progress.failed += 1; continue }
             if await index.isFresh(path, stamp) { progress.skipped += 1; continue }
-            guard Date() < deadline else { continue }
+            guard Date() < deadline else { progress.stoppedEarly = true; continue }
 
             if let parsed = await Self.parseCoordinated(url, name: (path as NSString).lastPathComponent) {
                 await index.store(parsed, at: path, stamp: stamp)
@@ -142,6 +151,8 @@ actor DocumentLibrary {
             // A walk of a large folder should not hold the actor against a question.
             await Task.yield()
         }
+
+        await onProgress(files.count, files.count)
 
         // Only when the walk was complete: pruning after a walk that stopped at the
         // budget would throw away everything it did not reach.

@@ -105,7 +105,9 @@ Numbers, Keynote, OpenDocument, EPUB, RTF, HTML, Text- und Quelldateien sowie Te
 Bildern. Gelesen wird durchgehend mit Apple-Frameworks — PDFKit, `NSAttributedString`,
 Vision, `XMLParser` —, und das Ergebnis liegt in einem lokalen SQLite-Index, verknüpft
 mit der Datei und ihrem Änderungsdatum: einmal gelesen, neu gelesen, sobald sich etwas
-ändert. Der Assistent durchsucht damit den **Inhalt** des ganzen Ordners und bekommt
+ändert. Gelesen wird, wenn der Assistent das erste Mal im Inhalt sucht — nicht auf einem
+Zeitgeber und nicht auf Knopfdruck —, und ein Fortschrittsbalken zeigt es. Danach
+durchsucht er den **Inhalt** des ganzen Ordners und bekommt
 Dokument, Seite oder Blatt und die Textstelle zurück — eine Antwort kann also „S. 3 des
 Bescheids" nennen statt „irgendwo in der Datei".
 
