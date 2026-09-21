@@ -81,6 +81,24 @@ not a list of notes. The system is a port of [cognee](https://github.com/topoter
   step.
 - **Bi-temporal**: a superseded fact is closed (`validTo`), not deleted.
 
+**The inventory from Fundus.** Connect Fundus in the settings and the assistant can
+look into your stock: where a thing is, how much of it there is, what stands in a
+given room or shelf. It reads `inventory.json` out of the App Group the two apps
+share — read only, so entering and changing still happens in Fundus, and it says so
+rather than promising otherwise. A missing quantity is passed on as uncounted rather
+than as zero, and a number a model read off a label keeps the caveat that it was read.
+Until it is connected the tool is not offered at all, and without Fundus on the device
+there is nothing to connect.
+
+**Files out of Spind.** Point the app at a folder in the Files app — one out of Spind,
+or iCloud Drive, or the device — and the assistant can look in it: list what is there,
+find a file by name across every subfolder, and read text files, source files and PDFs.
+Read only: it cannot write, rename or delete, and it says so instead of promising
+otherwise. Paths that lead out of the folder are refused, and everything it reads is
+fenced as foreign material — a file name is attacker chosen too. A listing says per
+entry whether an item is still waiting to be downloaded, because that decides whether
+reading it is free.
+
 **Resilient.** Embedding endpoints are often rate-limited, and that is the normal case,
 not the exception. Ingestion therefore never blocks on it: extracted facts are stored
 even without a vector — the model call that found them is paid for and should not go
@@ -206,7 +224,7 @@ bundle ID `dev.eigenhand.perbu`, create the app record in App Store Connect, and
 | `Media/` | Image preparation and the vision check |
 | `Speech/` | Dictation, recording, your own STT/TTS endpoints, speech output |
 | `Memory/` | The knowledge graph after cognee: identity, extraction, embedding, triple search |
-| `Storage/` | Keychain and file persistence |
+| `Storage/` | Keychain, file persistence, read access to Fundus's inventory and to the shared folder |
 | `UI/` | Chat, context bar, settings, setup assistant |
 
 Keys live in the device's keychain, everything else as JSON in Application Support.

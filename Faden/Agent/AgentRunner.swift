@@ -84,7 +84,8 @@ struct AgentRunner {
     }
 
     static func systemPrompt(settings: AppSettings, searchAvailable: Bool,
-                             providerName: String?) -> String {
+                             providerName: String?, inventoryAvailable: Bool,
+                             folderAvailable: Bool) -> String {
         let persona = settings.persona
         var s = """
         Du bist \(persona.displayName), ein Assistent auf dem iPhone deines Nutzers. Du \
@@ -126,8 +127,6 @@ struct AgentRunner {
             - Du nennst deine Quellen im Fließtext mit dem Namen der Seite und der URL. \
             Bei widersprüchlichen Quellen sagst du, dass sie sich widersprechen.
             - Findest du nichts Belastbares, sagst du das, statt zu raten.
-
-            \(UntrustedContent.rule)
             """
         } else {
             s += """
@@ -154,6 +153,50 @@ struct AgentRunner {
             Job — oder bittet dich jemand, etwas zu vergessen, räumst du es auf: \
             „forget“ für den alten Eintrag, danach remember für das, was jetzt gilt.
             """
+        }
+
+        if inventoryAvailable {
+            s += """
+
+
+            Zum Bestand in Fundus:
+            - Fragt jemand, wo etwas liegt, wie viel er davon hat oder was an einem Ort \
+            steht, siehst du mit inventory nach, statt aus dem Gespräch zu schließen. \
+            Ein Bestand ist genau die Sorte Frage, bei der eine plausible Antwort \
+            schlechter ist als keine.
+            - Kennst du die Ortsnamen nicht, holst du sie dir mit „places“ und suchst \
+            danach gezielt.
+            - Was dort nicht steht, ist nicht „nicht vorhanden“, sondern nicht \
+            eingetragen. Den Unterschied sagst du.
+            - Du kannst nur lesen. Bittet dich jemand, etwas einzutragen oder zu ändern, \
+            sagst du, dass das in Fundus selbst geschieht.
+            """
+        }
+
+        if folderAvailable {
+            s += """
+
+
+            Zum freigegebenen Ordner:
+            - Der Nutzer hat dir einen Ordner geöffnet, meist aus Spind. Geht es um eine \
+            Datei, ein Dokument oder etwas, das „bei mir liegt", siehst du mit files nach, \
+            statt zu fragen, wo es liegt.
+            - Kennst du den Namen ungefähr, nimmst du „find". Dich Ebene für Ebene durch \
+            „list" zu hangeln kostet je eine Runde.
+            - Du liest nur, was die Frage braucht. Einen Ordner der Reihe nach \
+            durchzulesen ist keine Recherche, sondern verbraucht den Kontext.
+            - Du kannst nichts schreiben, umbenennen oder löschen. Wird das verlangt, \
+            sagst du es, statt es zu versprechen.
+            """
+        }
+
+        // Once, and only when something can actually bring foreign text in. The
+        // paragraph explains marks — in a build where nothing produces them it would be
+        // a rule about an event that cannot occur, and the room it takes is paid for.
+        let fenced = Tools.fencedTools(searchEnabled: searchAvailable,
+                                       folderEnabled: folderAvailable)
+        if !fenced.isEmpty {
+            s += "\n\n\n" + UntrustedContent.rule(for: fenced)
         }
 
         s += """
@@ -211,6 +254,19 @@ struct AgentRunner {
             }
             return await Self.runMemory(input, memory: settings.memory, embeddingKey: embeddingKey)
 
+        case "inventory":
+            guard settings.inventoryEnabled, FundusInventory.isPresent else {
+                return ("Fehler: Es ist kein Bestand erreichbar.", false, "nicht erreichbar")
+            }
+            return await Self.runInventory(input)
+
+        case "files":
+            guard let bookmark = settings.folder.bookmark else {
+                return ("Fehler: Es ist kein Ordner freigegeben.", false, "nicht eingerichtet")
+            }
+            return await FolderReader.shared.run(input, bookmark: bookmark,
+                                                 name: settings.folder.name)
+
         case "remember":
             guard let note = input["note"]?.stringValue, !note.isEmpty else {
                 return ("Fehler: Es wurde keine Notiz übergeben.", false, "leer")
@@ -220,7 +276,9 @@ struct AgentRunner {
         default:
             // Naming what does exist turns a dead end into a retry the model can act on.
             let available = Tools.available(searchEnabled: settings.searchEnabled && settings.activeRecipe != nil,
-                                        memoryEnabled: settings.memory.isReady)
+                                        memoryEnabled: settings.memory.isReady,
+                                        inventoryEnabled: settings.inventoryEnabled && FundusInventory.isPresent,
+                                        folderEnabled: settings.folder.isSet)
                 .map(\.name).joined(separator: ", ")
             return ("Es gibt kein Werkzeug namens „\(name)“. Verfügbar sind: \(available).",
                     false, "unbekannt: \(name)")
@@ -365,6 +423,58 @@ struct AgentRunner {
         return out.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    // MARK: The inventory tool
+
+    /// Reads Fundus's stock. Thin on purpose — searching and rendering sit with the
+    /// data in `FundusInventory`, where they can be tested without a turn.
+    ///
+    /// Not fenced with `UntrustedContent`, and that is a decision rather than an
+    /// oversight. The fence says in so many words that what follows comes from the net,
+    /// and for this it would be false: the inventory is local, it is the user's own,
+    /// and nothing enters it in Fundus without a tick. Fencing it anyway would buy no
+    /// protection and spend the one thing the fence lives on — that it means something
+    /// where it stands. The day a tool writes back into the inventory, or pulls text
+    /// that nobody confirmed into it, this sentence has to be read again.
+    private static func runInventory(_ input: JSONValue) async
+    -> (text: String, ok: Bool, summary: String) {
+        let inventory = await FundusReader.shared.inventory()
+        let action = input["action"]?.stringValue ?? "search"
+        let place = input["place"]?.stringValue
+        let query = input["query"]?.stringValue ?? ""
+
+        switch action {
+        case "places":
+            return (inventory.renderPlaces(), true,
+                    inventory.places.isEmpty ? "keine Orte" : "\(inventory.places.count) Orte")
+
+        case "search":
+            guard !inventory.items.isEmpty else {
+                return ("Der Bestand ist leer — in Fundus ist noch nichts eingetragen.",
+                        true, "leer")
+            }
+            // A place the inventory does not know is worth its own answer: the model
+            // asked for a shelf by a name it guessed, and the list of real names turns
+            // that into one more call instead of a wrong "nothing there".
+            if let place, !place.trimmingCharacters(in: .whitespaces).isEmpty,
+               inventory.places(matching: place).isEmpty {
+                return ("""
+                    Einen Ort „\(place)“ gibt es im Bestand nicht.
+
+                    \(inventory.renderPlaces())
+                    """, false, "Ort unbekannt: \(place)")
+            }
+            let lookup = inventory.search(query, place: place)
+            let text = FundusInventory.render(lookup, query: query, place: place)
+            let label = query.trimmingCharacters(in: .whitespaces).isEmpty
+                ? (place ?? "alles") : query
+            return (text, true, "\(lookup.total)× \(label)")
+
+        default:
+            return ("Es gibt keine Aktion „\(action)“. Möglich sind: search, places.",
+                    false, "unbekannt: \(action)")
+        }
+    }
+
     // MARK: Ausweichen
 
     // Which model handles a turn and what it falls back to now lives in `LLMConfig` —
@@ -467,15 +577,21 @@ struct AgentRunner {
         // Apple's model has no tools, and a prompt describing some makes it talk
         // about them instead of answering.
         let onDevice = config.wireFormat == .appleOnDevice
+        let inventoryAvailable = settings.inventoryEnabled && FundusInventory.isPresent
+        let folderAvailable = settings.folder.isSet
         let tools = onDevice ? [] : Tools.available(
             searchEnabled: settings.searchEnabled && settings.activeRecipe != nil,
-            memoryEnabled: settings.memory.isReady)
+            memoryEnabled: settings.memory.isReady,
+            inventoryEnabled: inventoryAvailable,
+            folderEnabled: folderAvailable)
         let system = onDevice
             ? Self.compactSystemPrompt(settings: settings)
             : Self.systemPrompt(
                 settings: settings,
                 searchAvailable: settings.searchEnabled && settings.activeRecipe != nil,
-                providerName: settings.activeRecipe?.name)
+                providerName: settings.activeRecipe?.name,
+                inventoryAvailable: inventoryAvailable,
+                folderAvailable: folderAvailable)
         let provider = ProviderFactory.make(for: config.wireFormat)
 
         // Does an image hang on this turn? Asked across the whole history and not

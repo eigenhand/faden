@@ -18,6 +18,14 @@ struct ToolStep: Identifiable, Equatable {
                                ?? input["fact"]?.stringValue
                                ?? input["id"]?.stringValue
                                ?? input["action"]?.stringValue ?? ""
+        // The place is the more telling of the two: "Keller" says what was looked at,
+        // where a bare search term says only that something was.
+        case "inventory":  return input["place"]?.stringValue
+                               ?? input["query"]?.stringValue
+                               ?? input["action"]?.stringValue ?? ""
+        case "files":      return input["path"]?.stringValue
+                               ?? input["query"]?.stringValue
+                               ?? input["action"]?.stringValue ?? ""
         default:           return input.compactDescription
         }
     }
@@ -169,6 +177,8 @@ struct ToolTrace: View {
         case "fetch_page": return "Liest eine Seite"
         case "remember":   return "Merkt sich etwas"
         case "memory":     return "Sieht im Gedächtnis nach"
+        case "inventory":  return "Sieht im Bestand nach"
+        case "files":      return "Sieht im Ordner nach"
         default:           return "Arbeitet"
         }
     }
@@ -189,6 +199,10 @@ struct ToolTrace: View {
             case "remember":   return n == 1 ? "1 Notiz" : "\(n) Notizen"
             case "memory":     return n == 1 ? "Im Gedächtnis nachgesehen"
                                              : "\(n)× im Gedächtnis nachgesehen"
+            case "inventory":  return n == 1 ? "Im Bestand nachgesehen"
+                                             : "\(n)× im Bestand nachgesehen"
+            case "files":      return n == 1 ? "1 Datei angesehen"
+                                             : "\(n) Dateien angesehen"
             default:           return n == 1 ? name : "\(n)× \(name)"
             }
         }

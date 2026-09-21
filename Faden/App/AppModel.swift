@@ -832,15 +832,21 @@ final class AppModel {
         // travel at all — with a context window of 4,000 tokens that is the difference
         // between “half full” and “nearly empty”.
         let onDevice = config.wireFormat == .appleOnDevice
+        let inventoryAvailable = settings.inventoryEnabled && FundusInventory.isPresent
+        let folderAvailable = settings.folder.isSet
         let tools = onDevice ? [] : Tools.available(
             searchEnabled: settings.searchEnabled && settings.activeRecipe != nil,
-            memoryEnabled: settings.memory.isReady)
+            memoryEnabled: settings.memory.isReady,
+            inventoryEnabled: inventoryAvailable,
+            folderEnabled: folderAvailable)
         let system = onDevice
             ? AgentRunner.compactSystemPrompt(settings: settings)
             : AgentRunner.systemPrompt(
                 settings: settings,
                 searchAvailable: settings.searchEnabled && settings.activeRecipe != nil,
-                providerName: settings.activeRecipe?.name)
+                providerName: settings.activeRecipe?.name,
+                inventoryAvailable: inventoryAvailable,
+                folderAvailable: folderAvailable)
         let estimate = TokenCounter.projectedInput(
             messages: conversation.messages, system: system, tools: tools)
 

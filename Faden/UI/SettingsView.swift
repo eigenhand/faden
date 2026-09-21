@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
@@ -12,6 +13,14 @@ struct SettingsView: View {
     /// activation says steps are most expensive. The back button still leads to the
     /// full list, so nothing is hidden — it is only reordered.
     @State private var goStraightToProvider = false
+    /// `nil` until it has been counted once — the file lies in another app's folder and
+    /// is read from disk, so the figure arrives after the screen does.
+    @State private var inventoryCount: Int?
+    @State private var choosingFolder = false
+    /// What went wrong while adopting a folder, if anything did. Shown in place of the
+    /// state line: a picker that closes and leaves everything as it was is the one
+    /// outcome the user cannot tell from a successful one.
+    @State private var folderError: String?
 
     var body: some View {
         @Bindable var model = model
@@ -173,6 +182,60 @@ struct SettingsView: View {
                             .buttonStyle(EHTap())
                         }
 
+                        // Nothing to set up here, and that is the whole point of the
+                        // section: whether it works depends on whether Fundus is on
+                        // this device, not on anything typed here. So the line below
+                        // the switch says which of the two cases holds — otherwise the
+                        // only way to find out would be to ask the assistant and see.
+                        // One section, because the rule is one rule: a tool reaches
+                        // the model only when the service behind it is connected here.
+                        // Two sections in two shapes — a switch over there, a picker
+                        // over here — implemented the same rule and showed none.
+                        section("Dienste") {
+                            Text("Ein Werkzeug bekommt der Assistent erst, wenn der Dienst hier verbunden ist. Nicht verbunden heißt: es wird ihm gar nicht erst angeboten.")
+                                .font(.eh(12, .caption)).foregroundStyle(EH.muted)
+
+                            serviceRow(title: "Fundus",
+                                       state: inventoryState,
+                                       connected: model.settings.inventoryEnabled && FundusInventory.isPresent) {
+                                Toggle(isOn: $model.settings.inventoryEnabled) {
+                                    Text("Bestand lesen").font(EH.bodySmall).foregroundStyle(EH.navy)
+                                }
+                                .tint(EH.navy)
+                                .onChange(of: model.settings.inventoryEnabled) { _, _ in
+                                    model.persist()
+                                    model.recomputeUsage()
+                                }
+                            }
+
+                            serviceRow(title: model.settings.folder.isSet
+                                              ? model.settings.folder.name : "Ordner",
+                                       state: folderState,
+                                       connected: model.settings.folder.isSet && folderReachable) {
+                                HStack(spacing: 10) {
+                                    Button(model.settings.folder.isSet ? "Anderen wählen"
+                                                                       : "Ordner wählen") {
+                                        choosingFolder = true
+                                    }
+                                    .buttonStyle(EHButtonStyle())
+
+                                    if model.settings.folder.isSet {
+                                        Button("Trennen") {
+                                            model.settings.folder = FolderConfig()
+                                            folderError = nil
+                                            model.persist()
+                                            model.recomputeUsage()
+                                        }
+                                        .buttonStyle(EHButtonStyle())
+                                    }
+                                }
+                            }
+                        }
+                        .fileImporter(isPresented: $choosingFolder,
+                                      allowedContentTypes: [.folder]) { result in
+                            adoptFolder(result)
+                        }
+
                         section("Kontext") {
                             // State and manual compaction — a bar at the bottom edge
                             // used to carry this. With a window of a million tokens it
@@ -306,6 +369,23 @@ struct SettingsView: View {
                     goStraightToProvider = true
                 }
             }
+            // Deliberately past the cache: whoever opens this screen has usually just
+            // been in Fundus, and a figure from before that visit would be the one
+            // thing here that is wrong.
+            .task {
+                // A moved folder still resolves, for a while. Renewing it here is the
+                // one moment where the screen is open and the write is natural —
+                // otherwise the bookmark expires quietly and the failure surfaces weeks
+                // later, mid-turn, for a folder the user can plainly see in Files.
+                if let old = model.settings.folder.bookmark,
+                   let fresh = SharedFolder.renewedBookmark(for: old) {
+                    model.settings.folder.bookmark = fresh
+                    model.persist()
+                }
+                guard FundusInventory.isPresent else { return }
+                await FundusReader.shared.forget()
+                inventoryCount = await FundusReader.shared.inventory().items.count
+            }
             .navigationTitle("Einstellungen")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -320,6 +400,87 @@ struct SettingsView: View {
     private var personaSubtitle: String {
         let p = model.settings.persona
         return [p.address.label, p.length.label, p.tone.label].joined(separator: " · ")
+    }
+
+    /// Which of the three cases holds, in one sentence.
+    ///
+    /// The distinction between "no App Group" and "no inventory" matters: the first is
+    /// a property of the build and nothing the user can do anything about, the second
+    /// goes away by itself as soon as something stands in Fundus. One sentence for both
+    /// would have to be vague enough to cover them, and would then help with neither.
+    /// Which of the four cases holds, in one sentence.
+    ///
+    /// Four and not one, because they call for different things from the reader: two
+    /// are theirs to change, one goes away by itself once Fundus has an entry, and one
+    /// is a property of the build that nothing on this screen can touch. A sentence
+    /// vague enough to cover all four would help with none.
+    private var inventoryState: String {
+        guard SharedContainer.isAvailable else {
+            return String(localized: "Der gemeinsame Ordner der eigenhand-Apps ist in diesem Build nicht freigeschaltet.")
+        }
+        guard FundusInventory.isPresent else {
+            return String(localized: "Kein Bestand gefunden. Es gibt ihn, sobald in Fundus auf diesem Gerät der erste Eintrag steht.")
+        }
+        guard model.settings.inventoryEnabled else {
+            return String(localized: "Nicht verbunden. Der Bestand liegt bereit, der Assistent sieht ihn nicht.")
+        }
+        guard let inventoryCount else { return String(localized: "Verbunden.") }
+        return String(localized: "Verbunden · \(inventoryCount) Dinge im Bestand.")
+    }
+
+    /// Whether the stored bookmark still leads anywhere.
+    ///
+    /// Asked of the bookmark rather than remembered from the day it was made: the folder
+    /// can be deleted, renamed out from under it, or its app uninstalled, and none of
+    /// those events reach this app. A green dot that meant "worked once" would be the
+    /// most misleading thing on this screen.
+    private var folderReachable: Bool {
+        guard let bookmark = model.settings.folder.bookmark else { return false }
+        return SharedFolder.resolve(bookmark) != nil
+    }
+
+    private var folderState: String {
+        if let folderError { return folderError }
+        guard model.settings.folder.isSet else {
+            return String(localized: "Nicht verbunden. Gib einen Ordner frei — etwa einen aus Spind —, und der Assistent kann darin lesen.")
+        }
+        guard folderReachable else {
+            return String(localized: "Nicht mehr erreichbar — umbenannt, gelöscht, oder die App dahinter ist weg. Wähl ihn neu.")
+        }
+        return String(localized: "Verbunden · nur lesen. Schreiben, umbenennen und löschen kann der Assistent nicht.")
+    }
+
+    /// Turns the picked folder into something that survives a restart.
+    ///
+    /// The bookmark has to be made while the scope is open, and that is the whole of
+    /// the ceremony below: a URL from the picker is readable now and meaningless after
+    /// the next launch, and a bookmark taken without the scope open is taken of
+    /// something the app is not allowed to see.
+    private func adoptFolder(_ result: Result<URL, Error>) {
+        folderError = nil
+        switch result {
+        case .failure(let error):
+            folderError = error.localizedDescription
+        case .success(let url):
+            let opened = url.startAccessingSecurityScopedResource()
+            defer { if opened { url.stopAccessingSecurityScopedResource() } }
+            do {
+                var config = FolderConfig()
+                config.bookmark = try url.bookmarkData()
+                // The name the Files app shows, not the directory on disk. The two come
+                // apart exactly where it matters: the root of a File Provider is called
+                // something like "File Provider Storage" underneath, and putting that
+                // on the screen would name a folder the user has never seen.
+                config.name = (try? url.resourceValues(forKeys: [.localizedNameKey]))?
+                    .localizedName ?? url.lastPathComponent
+                config.chosenAt = Date()
+                model.settings.folder = config
+                model.persist()
+                model.recomputeUsage()
+            } catch {
+                folderError = String(localized: "Der Ordner ließ sich nicht dauerhaft merken: \(error.localizedDescription)")
+            }
+        }
     }
 
     private var speechSubtitle: String {
@@ -359,6 +520,30 @@ struct SettingsView: View {
 
     private func emptyRow(_ text: String) -> some View {
         Text(text).font(EH.bodySmall).foregroundStyle(EH.muted)
+    }
+
+    /// One connected service: the dot says whether a tool is actually released, the
+    /// line below says why when it is not, and the control is whatever connecting
+    /// happens to look like for this one.
+    ///
+    /// Not `row(…)`: that one carries a chevron and belongs to a `NavigationLink`. A
+    /// chevron that leads nowhere is the kind of small lie that costs somebody a tap
+    /// every time they look at this screen.
+    private func serviceRow<C: View>(title: String, state: String, connected: Bool,
+                                     @ViewBuilder control: () -> C) -> some View {
+        HairlineCard(padding: 14) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 10) {
+                    Circle()
+                        .fill(connected ? EH.good : EH.hairStrong)
+                        .frame(width: 6, height: 6)
+                    Text(title).font(EH.body).foregroundStyle(EH.navy)
+                    Spacer(minLength: 0)
+                }
+                Text(state).font(.eh(12, .caption)).foregroundStyle(EH.muted)
+                control()
+            }
+        }
     }
 
     private func row(title: String, subtitle: String, active: Bool) -> some View {

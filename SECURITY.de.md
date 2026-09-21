@@ -14,12 +14,26 @@ Faden bringt keine Infrastruktur mit. Es gibt keinen Server von mir, keine Telem
 und kein Konto. Was hinausgeht, geht an Endpoints, die der Nutzer selbst eingetragen
 hat:
 
+Jede Zeile unterhalb der ersten setzt einen Dienst voraus, den der Nutzer in den
+Einstellungen verbunden hat — einen Suchanbieter, ein Einbettungsmodell, Fundus, einen
+Ordner. Nicht verbunden heißt: das Werkzeug steht gar nicht in der Anfrage, das Modell
+kann also weder danach greifen noch dazu überredet werden. Immer dabei ist nur
+`remember`, das nichts erreicht: Es schreibt eine Notiz in das Gespräch, zu dem es
+ohnehin gehört.
+
 | Wohin | Was | Wann |
 | --- | --- | --- |
 | Modell-Endpoint | Der ganze Gesprächsverlauf, Bilder, Werkzeugergebnisse | Bei jedem Zug |
 | Suchanbieter | Die Suchanfrage | Wenn das Modell sucht |
 | Beliebige Webseiten | Nichts ausser einem Seitenabruf | Wenn das Modell eine Seite lädt |
 | Einbettungs-Endpoint | Text, aus dem Erinnerungen werden | Wenn das Gedächtnis an ist |
+| Modell-Endpoint | Einträge aus dem Fundus-Bestand | Wenn das Modell im Bestand nachsieht |
+| Modell-Endpoint | Namen und Inhalte von Dateien aus dem freigegebenen Ordner | Wenn das Modell im Ordner nachsieht |
+
+Der Bestand ist das Einzige, was Faden liest und nicht selbst erzeugt hat. Er bleibt
+auf dem Gerät, bis das Modell danach greift, und hinaus gehen dann die Einträge, die
+gepasst haben — nicht der ganze Bestand. Nichts davon geht irgendwohin, bevor Fundus in den
+Einstellungen verbunden ist; unverbunden wird das Werkzeug gar nicht erst angeboten.
 
 Alles andere – Verlauf, Einstellungen, Erinnerungen – liegt in Application Support auf
 dem Gerät.
@@ -95,6 +109,21 @@ Ende nur, ihm keine gefährlichen Werkzeuge zu geben – und die gefährlichsten
 Faden nicht: es schreibt keine Dateien, verschickt nichts und kauft nichts. Das
 Schlimmste, was ein erfolgreicher Angriff erreicht, ist ein falscher Eintrag im
 Gedächtnis oder eine falsche Auskunft.
+
+**Ein Ordner ist so vertrauenswürdig wie sein Inhalt.** Das Werkzeug `files` liest,
+worauf der Nutzer es gerichtet hat, und ein synchronisierter Ordner enthält, was der
+Server enthält — auch das, was jemand anderes über eine von Spinds Freigaben
+hineingelegt hat. Alles daraus wird eingefasst, die Auflistung eingeschlossen, denn auch
+ein Dateiname ist vom Angreifer gewählt. Das bringt den Unterschied zwischen ein
+Dokument lesen und ihm folgen; eine Garantie ist es nicht, aus dem Grund im Absatz
+darüber. Klein bleibt die Folge dadurch, dass das Werkzeug nicht schreiben kann: Das
+Schlimmste, was ein präpariertes Dokument erreicht, ist eine falsche Auskunft über eine
+andere Datei.
+
+**Ein Pfad wird eingesperrt, nicht bereinigt.** `..`, absolute Pfade und Symlinks, die
+aus dem Ordner herausführen, werden abgewiesen, und jeder Weg hinaus bekommt denselben
+Satz — damit die Abweisungen keine Karte der Grenze sind. Innerhalb des Ordners gibt es
+keine weitere Einschränkung: Wer den Ordner lesen darf, darf ihn ganz lesen.
 
 **Kein Schutz gegen ein bösartiges Modell.** Der Endpoint bekommt den ganzen Verlauf
 und antwortet frei. Wer einen Endpoint einträgt, dem er nicht traut, hat ein anderes

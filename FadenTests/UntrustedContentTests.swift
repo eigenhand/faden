@@ -76,7 +76,9 @@ final class UntrustedContentTests: XCTestCase {
         var settings = AppSettings()
         settings.searchEnabled = true
         let withSearch = AgentRunner.systemPrompt(settings: settings, searchAvailable: true,
-                                                  providerName: "Brave")
+                                                  providerName: "Brave",
+                                                  inventoryAvailable: false,
+                                                  folderAvailable: false)
         XCTAssertTrue(withSearch.contains("<<<fremd:"),
                       "Without the rule the fencing is only decoration.")
         XCTAssertTrue(withSearch.contains("Material"))
@@ -84,7 +86,9 @@ final class UntrustedContentTests: XCTestCase {
         // Without tools that bring foreign text in, the rule is needless room in the
         // context — and room in the context is paid for.
         let withoutSearch = AgentRunner.systemPrompt(settings: settings, searchAvailable: false,
-                                                     providerName: nil)
+                                                     providerName: nil,
+                                                     inventoryAvailable: false,
+                                                     folderAvailable: false)
         XCTAssertFalse(withoutSearch.contains("<<<fremd:"))
     }
 }

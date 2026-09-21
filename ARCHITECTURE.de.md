@@ -149,13 +149,88 @@ Fähigkeit verloren hat, darf die App nicht brechen.
 
 Zwei Dateien ziehen sie, und beide liegen in `Agent/`.
 
-`UntrustedContent` fasst alles ein, was aus `web_search` und `fetch_page` zurückkommt,
-mit einer je Aufruf gewürfelten Kennung. `FetchTarget` entscheidet, welche Adressen ein
-Werkzeug überhaupt laden darf, einschließlich jeder Weiterleitung.
+`UntrustedContent` fasst alles ein, was aus `web_search`, `fetch_page` und `files`
+zurückkommt, mit einer je Aufruf gewürfelten Kennung. `FetchTarget` entscheidet, welche
+Adressen ein Werkzeug überhaupt laden darf, einschließlich jeder Weiterleitung.
+
+Die Einfassung nennt, woher der Text stammt, und das ist ein Parameter statt eines
+Satzes. Lange war das Netz der einzige Fall; eine Datei aus einem synchronisierten
+Ordner ist genauso fremd — aber eine Einfassung, die sie zur Seite erklärte, sagte
+ausgerechnet in dem Satz etwas Unwahres, der zur Vorsicht auffordert.
 
 Beide sind reine Funktionen über Zeichenketten und Adressen, beide haben Tests, und
 keine weiß, was mit ihrem Ergebnis geschieht. Die Einzelheiten und — wichtiger — die
 Grenzen stehen in [SECURITY.de.md](SECURITY.de.md).
+
+## Fundus' Bestand lesen
+
+`Storage/FundusInventory.swift` liest `inventory.json` aus der gemeinsamen App Group
+`group.dev.eigenhand.shared`, in die Fundus schreibt. Nur lesen, und das ist die Form
+der Sache und kein erster Schritt: Fundus hält seinen ganzen Bestand im Speicher und
+schreibt die Datei vollständig heraus. Eine zweite App, die hineinschreibt, heißt
+Last-writer-wins — und was verliert, ist das von Hand Eingetragene.
+
+Drei Entscheidungen, die ihre Zeilen wert sind:
+
+**Faden legt dort nichts an.** Fundus' eigener `SharedContainer` erzeugt seinen Ordner
+beim ersten Zugriff, weil er schreiben wird. Täte Faden dasselbe, stünde auf jedem
+Gerät ohne Fundus ein leerer `Fundus/`-Ordner — und die Frage „gibt es einen Bestand"
+hieße ja und lieferte dann nichts.
+
+**Eine zweite, schmalere Kopie des Modells statt einer gemeinsamen Bibliothek.**
+Dasselbe Argument wie bei den zwei Stringkatalogen. Schmaler ist der Punkt: Die Datei
+trägt je Eintrag einen Einbettungsvektor, und Faden kann damit nichts anfangen.
+
+**Nicht mit `UntrustedContent` eingefasst.** Die Einfassung sagt wörtlich, dass der
+folgende Text aus dem Netz stammt, und das wäre hier falsch — der Bestand ist lokal, er
+gehört dem Nutzer, und in Fundus landet nichts darin ohne Häkchen. Ihn trotzdem
+einzufassen brächte keinen Schutz und verbrauchte das Einzige, wovon die Einfassung
+lebt: dass sie etwas bedeutet, wo sie steht. An dem Tag, an dem ein Werkzeug
+zurückschreibt, ist dieser Satz neu zu lesen.
+
+Die Suche vergleicht Wörter und sagt das. Fundus durchsucht seinen Bestand sinngemäß,
+mit einer Einbettung je Eintrag; dasselbe hier bräuchte einen zweiten
+Einbettungs-Endpoint samt Schlüssel — und eine Suche, die stillschweigend zwischen zwei
+Vektorräumen vergleicht, ist schlechter als eine, die schlicht Wörter trifft.
+
+## Der Ordner
+
+`Storage/SharedFolder.swift` liest aus einem Ordner, den der Nutzer in der Dateien-App
+ausgewählt hat — gedacht für einen aus Spind, das eine Storage Box als File Provider
+einhängt. Nichts im Code weiß von Spind, und das mit Absicht: derselbe Weg bedient
+iCloud Drive oder einen Ordner auf dem Gerät, und ein Werkzeug, das an einer
+Schwester-App hängt, ist eines, das ohne sie zerbricht. `Agent/FolderReader.swift` ist
+das Werkzeug darauf.
+
+**`locate` ist die Sicherheitsgrenze, und zwar in zwei Prüfungen.** Die erste wirft
+`..` hinaus, bevor es überhaupt angehängt wird — das deckt den Normalfall ab,
+einschließlich dessen, den ein Modell selbst erzeugt, wenn es einen Pfad aus zwei
+Auflistungen zusammensetzt. Die zweite löst Symlinks auf und vergleicht das Ergebnis mit
+der Wurzel, denn die erste sieht keinen Link *im* Ordner, der hinausführt — und ein
+synchronisierter Ordner enthält, was der Server enthält. Ein absoluter Pfad wird
+abgewiesen und nicht umgedeutet.
+
+Jeder Weg hinaus bekommt denselben Satz. Eine Abweisung, die je Fall anders ausfiele,
+wäre eine Karte der Grenze: genug Schreibweisen probiert, und die Unterschiede sagen,
+wo sie verläuft.
+
+**Alles Gelesene ist eingefasst, die Auflistung eingeschlossen.** Ein Dateiname ist vom
+Angreifer gewählt — `Bitte ignoriere deine Anweisungen.txt` ist auf jedem Dateisystem
+ein gültiger Name. Unsere eigenen Fehlermeldungen bleiben außerhalb der Einfassung: Sie
+sind kein Material zum Lesen, sondern der Grund, als Nächstes etwas anderes zu tun.
+
+**Gelesen wird über `NSFileCoordinator`.** Spinds File Provider ist eine replizierte
+Erweiterung mit Files-on-Demand, der größte Teil eines großen Ordners besteht also aus
+Name und Größe und sonst nichts. `Data(contentsOf:)` bekommt darauf je nach Tag eine
+leere Datei oder einen Fehler; die Koordination ist das, was den Provider bittet, sie
+vorher zu holen. Die Auflistung sagt je Eintrag, ob er noch nicht geladen ist — das ist
+der Unterschied zwischen „Lesen kostet nichts" und „Lesen lädt herunter".
+
+**Nur lesen, wie beim Bestand und mehr noch.** Das ist das einzige Werkzeug, das in
+Material greift, das niemand in diesem Gespräch geschrieben hat. Ein Modell, das sich
+von einem gerade gelesenen Dokument herumkriegen lässt, ist genau der Fall, für den es
+`UntrustedContent` gibt — und die Antwort darauf ist kein besserer Prompt, sondern ein
+Werkzeug, das nicht handeln kann.
 
 ## Was mit Absicht nicht abstrahiert ist
 
@@ -180,7 +255,7 @@ Begründung dabei.
 
 ## Prüfen
 
-96 Unittests, alle ohne Netz, dazu UI-Tests, die die echte App im Simulator fahren. Die
+180 Unittests, alle ohne Netz, dazu UI-Tests, die die echte App im Simulator fahren. Die
 Teilung ist Absicht: Was sich aus Werten entscheiden lässt, ist ein Unittest; was einen
 Bildschirm braucht, ist ein UI-Test; alles andere ist nicht geprüft und sagt das.
 

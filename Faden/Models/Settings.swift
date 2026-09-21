@@ -363,6 +363,27 @@ struct AppSettings: Codable, Equatable {
     var speech = SpeechConfig()
     var memory = MemoryConfig()
     var searchEnabled: Bool = true
+    /// Whether the user has connected Fundus.
+    ///
+    /// Off until they say otherwise, like every other source in this app. The earlier
+    /// argument for the opposite — that the App Group already means the two apps belong
+    /// together, so nobody would find the switch — got the direction of the question
+    /// wrong. That a folder is technically reachable is not permission to read it and
+    /// send what is in it to an endpoint; installing the sister app says the two apps
+    /// may share an endpoint, not that a chat may quote the cellar.
+    ///
+    /// The other three sources were already like this, each by accident of needing
+    /// setup: search has no provider until one is entered, memory no embedding model,
+    /// the folder no bookmark. This one needed nothing, which is exactly why it was the
+    /// one that defaulted to on.
+    var inventoryEnabled: Bool = false
+    /// The folder the user opened, if any.
+    ///
+    /// No switch beside it, unlike the inventory: there is nothing to switch. A folder
+    /// is set or it is not, and "set but switched off" would be a third state that says
+    /// the same as removing it — with the difference that the bookmark stays on disk
+    /// and the user believes it is gone.
+    var folder = FolderConfig()
     var resultsPerSearch: Int = 5
     /// Fraction of the context window at which a background compaction fires.
     var compactionThreshold: Double = 0.75
@@ -384,6 +405,8 @@ struct AppSettings: Codable, Equatable {
         memory              = try c.decodeIfPresent(MemoryConfig.self, forKey: .memory) ?? MemoryConfig()
         activeRecipeID      = try c.decodeIfPresent(UUID.self, forKey: .activeRecipeID)
         searchEnabled       = try c.decodeIfPresent(Bool.self, forKey: .searchEnabled) ?? d.searchEnabled
+        inventoryEnabled    = try c.decodeIfPresent(Bool.self, forKey: .inventoryEnabled) ?? d.inventoryEnabled
+        folder              = try c.decodeIfPresent(FolderConfig.self, forKey: .folder) ?? d.folder
         resultsPerSearch    = try c.decodeIfPresent(Int.self, forKey: .resultsPerSearch) ?? d.resultsPerSearch
         compactionThreshold = try c.decodeIfPresent(Double.self, forKey: .compactionThreshold) ?? d.compactionThreshold
         autoCompactEnabled  = try c.decodeIfPresent(Bool.self, forKey: .autoCompactEnabled) ?? d.autoCompactEnabled

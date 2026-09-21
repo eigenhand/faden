@@ -81,6 +81,24 @@ nicht eine Liste von Notizen. Das System ist [cognee](https://github.com/topoter
   nach ihrem stärksten Teil abzüglich `triplet_distance_penalty` pro Schritt.
 - **Bi-temporal**: Ein überholter Fakt wird geschlossen (`validTo`), nicht gelöscht.
 
+**Der Bestand aus Fundus.** Verbinde Fundus in den Einstellungen, und der Assistent
+kann nachsehen: wo etwas liegt, wie viel davon da ist, was in einem Raum oder Regal
+steht. Gelesen wird `inventory.json` aus der App Group, die sich die beiden Apps teilen
+— nur lesen, eingetragen und geändert wird weiter in Fundus, und das sagt er, statt
+anderes zu versprechen. Eine fehlende Menge gibt er als ungezählt weiter und nicht als
+null, und eine Nummer, die ein Modell von einem Etikett gelesen hat, behält den
+Vorbehalt, dass sie abgelesen ist. Solange nicht verbunden, wird das Werkzeug gar nicht
+erst angeboten — und ohne Fundus auf dem Gerät gibt es nichts zu verbinden.
+
+**Dateien aus Spind.** Richte die App auf einen Ordner in der Dateien-App — einen aus
+Spind, aus iCloud Drive oder vom Gerät —, und der Assistent kann darin nachsehen:
+auflisten, was da ist, eine Datei über alle Unterordner hinweg am Namen finden und
+Text-, Quell- und PDF-Dateien lesen. Nur lesen: schreiben, umbenennen und löschen kann
+er nicht, und er sagt das, statt anderes zu versprechen. Pfade, die aus dem Ordner
+herausführen, werden abgewiesen, und alles Gelesene ist als fremdes Material eingefasst
+— auch ein Dateiname ist vom Angreifer gewählt. Die Auflistung sagt je Eintrag, ob er
+noch heruntergeladen werden muss, denn davon hängt ab, ob das Lesen etwas kostet.
+
 **Ausfallsicher.** Einbettungs-Endpoints sind oft mengenbegrenzt, und das ist der
 Normalfall, nicht die Ausnahme. Deshalb blockiert die Aufnahme nie daran: extrahierte
 Fakten werden auch ohne Vektor gespeichert — der Modellaufruf, der sie gefunden hat, ist
@@ -208,7 +226,7 @@ und `ASC_ISSUER_ID` setzen (App Store Connect › Users and Access › Integrati
 | `Media/` | Bildaufbereitung und die Vision-Prüfung |
 | `Speech/` | Diktat, Aufnahme, eigene STT-/TTS-Endpoints, Sprachausgabe |
 | `Memory/` | Der Wissensgraph nach cognee: Identität, Extraktion, Einbettung, Tripel-Suche |
-| `Storage/` | Schlüsselbund und Dateipersistenz |
+| `Storage/` | Schlüsselbund, Dateipersistenz, Lesezugriff auf Fundus' Bestand und den freigegebenen Ordner |
 | `UI/` | Chat, Kontextleiste, Einstellungen, Einrichtungsassistent |
 
 Keys liegen im Schlüsselbund des Geräts, alles andere als JSON in Application Support.

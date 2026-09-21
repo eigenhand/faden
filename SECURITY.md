@@ -13,12 +13,25 @@ with no promised response times.
 Faden brings no infrastructure with it. There is no server of mine, no telemetry and no
 account. What goes out goes to endpoints the user entered:
 
+Every row below the first needs a service the user connected in the settings — a search
+provider, an embedding model, Fundus, a folder. Not connected means the tool is not in
+the request at all, so the model cannot ask for it and cannot be talked into asking. The
+only tool that is always there is `remember`, which reaches nothing: it writes a note
+into the conversation it already belongs to.
+
 | Where | What | When |
 | --- | --- | --- |
 | Model endpoint | The whole conversation, images, tool results | On every turn |
 | Search provider | The search query | When the model searches |
 | Arbitrary web pages | Nothing but a page request | When the model loads a page |
 | Embedding endpoint | Text that becomes memories | When the memory is on |
+| Model endpoint | Entries from the Fundus inventory | When the model looks in the stock |
+| Model endpoint | Names and contents of files from the shared folder | When the model looks in the folder |
+
+The inventory is the only data Faden reads that it did not itself produce. It stays
+on the device until the model reaches for it, and what goes out then are the entries
+that matched — not the whole stock. None of it goes anywhere until Fundus is
+connected in the settings; unconnected, the tool is not offered at all.
 
 Everything else — history, settings, memories — lies in Application Support on the
 device.
@@ -91,6 +104,19 @@ only thing that helps in the end is giving it no dangerous tools — and the mos
 dangerous ones Faden does not have: it writes no files, sends nothing and buys nothing.
 The worst a successful attack achieves is a wrong entry in the memory or a wrong
 answer.
+
+**A folder is as trustworthy as what is in it.** The `files` tool reads what the user
+pointed it at, and a synced folder holds what the server holds — including what somebody
+else put there through one of Spind's share links. Everything read out of it is fenced,
+listing included, because a file name is attacker chosen too. What that buys is the
+difference between reading a document and obeying it; it is not a guarantee, for the
+reason in the paragraph above. What keeps the consequence small is that the tool cannot
+write: the worst a prepared document achieves is a wrong answer about another file.
+
+**A path is confined, not sanitised.** `..`, absolute paths and symlinks pointing out of
+the folder are refused, and every way out gets the same sentence so that the refusals
+are not a map of the boundary. Inside the folder there is no further restriction: a
+tool that may read the folder may read all of it.
 
 **No protection against a malicious model.** The endpoint receives the whole history
 and answers freely. Whoever enters an endpoint they do not trust has a different problem

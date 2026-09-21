@@ -376,6 +376,16 @@
         }
       }
     },
+    "Anderen wählen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose another"
+          }
+        }
+      }
+    },
     "Anrede": {
       "extractionState": "manual",
       "localizations": {
@@ -657,6 +667,36 @@
         }
       }
     },
+    "Bestand": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inventory"
+          }
+        }
+      }
+    },
+    "Bestand gefunden.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inventory found."
+          }
+        }
+      }
+    },
+    "Bestand lesen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read the inventory"
+          }
+        }
+      }
+    },
     "Bild entfernen": {
       "localizations": {
         "en": {
@@ -876,6 +916,16 @@
         }
       }
     },
+    "Der Ordner ließ sich nicht dauerhaft merken: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The folder could not be remembered: %@"
+          }
+        }
+      }
+    },
     "Der Parser ist reine Konfiguration und läuft ab jetzt lokal auf diesem iPhone — für Suchen wird kein Modell mehr gebraucht.": {
       "localizations": {
         "en": {
@@ -922,6 +972,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Your own recognition service did not answer; Apple did the recognising. %@"
+          }
+        }
+      }
+    },
+    "Der gemeinsame Ordner der eigenhand-Apps ist in diesem Build nicht freigeschaltet.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The shared folder of the eigenhand apps is not enabled in this build."
           }
         }
       }
@@ -1053,6 +1113,16 @@
         }
       }
     },
+    "Dienste": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Services"
+          }
+        }
+      }
+    },
     "Diese Vektoren zählen nicht mit — sie stammen aus einem anderen Raum. Beim nächsten Nachholen werden sie ersetzt.": {
       "localizations": {
         "en": {
@@ -1111,6 +1181,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Separate model for images"
+          }
+        }
+      }
+    },
+    "Ein Werkzeug bekommt der Assistent erst, wenn der Dienst hier verbunden ist. Nicht verbunden heißt: es wird ihm gar nicht erst angeboten.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The assistant gets a tool only once the service is connected here. Not connected means it is not offered to it at all."
           }
         }
       }
@@ -1675,6 +1755,16 @@
         }
       }
     },
+    "Kein Bestand gefunden. Es gibt ihn, sobald in Fundus auf diesem Gerät der erste Eintrag steht.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No inventory found. There will be one as soon as Fundus on this device holds its first entry."
+          }
+        }
+      }
+    },
     "Kein Modell konfiguriert. Endpoint, Key und Modellname fehlen.": {
       "localizations": {
         "en": {
@@ -2033,6 +2123,36 @@
         }
       }
     },
+    "Nicht mehr erreichbar — umbenannt, gelöscht, oder die App dahinter ist weg. Wähl ihn neu.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No longer reachable — renamed, deleted, or the app behind it is gone. Choose it again."
+          }
+        }
+      }
+    },
+    "Nicht verbunden. Der Bestand liegt bereit, der Assistent sieht ihn nicht.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not connected. The inventory is there; the assistant does not see it."
+          }
+        }
+      }
+    },
+    "Nicht verbunden. Gib einen Ordner frei — etwa einen aus Spind —, und der Assistent kann darin lesen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not connected. Share a folder — one out of Spind, say — and the assistant can read in it."
+          }
+        }
+      }
+    },
     "Nichts gefunden.": {
       "localizations": {
         "en": {
@@ -2121,6 +2241,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "None"
+          }
+        }
+      }
+    },
+    "Ordner": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Folder"
+          }
+        }
+      }
+    },
+    "Ordner wählen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a folder"
           }
         }
       }
@@ -2570,6 +2710,16 @@
         }
       }
     },
+    "Trennen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disconnect"
+          }
+        }
+      }
+    },
     "URL": {
       "extractionState": "manual",
       "localizations": {
@@ -2609,6 +2759,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Connection error: %@"
+          }
+        }
+      }
+    },
+    "Verbunden · %lld Dinge im Bestand.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connected · %lld things in the inventory."
+          }
+        }
+      }
+    },
+    "Verbunden · nur lesen. Schreiben, umbenennen und löschen kann der Assistent nicht.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connected · reading only. The assistant cannot write, rename or delete."
+          }
+        }
+      }
+    },
+    "Verbunden.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connected."
           }
         }
       }
