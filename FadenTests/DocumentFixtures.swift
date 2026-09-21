@@ -1,0 +1,65 @@
+import Foundation
+
+/// Real files, built by a real ZIP writer, as base64.
+///
+/// Handmade bytes would only prove that the reader agrees with whatever the test
+/// author believed about the format. These came out of Python's `zipfile` — the same
+/// central directory, the same deflate streams, the same local headers that Word and
+/// LibreOffice write. The one entry stored uncompressed is there on purpose: an EPUB
+/// must keep its `mimetype` that way, and a reader that only handles deflate passes
+/// every other test and fails on every real book.
+enum DocumentFixtures {
+
+    static let docx = Data(base64Encoded:
+        "UEsDBBQAAAAIAAAAIQDuR1hmHwAAAB0AAAATAAAAW0NvbnRlbnRfVHlwZXNdLnhtbLOxr8jNUShLLSrOzM+zVTLU" +
+        "M1Cyt7MJqSxILda3AwBQSwMEFAAAAAgAAAAhAO/TWcHmAAAAcQEAABEAAAB3b3JkL2RvY3VtZW50LnhtbIWQz07D" +
+        "MAzG7zyF1QMntIQJEOq67jJO086csyZNIzVx5LgU3ofH2K0vRjIBEgKJyydb/vzzn2b36kd4MZQchm11u5LVrr1q" +
+        "5lpjN3kTGHI9pHreVgNzrIVI3WC8SiuMJuRaj+QV55SsmJF0JOxMSi5YP4q1lA/CKxeqNiNPqN8u7FgyKsLt0RnO" +
+        "45mUhX45E2hn4BmHMAXbiOIoSheNv7r32XxQI/tMMXAyTMu7ZfjR+G1+vLu/kRKeJsL/yYflHLSzeYvUk0tcgybj" +
+        "4IhB5UnXyscN5FeQ63l03fAXUHyeXIKvd7YfUEsBAhQDFAAAAAgAAAAhAO5HWGYfAAAAHQAAABMAAAAAAAAAAAAA" +
+        "AIABAAAAAFtDb250ZW50X1R5cGVzXS54bWxQSwECFAMUAAAACAAAACEA79NZweYAAABxAQAAEQAAAAAAAAAAAAAA" +
+        "gAFQAAAAd29yZC9kb2N1bWVudC54bWxQSwUGAAAAAAIAAgCAAAAAZQEAAAAA")!
+
+    static let xlsx = Data(base64Encoded:
+        "UEsDBBQAAAAIAAAAIQBa0zPjfAAAAJ8AAAAPAAAAeGwvd29ya2Jvb2sueG1sNY1BDsIwDAS/EvkBdeDAASXpmQfw" +
+        "gEANqVrHURwB4vVEFT2tdmelceOHV/OiqrNkD4fBwhjcW+pyE1lMh1k9pNbKGVHviTjqIIVyJw+pHFuv9YlaKsVJ" +
+        "E1HjFY/WnpDjnCG4bdN/mhyZPFxZY/uC2bbL1L2AweF+xd0fflBLAwQUAAAACAAAACEAprPeJokAAAC9AAAAFAAA" +
+        "AHhsL3NoYXJlZFN0cmluZ3MueG1sXc5BCsIwEAXQq4QcoBMVXEiagu4EDzHUsQ00k5qZiMc3IiK4/O8v/vfDMy3m" +
+        "QUVi5t5uOmeH4EXUNGfp7ay6HgBknCmhdHklbs0tl4TaYplA1kJ4lZlI0wJb5/aQMLI1Y66svd1ZUzneK52+uQ3E" +
+        "4DVcMqN60ODhDR88I1cs/3okLTj9FNrF8AJQSwMEFAAAAAgAAAAhAEE8dxChAAAAGQEAABgAAAB4bC93b3Jrc2hl" +
+        "ZXRzL3NoZWV0MS54bWxdj1sOwiAQRf9dBWEBHYqPD0NpNG6EVLSN5ZGBtC7fsZq26R/3HjgzqPrtejZYTF3wFS8L" +
+        "wWutxoCv1FqbGVGfKt7mHM8AqWmtM6kI0Xoij4DOZIr4hBTRmvv0yPUghTiBM53nWk3dzWSjdwrDyJDGUN18D5eS" +
+        "s1zxRHnQQsGgFTR/dl0zOTMgx2KSs0mubpcbk/y1cn8ojlsRLPspmD+uP1BLAQIUAxQAAAAIAAAAIQBa0zPjfAAA" +
+        "AJ8AAAAPAAAAAAAAAAAAAACAAQAAAAB4bC93b3JrYm9vay54bWxQSwECFAMUAAAACAAAACEAprPeJokAAAC9AAAA" +
+        "FAAAAAAAAAAAAAAAgAGpAAAAeGwvc2hhcmVkU3RyaW5ncy54bWxQSwECFAMUAAAACAAAACEAQTx3EKEAAAAZAQAA" +
+        "GAAAAAAAAAAAAAAAgAFkAQAAeGwvd29ya3NoZWV0cy9zaGVldDEueG1sUEsFBgAAAAADAAMAxQAAADsCAAAAAA==")!
+
+    static let pptx = Data(base64Encoded:
+        "UEsDBBQAAAAIAAAAIQBPgbYBqAAAACABAAAVAAAAcHB0L3NsaWRlcy9zbGlkZTEueG1sjZBNDsIgEEav0nCATnXh" +
+        "glCaeAOjF5gUbJvwlwG1enqh1TTu3LzADPPmC6KbranumuLkXct2dcM6KQKPRlW54yIPLRtTChwg9qO2GGsftMu9" +
+        "qyeLKV9pgEA6apcwZYs1sG+aA1icHPtI8B+JInxMbviZL1n6s1FLpnAhrddTYZqPXj2lQB4KqCDJ0w0poYkvHI12" +
+        "AkqtkBbml7BNwqqCzQ3fdbD8gXwDUEsDBBQAAAAIAAAAIQA7Rm5GqAAAAB8BAAAVAAAAcHB0L3NsaWRlcy9zbGlk" +
+        "ZTIueG1sjZBNDsIgEEav0nAAB7vQpKE0egW9ABZsifxlQK23F1pN487NC8wwb77Ausma6qEwau9ast1Q0nEWmmhk" +
+        "lTsuNqElY0qhAYj9qKyIGx+Uy72rRytSvuIAAVVULomULdZATekOrNCOfCTiH4lE8dRu+JkvWfqTkXOmcEalllNh" +
+        "mo5evjgTTSjAgsQP93gxur9VNa33DEqpEGfmh7AOwmKCVQ3fbTB/AX8DUEsBAhQDFAAAAAgAAAAhAE+BtgGoAAAA" +
+        "IAEAABUAAAAAAAAAAAAAAIABAAAAAHBwdC9zbGlkZXMvc2xpZGUxLnhtbFBLAQIUAxQAAAAIAAAAIQA7Rm5GqAAA" +
+        "AB8BAAAVAAAAAAAAAAAAAACAAdsAAABwcHQvc2xpZGVzL3NsaWRlMi54bWxQSwUGAAAAAAIAAgCGAAAAtgEAAAAA")!
+
+    static let epub = Data(base64Encoded:
+        "UEsDBBQAAAAAAAAAIQBvYassFAAAABQAAAAIAAAAbWltZXR5cGVhcHBsaWNhdGlvbi9lcHViK3ppcFBLAwQUAAAA" +
+        "CAAAACEA4rUvk3YAAACLAAAADwAAAE9FQlBTL2NoMS54aHRtbCWMQQ7CIBBFrzLhAIzEFWY6XXVlPATGiSUiJTCR" +
+        "entp3L7/36N5fyf4SG1xy5Nx9mRmplUHHENuk1lVywWx92772W71ic57j/vxMUz37fEdguOlNpUG11CiSiIciAov" +
+        "DXqoIDHDKySVCreRkGwJCxP+bTxa/ANQSwMEFAAAAAgAAAAhAKgb/fZqAAAAdAAAAA8AAABPRUJQUy9jaDIueGh0" +
+        "bWyzsa/IzVEoSy0qzszPs1Uy1DNQsrezySgBCgIl8optlTJKSgqs9PXLy8v1yo318ovS9Q0tLS31K0BqlOxskvJT" +
+        "Ku1sCuyiylMzS1KLFbwTC4B0jo5C9uE9RVWpRXo2+gV2NvoQZfogTXYAUEsBAhQDFAAAAAAAAAAhAG9hqywUAAAA" +
+        "FAAAAAgAAAAAAAAAAAAAAIABAAAAAG1pbWV0eXBlUEsBAhQDFAAAAAgAAAAhAOK1L5N2AAAAiwAAAA8AAAAAAAAA" +
+        "AAAAAIABOgAAAE9FQlBTL2NoMS54aHRtbFBLAQIUAxQAAAAIAAAAIQCoG/32agAAAHQAAAAPAAAAAAAAAAAAAACA" +
+        "Ad0AAABPRUJQUy9jaDIueGh0bWxQSwUGAAAAAAMAAwCwAAAAdAEAAAAA")!
+
+    static let odt = Data(base64Encoded:
+        "UEsDBBQAAAAIAAAAIQA8yaNCtAAAAGEBAAALAAAAY29udGVudC54bWyNkE0OgjAQha/SsBd0OyklLryBF2jLIE3s" +
+        "lNDBoGfxNl5M/iSyMHHV6Xvvm05HFr2/ihu20QXKk0O6TwolQ1U5i1AG23kk3tlAPJxiyFKE2c2TriUIOroIpD1G" +
+        "YAuhQfpQ8J2GsfPCM/b8Lz1mJ3YdyoTyvl5GW8kpVKvX0wz/sHXrKpbZIs5mo06OxNFEzQ/hHYtZjo0mhY4uaJAZ" +
+        "Gf3CTYY4D2W6KI2S2ebRbDNP9mNl6g1QSwECFAMUAAAACAAAACEAPMmjQrQAAABhAQAACwAAAAAAAAAAAAAAgAEA" +
+        "AAAAY29udGVudC54bWxQSwUGAAAAAAEAAQA5AAAA3QAAAAAA")!
+}

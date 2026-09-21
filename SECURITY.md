@@ -27,6 +27,7 @@ into the conversation it already belongs to.
 | Embedding endpoint | Text that becomes memories | When the memory is on |
 | Model endpoint | Entries from the Fundus inventory | When the model looks in the stock |
 | Model endpoint | Names and contents of files from the shared folder | When the model looks in the folder |
+| Nowhere | The parsed text of the documents | Stays in a local index in Application Support |
 
 The inventory is the only data Faden reads that it did not itself produce. It stays
 on the device until the model reaches for it, and what goes out then are the entries
@@ -112,6 +113,14 @@ listing included, because a file name is attacker chosen too. What that buys is 
 difference between reading a document and obeying it; it is not a guarantee, for the
 reason in the paragraph above. What keeps the consequence small is that the tool cannot
 write: the worst a prepared document achieves is a wrong answer about another file.
+
+**A document is parsed, and parsing is attack surface.** Reading a `.docx` means
+walking a ZIP by offset and an XML tree that somebody else wrote. Sizes are capped
+before anything is unpacked — a small archive may claim any uncompressed size it likes —
+the container reader refuses anything it cannot make sense of rather than guessing, and
+the XML goes through Apple's `XMLParser` rather than a regular expression over the
+markup. What comes out is fenced like every other file. What it cannot do is act: the
+tool reads.
 
 **A path is confined, not sanitised.** `..`, absolute paths and symlinks pointing out of
 the folder are refused, and every way out gets the same sentence so that the refusals

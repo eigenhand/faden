@@ -115,6 +115,16 @@
         }
       }
     },
+    "%lld Dokumente eingelesen und durchsuchbar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld documents read and searchable."
+          }
+        }
+      }
+    },
     "%lld Modelle": {
       "localizations": {
         "en": {
@@ -171,6 +181,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld results"
+          }
+        }
+      }
+    },
+    "%lld gelesen, %lld schon aktuell, %lld übersprungen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld read, %lld already current, %lld skipped."
           }
         }
       }
@@ -1153,6 +1173,16 @@
         }
       }
     },
+    "Dokumente einlesen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read the documents"
+          }
+        }
+      }
+    },
     "Dunkel": {
       "extractionState": "manual",
       "localizations": {
@@ -1882,6 +1912,16 @@
         }
       }
     },
+    "Liest …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading …"
+          }
+        }
+      }
+    },
     "Liste neu laden": {
       "extractionState": "manual",
       "localizations": {
@@ -2179,6 +2219,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nothing embedded yet."
+          }
+        }
+      }
+    },
+    "Noch nichts eingelesen. Bis dahin findet die Inhaltssuche nichts — einzelne Dateien liest der Assistent trotzdem auf Zuruf.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing read yet. Until then the content search finds nothing — single files the assistant still reads on request."
           }
         }
       }

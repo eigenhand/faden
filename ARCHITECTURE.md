@@ -224,6 +224,58 @@ material nobody in the conversation wrote. A model that can be talked round by a
 document it has just read is exactly the case `UntrustedContent` exists for, and the
 answer to it is not a better prompt but a tool that cannot act.
 
+## Reading the documents
+
+`Documents/` turns a folder of files into something a question can be asked of. Four
+pieces, each with a reason to be separate.
+
+**`DocumentParser` dispatches to whichever Apple framework reads the format.** PDFKit
+for PDF; `NSAttributedString` for RTF, RTFD and HTML; Vision for images and for PDFs
+with no text layer; `XMLParser` for the Office and OpenDocument parts. The set is
+decided by what iOS actually ships: on macOS `NSAttributedString` reads `.docx` and
+`.odt` directly, on iOS it does not, and that single gap is why `ZipArchive` exists.
+
+**`ZipArchive` is a read-only ZIP reader, about a hundred lines.** iOS ships none, and
+`.docx`, `.xlsx`, `.pptx`, `.pages`, `.numbers`, `.key`, `.epub` and `.odt` are all ZIP
+containers — without it the parser reads a PDF and a text file and nothing anybody
+writes a document in. Only the container is ours: the decompression is Apple's
+`COMPRESSION_ZLIB` (raw DEFLATE is what ZIP stores), and what comes out goes back to
+PDFKit, `XMLParser` or `NSAttributedString`. iWork files are read through the PDF
+preview they carry, because their real format is an undocumented protobuf archive that
+no iOS API opens.
+
+**`ParsedDocument` is the machine-readable form: metadata plus addressable blocks.**
+Blocks rather than one string is the whole point — a hit is only useful if it can be
+pointed at, so the text carries its position from the parse into the database, the
+search result and the answer. The boundaries come from the format (a page, a sheet, a
+slide) rather than from a guess at paragraphs.
+
+**`DocumentIndex` is SQLite with FTS5**, which is part of the system SQLite on iOS, so
+full-text search costs a link flag and no dependency. The rest of the app stores JSON
+files; this does not, because answering "where does it say anything about the boiler"
+over JSON means loading every document into memory on every question.
+
+Freshness is the modification date **and** the size. The date alone is what everybody
+uses and it is not enough: a file synced back from a server can arrive carrying a date
+it already had. What neither catches — an edit that keeps the byte count — would need a
+hash of the whole file, which for a synced folder means downloading everything to check
+whether anything changed.
+
+**`DocumentLibrary` keeps the three jobs apart**, and that is what keeps a turn fast.
+Reading one named document parses on demand and caches. Searching contents answers from
+the index and never parses — a question is not the moment to read four hundred files,
+so the answer says how many documents it looked through and what to do when the miss
+means "not read yet". Filling the index is a third thing, started from the settings
+rather than on its own: reading a folder fetches files that are not downloaded, which
+on a metered connection is the user's decision.
+
+Two details that are easy to get wrong and expensive to find. Apple's HTML reader is
+built on WebKit and puts itself on the main queue whatever thread called it, so parsing
+HTML off the main actor deadlocks — on a file, which means the app hangs the day
+somebody puts a web page in their folder and never before. And parsing goes through
+`NSFileCoordinator` into a temporary copy, because a File Provider file that is not
+downloaded yet gives `Data(contentsOf:)` an empty file or an error depending on the day.
+
 ## What is deliberately not abstracted
 
 **No repository layer, no view models.** `AppModel` is the view model, for all views.
@@ -247,7 +299,7 @@ the reason.
 
 ## Testing
 
-180 unit tests, all of them without a network, plus UI tests that drive the real app in
+223 unit tests, all of them without a network, plus UI tests that drive the real app in
 the simulator. The split is on purpose: everything decidable from values is a unit
 test; everything that needs a screen is a UI test; everything else is not tested and
 says so.

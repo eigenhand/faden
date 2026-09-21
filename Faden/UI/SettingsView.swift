@@ -21,6 +21,10 @@ struct SettingsView: View {
     /// state line: a picker that closes and leaves everything as it was is the one
     /// outcome the user cannot tell from a successful one.
     @State private var folderError: String?
+    /// How much of the folder has been read. `nil` until counted once.
+    @State private var indexed: DocumentIndex.Summary?
+    @State private var reading = false
+    @State private var readProgress: DocumentLibrary.Progress?
 
     var body: some View {
         @Bindable var model = model
@@ -212,21 +216,28 @@ struct SettingsView: View {
                                               ? model.settings.folder.name : "Ordner",
                                        state: folderState,
                                        connected: model.settings.folder.isSet && folderReachable) {
-                                HStack(spacing: 10) {
-                                    Button(model.settings.folder.isSet ? "Anderen wählen"
-                                                                       : "Ordner wählen") {
-                                        choosingFolder = true
-                                    }
-                                    .buttonStyle(EHButtonStyle())
-
+                                VStack(alignment: .leading, spacing: 8) {
                                     if model.settings.folder.isSet {
-                                        Button("Trennen") {
-                                            model.settings.folder = FolderConfig()
-                                            folderError = nil
-                                            model.persist()
-                                            model.recomputeUsage()
+                                        Text(indexState)
+                                            .font(.eh(12, .caption)).foregroundStyle(EH.muted)
+                                    }
+                                    HStack(spacing: 10) {
+                                        Button(model.settings.folder.isSet ? "Anderen wählen"
+                                                                           : "Ordner wählen") {
+                                            choosingFolder = true
                                         }
                                         .buttonStyle(EHButtonStyle())
+
+                                        if model.settings.folder.isSet {
+                                            Button(reading ? "Liest …" : "Dokumente einlesen") {
+                                                readDocuments()
+                                            }
+                                            .buttonStyle(EHButtonStyle())
+                                            .disabled(reading || !folderReachable)
+
+                                            Button("Trennen") { disconnectFolder() }
+                                                .buttonStyle(EHButtonStyle())
+                                        }
                                     }
                                 }
                             }
@@ -382,6 +393,9 @@ struct SettingsView: View {
                     model.settings.folder.bookmark = fresh
                     model.persist()
                 }
+                if model.settings.folder.isSet {
+                    indexed = await DocumentLibrary.shared.summary()
+                }
                 guard FundusInventory.isPresent else { return }
                 await FundusReader.shared.forget()
                 inventoryCount = await FundusReader.shared.inventory().items.count
@@ -450,6 +464,52 @@ struct SettingsView: View {
         return String(localized: "Verbunden · nur lesen. Schreiben, umbenennen und löschen kann der Assistent nicht.")
     }
 
+    /// What of the folder has been read into the index, in one sentence.
+    private var indexState: String {
+        if let readProgress {
+            return String(localized: "\(readProgress.parsed) gelesen, \(readProgress.skipped) schon aktuell, \(readProgress.failed) übersprungen.")
+        }
+        guard let indexed, indexed.documents > 0 else {
+            return String(localized: "Noch nichts eingelesen. Bis dahin findet die Inhaltssuche nichts — einzelne Dateien liest der Assistent trotzdem auf Zuruf.")
+        }
+        return String(localized: "\(indexed.documents) Dokumente eingelesen und durchsuchbar.")
+    }
+
+    /// Reads what has changed since the last time.
+    ///
+    /// Started here and not on its own in the background: reading a folder fetches
+    /// files that are not downloaded yet, which on a metered connection is the user's
+    /// decision and not the app's.
+    private func readDocuments() {
+        guard let bookmark = model.settings.folder.bookmark,
+              let resolved = SharedFolder.resolve(bookmark) else { return }
+        reading = true
+        Task {
+            let root = resolved.url
+            let opened = root.startAccessingSecurityScopedResource()
+            defer { if opened { root.stopAccessingSecurityScopedResource() } }
+            readProgress = await DocumentLibrary.shared.index(root: root)
+            indexed = await DocumentLibrary.shared.summary()
+            reading = false
+        }
+    }
+
+    /// Disconnecting throws the index away with the folder.
+    ///
+    /// The paths in it are relative to a root that is no longer set, so every one of
+    /// them names a file nobody can reach — and a hit on one of those is worse than no
+    /// hit. Leaving the contents of somebody's documents in a database after they
+    /// revoked access would also be the wrong answer to "revoke".
+    private func disconnectFolder() {
+        model.settings.folder = FolderConfig()
+        folderError = nil
+        readProgress = nil
+        indexed = nil
+        model.persist()
+        model.recomputeUsage()
+        Task { await DocumentLibrary.shared.clear() }
+    }
+
     /// Turns the picked folder into something that survives a restart.
     ///
     /// The bookmark has to be made while the scope is open, and that is the whole of
@@ -477,6 +537,11 @@ struct SettingsView: View {
                 model.settings.folder = config
                 model.persist()
                 model.recomputeUsage()
+                // The index is keyed by paths relative to a root. A different root
+                // makes every one of them name something else.
+                readProgress = nil
+                indexed = nil
+                Task { await DocumentLibrary.shared.clear() }
             } catch {
                 folderError = String(localized: "Der Ordner ließ sich nicht dauerhaft merken: \(error.localizedDescription)")
             }

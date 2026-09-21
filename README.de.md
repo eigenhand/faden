@@ -99,6 +99,16 @@ herausführen, werden abgewiesen, und alles Gelesene ist als fremdes Material ei
 — auch ein Dateiname ist vom Angreifer gewählt. Die Auflistung sagt je Eintrag, ob er
 noch heruntergeladen werden muss, denn davon hängt ab, ob das Lesen etwas kostet.
 
+**Dokumente statt nur Dateien.** Richte die App auf einen Ordner, und sie liest, was
+darin steht: PDF (auch gescanntes, per Texterkennung), Word, Excel, PowerPoint, Pages,
+Numbers, Keynote, OpenDocument, EPUB, RTF, HTML, Text- und Quelldateien sowie Text in
+Bildern. Gelesen wird durchgehend mit Apple-Frameworks — PDFKit, `NSAttributedString`,
+Vision, `XMLParser` —, und das Ergebnis liegt in einem lokalen SQLite-Index, verknüpft
+mit der Datei und ihrem Änderungsdatum: einmal gelesen, neu gelesen, sobald sich etwas
+ändert. Der Assistent durchsucht damit den **Inhalt** des ganzen Ordners und bekommt
+Dokument, Seite oder Blatt und die Textstelle zurück — eine Antwort kann also „S. 3 des
+Bescheids" nennen statt „irgendwo in der Datei".
+
 **Ausfallsicher.** Einbettungs-Endpoints sind oft mengenbegrenzt, und das ist der
 Normalfall, nicht die Ausnahme. Deshalb blockiert die Aufnahme nie daran: extrahierte
 Fakten werden auch ohne Vektor gespeichert — der Modellaufruf, der sie gefunden hat, ist
@@ -227,6 +237,7 @@ und `ASC_ISSUER_ID` setzen (App Store Connect › Users and Access › Integrati
 | `Speech/` | Diktat, Aufnahme, eigene STT-/TTS-Endpoints, Sprachausgabe |
 | `Memory/` | Der Wissensgraph nach cognee: Identität, Extraktion, Einbettung, Tripel-Suche |
 | `Storage/` | Schlüsselbund, Dateipersistenz, Lesezugriff auf Fundus' Bestand und den freigegebenen Ordner |
+| `Documents/` | Dokumente mit Apple-Frameworks parsen, und der SQLite-Index, in dem sie durchsucht werden |
 | `UI/` | Chat, Kontextleiste, Einstellungen, Einrichtungsassistent |
 
 Keys liegen im Schlüsselbund des Geräts, alles andere als JSON in Application Support.

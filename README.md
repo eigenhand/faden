@@ -99,6 +99,16 @@ fenced as foreign material — a file name is attacker chosen too. A listing say
 entry whether an item is still waiting to be downloaded, because that decides whether
 reading it is free.
 
+**Documents, not just files.** Point the app at a folder and it reads what is in it:
+PDF (scanned ones too, through text recognition), Word, Excel, PowerPoint, Pages,
+Numbers, Keynote, OpenDocument, EPUB, RTF, HTML, text and source files, and text inside
+images. Everything goes through an Apple framework — PDFKit, `NSAttributedString`,
+Vision, `XMLParser` — and what comes out is kept in a local SQLite index against the
+file and its modification date, so a document is read once and re-read when it changes.
+The assistant can then search the *contents* of the whole folder and gets back the
+document, the page or sheet, and the passage — so an answer can cite "page 3 of the
+assessment" instead of "somewhere in that file".
+
 **Resilient.** Embedding endpoints are often rate-limited, and that is the normal case,
 not the exception. Ingestion therefore never blocks on it: extracted facts are stored
 even without a vector — the model call that found them is paid for and should not go
@@ -225,6 +235,7 @@ bundle ID `dev.eigenhand.perbu`, create the app record in App Store Connect, and
 | `Speech/` | Dictation, recording, your own STT/TTS endpoints, speech output |
 | `Memory/` | The knowledge graph after cognee: identity, extraction, embedding, triple search |
 | `Storage/` | Keychain, file persistence, read access to Fundus's inventory and to the shared folder |
+| `Documents/` | Parsing documents with Apple frameworks, and the SQLite index they are searched in |
 | `UI/` | Chat, context bar, settings, setup assistant |
 
 Keys live in the device's keychain, everything else as JSON in Application Support.

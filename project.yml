@@ -22,6 +22,10 @@ targets:
     platform: iOS
     sources:
       - path: Faden
+    dependencies:
+      # The system SQLite, for the document index. FTS5 is compiled into it on iOS, so
+      # full-text search over the parsed documents costs this line and no dependency.
+      - sdk: libsqlite3.tbd
     settings:
       base:
         # Stays "perbu", and that is not a leftover from the rename. The bundle ID

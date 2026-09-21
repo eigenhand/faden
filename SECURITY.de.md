@@ -29,6 +29,7 @@ ohnehin gehört.
 | Einbettungs-Endpoint | Text, aus dem Erinnerungen werden | Wenn das Gedächtnis an ist |
 | Modell-Endpoint | Einträge aus dem Fundus-Bestand | Wenn das Modell im Bestand nachsieht |
 | Modell-Endpoint | Namen und Inhalte von Dateien aus dem freigegebenen Ordner | Wenn das Modell im Ordner nachsieht |
+| Nirgendwohin | Der geparste Text der Dokumente | Bleibt in einem lokalen Index in Application Support |
 
 Der Bestand ist das Einzige, was Faden liest und nicht selbst erzeugt hat. Er bleibt
 auf dem Gerät, bis das Modell danach greift, und hinaus gehen dann die Einträge, die
@@ -119,6 +120,14 @@ Dokument lesen und ihm folgen; eine Garantie ist es nicht, aus dem Grund im Absa
 darüber. Klein bleibt die Folge dadurch, dass das Werkzeug nicht schreiben kann: Das
 Schlimmste, was ein präpariertes Dokument erreicht, ist eine falsche Auskunft über eine
 andere Datei.
+
+**Ein Dokument wird geparst, und Parsen ist Angriffsfläche.** Eine `.docx` zu lesen
+heißt, ein ZIP nach Offsets abzulaufen und einen XML-Baum zu lesen, den jemand anderes
+geschrieben hat. Größen werden gedeckelt, bevor irgendetwas entpackt wird — ein kleines
+Archiv darf jede beliebige entpackte Größe behaupten —, der Container-Leser weist
+zurück, was er nicht versteht, statt zu raten, und das XML geht durch Apples
+`XMLParser` statt durch einen regulären Ausdruck über das Markup. Was herauskommt, ist
+eingefasst wie jede andere Datei. Handeln kann es nicht: Das Werkzeug liest.
 
 **Ein Pfad wird eingesperrt, nicht bereinigt.** `..`, absolute Pfade und Symlinks, die
 aus dem Ordner herausführen, werden abgewiesen, und jeder Weg hinaus bekommt denselben

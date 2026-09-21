@@ -181,6 +181,20 @@ indirect enum JSONValue: Codable, Equatable, Hashable {
         default:             return nil
         }
     }
+    /// A whole number, whether it arrived as one or as a string.
+    ///
+    /// Same reason as `boolValue` below: a model asked for an integer sends `3` about as
+    /// often as `"3"`, and a reader that only accepts the first turns a valid tool call
+    /// into "no section given". A fractional number is refused rather than rounded —
+    /// section 2.5 is a mistake, not a section.
+    var intValue: Int? {
+        switch self {
+        case .number(let d): return d == d.rounded() ? Int(d) : nil
+        case .string(let s): return Int(s.trimmingCharacters(in: .whitespaces))
+        default:             return nil
+        }
+    }
+
     /// A truth value, even when it stands there as a word or a number.
     ///
     /// Model lists write capabilities sometimes as `true`, sometimes as `"true"`,

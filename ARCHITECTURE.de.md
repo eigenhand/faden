@@ -232,6 +232,61 @@ von einem gerade gelesenen Dokument herumkriegen lässt, ist genau der Fall, fü
 `UntrustedContent` gibt — und die Antwort darauf ist kein besserer Prompt, sondern ein
 Werkzeug, das nicht handeln kann.
 
+## Die Dokumente lesen
+
+`Documents/` macht aus einem Ordner voller Dateien etwas, an das sich eine Frage
+richten lässt. Vier Teile, jeder mit einem Grund, getrennt zu sein.
+
+**`DocumentParser` verteilt auf das Apple-Framework, das das Format liest.** PDFKit für
+PDF; `NSAttributedString` für RTF, RTFD und HTML; Vision für Bilder und für PDFs ohne
+Textebene; `XMLParser` für die Office- und OpenDocument-Teile. Welche Formate das sind,
+entscheidet das, was iOS wirklich mitbringt: Auf macOS liest `NSAttributedString`
+`.docx` und `.odt` direkt, auf iOS nicht — und genau diese Lücke ist der Grund, warum es
+`ZipArchive` gibt.
+
+**`ZipArchive` ist ein Nur-Lese-ZIP-Leser, rund hundert Zeilen.** iOS bringt keinen mit,
+und `.docx`, `.xlsx`, `.pptx`, `.pages`, `.numbers`, `.key`, `.epub` und `.odt` sind
+alle ZIP-Container — ohne ihn liest der Parser ein PDF und eine Textdatei und nichts,
+worin jemand ein Dokument schreibt. Nur der Container ist unserer: Das Entpacken macht
+Apples `COMPRESSION_ZLIB` (rohes DEFLATE ist, was ZIP speichert), und was herauskommt,
+geht zurück an PDFKit, `XMLParser` oder `NSAttributedString`. iWork-Dateien werden über
+die PDF-Vorschau gelesen, die sie mitführen — ihr eigentliches Format ist ein
+undokumentiertes Protobuf-Archiv, das keine iOS-Schnittstelle öffnet.
+
+**`ParsedDocument` ist die maschinenlesbare Form: Metadaten plus adressierbare
+Abschnitte.** Abschnitte statt einer Zeichenkette sind der ganze Punkt — eine Fundstelle
+nützt nur, wenn man auf sie zeigen kann. Also trägt der Text seine Position vom Parsen
+über die Datenbank und das Suchergebnis bis in die Antwort. Die Grenzen kommen aus dem
+Format (eine Seite, ein Blatt, eine Folie), nicht aus einer Vermutung über Absätze.
+
+**`DocumentIndex` ist SQLite mit FTS5**, das im System-SQLite von iOS enthalten ist —
+Volltextsuche kostet also ein Link-Flag und keine Abhängigkeit. Der Rest der App legt
+JSON-Dateien ab, das hier nicht: „Wo steht etwas über den Heizkessel" über JSON zu
+beantworten hieße, bei jeder Frage jedes Dokument in den Speicher zu laden.
+
+Aktuell ist ein Eintrag über Änderungsdatum **und** Größe. Das Datum allein nehmen alle,
+und es reicht nicht: Eine vom Server zurücksynchronisierte Datei kann mit einem Datum
+ankommen, das sie schon hatte. Was beides nicht fängt — eine Änderung bei gleicher
+Byte-Zahl — bräuchte eine Prüfsumme über die ganze Datei, und das hieße bei einem
+synchronisierten Ordner, alles herunterzuladen, um zu prüfen, ob sich etwas geändert hat.
+
+**`DocumentLibrary` hält die drei Aufgaben auseinander**, und das hält eine Runde
+schnell. Ein benanntes Dokument zu lesen parst bei Bedarf und merkt sich das Ergebnis.
+Die Inhaltssuche antwortet aus dem Index und parst nie — eine Frage ist nicht der
+Moment, vierhundert Dateien zu lesen; deshalb sagt die Antwort, wie viele Dokumente sie
+durchsucht hat und was zu tun ist, wenn der Fehlschlag „noch nicht eingelesen" bedeutet.
+Das Füllen des Index ist das dritte und wird aus den Einstellungen angestoßen: Einen
+Ordner einzulesen holt Dateien, die noch nicht heruntergeladen sind, und das ist bei
+getaktetem Netz die Entscheidung des Nutzers.
+
+Zwei Einzelheiten, die leicht falsch werden und teuer zu finden sind. Apples HTML-Leser
+steht auf WebKit und setzt sich auf die Hauptwarteschlange, egal von welchem Thread er
+gerufen wurde — HTML außerhalb des Main Actors zu parsen blockiert also, und zwar an
+einer Datei: Die App hängt an dem Tag, an dem jemand eine Webseite in seinen Ordner
+legt, und vorher nie. Und geparst wird über `NSFileCoordinator` in eine temporäre Kopie,
+weil eine noch nicht heruntergeladene File-Provider-Datei bei `Data(contentsOf:)` je
+nach Tag eine leere Datei oder einen Fehler liefert.
+
 ## Was mit Absicht nicht abstrahiert ist
 
 **Keine Repository-Schicht, keine View Models.** `AppModel` *ist* das View Model, für
@@ -255,7 +310,7 @@ Begründung dabei.
 
 ## Prüfen
 
-180 Unittests, alle ohne Netz, dazu UI-Tests, die die echte App im Simulator fahren. Die
+223 Unittests, alle ohne Netz, dazu UI-Tests, die die echte App im Simulator fahren. Die
 Teilung ist Absicht: Was sich aus Werten entscheiden lässt, ist ein Unittest; was einen
 Bildschirm braucht, ist ein UI-Test; alles andere ist nicht geprüft und sagt das.
 

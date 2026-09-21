@@ -29,6 +29,7 @@ actor FolderReader {
         let action = input["action"]?.stringValue ?? "list"
         let path = input["path"]?.stringValue ?? ""
         let query = input["query"]?.stringValue ?? ""
+        let block = input["block"]?.intValue
 
         guard let resolved = SharedFolder.resolve(bookmark) else {
             return ("""
@@ -44,11 +45,12 @@ actor FolderReader {
         let label = folderName.isEmpty ? root.lastPathComponent : folderName
 
         switch action {
-        case "list":  return list(path, root: root, label: label)
-        case "find":  return find(query, root: root, label: label)
-        case "read":  return read(path, root: root, label: label)
+        case "search": return await search(query, label: label)
+        case "list":   return list(path, root: root, label: label)
+        case "find":   return find(query, root: root, label: label)
+        case "read":   return await read(path, block: block, root: root, label: label)
         default:
-            return ("Es gibt keine Aktion „\(action)“. Möglich sind: list, find, read.",
+            return ("Es gibt keine Aktion „\(action)“. Möglich sind: search, find, list, read.",
                     false, "unbekannt: \(action)")
         }
     }
@@ -130,9 +132,53 @@ actor FolderReader {
         return (Self.fence(body, source: label), true, "\(hits.count)× \(q)")
     }
 
+    // MARK: search — in the contents
+
+    /// The index, and only the index.
+    ///
+    /// Nothing is parsed here, which is the point: a question is not the moment to read
+    /// four hundred files. The price is that a miss has two meanings — not in the
+    /// documents, or not read yet — so the answer says how many documents it looked
+    /// through and what to do about the second case.
+    private func search(_ query: String, label: String) async
+    -> (text: String, ok: Bool, summary: String) {
+        let q = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !q.isEmpty else {
+            return ("Fehler: Es wurde keine Suchanfrage übergeben.", false, "ohne Anfrage")
+        }
+        let result = await DocumentLibrary.shared.search(q)
+
+        guard !result.hits.isEmpty else {
+            let body = result.indexed == 0
+                ? """
+                  Es ist noch kein Dokument eingelesen, deshalb findet die Inhaltssuche \
+                  nichts. Such mit „find" nach dem Dateinamen und lies die Datei mit \
+                  „read" — das liest sie ein und beim nächsten Mal wird sie gefunden.
+                  """
+                : """
+                  Keines der \(result.indexed) eingelesenen Dokumente enthält „\(q)".
+
+                  Das kann zweierlei heißen: es steht nirgends, oder das betreffende \
+                  Dokument ist noch nicht eingelesen. Nimm ein anderes Wort, oder such \
+                  mit „find" nach dem Dateinamen.
+                  """
+            return (Self.fence(body, source: label), true, "0× \(q)")
+        }
+
+        var body = "\(result.hits.count) Fundstellen für „\(q)“ in "
+            + "\(result.indexed) eingelesenen Dokumenten:\n"
+        for hit in result.hits {
+            let where_ = hit.locator.isEmpty ? "Abschnitt \(hit.block)"
+                                             : "\(hit.locator), Abschnitt \(hit.block)"
+            body += "\n\(hit.path) · \(where_)\n  \(hit.snippet)"
+        }
+        body += "\n\n[Mehr davon: „read\" mit dem Pfad und der Abschnittsnummer.]"
+        return (Self.fence(body, source: label), true, "\(result.hits.count)× \(q)")
+    }
+
     // MARK: read
 
-    private func read(_ path: String, root: URL, label: String)
+    private func read(_ path: String, block: Int?, root: URL, label: String) async
     -> (text: String, ok: Bool, summary: String) {
         let trimmed = path.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
@@ -147,6 +193,26 @@ actor FolderReader {
                     false, "nicht da: \(trimmed)")
         }
 
+        // Everything a parser here knows goes through the library, which answers from
+        // the index when the file has not changed since it was read.
+        if DocumentParser.canRead(trimmed) {
+            if let document = await DocumentLibrary.shared.document(at: trimmed, url: target) {
+                if let block {
+                    guard let piece = document.render(block: block, path: trimmed) else {
+                        return ("„\(trimmed)“ hat keinen Abschnitt \(block); es sind "
+                                + "\(document.blocks.count). Lies ohne `block`, um zu sehen, "
+                                + "welche es gibt.", false, "kein Abschnitt \(block)")
+                    }
+                    return (Self.fence(piece, source: trimmed), true,
+                            "\(trimmed) · Abschnitt \(block)")
+                }
+                return (Self.fence(document.render(path: trimmed), source: trimmed), true,
+                        "\(trimmed) · \(document.blocks.count) Abschnitte")
+            }
+        }
+
+        // Not a format with a parser, or nothing came out of it. The byte-level reader
+        // has the sentences for those cases — too large, binary, not downloaded.
         switch SharedFolder.read(target) {
         case .text(let text, let truncated):
             var body = text
@@ -157,8 +223,6 @@ actor FolderReader {
                     "\(trimmed) · \(text.count) Zeichen")
 
         case .notText(let why):
-            // Ours, not the file's — so it stays outside the fence, where the model can
-            // act on it.
             return ("\(why) Gelesen wurde „\(trimmed)“.", false, "kein Text: \(trimmed)")
 
         case .tooLarge(let bytes):
