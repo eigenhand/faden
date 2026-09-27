@@ -356,8 +356,8 @@ Der Assistent kennt Datum und Uhrzeit — sie stehen aber nicht im System-Prompt
 am Ende der letzten Nutzernachricht. Prompt-Caching gleicht einen exakten Präfix ab, und
 die Reihenfolge ist Werkzeuge → System → Nachrichten: Eine Uhr im System-Prompt ändert
 die ersten Bytes jeder Anfrage, womit nichts dahinter je wiederverwendbar ist. Dasselbe
-gilt für abgerufene Erinnerungen: In einem gemessenen Gespräch brachen Erinnerungen im
-System-Prompt den gemeinsamen Präfix nach 1965 von 2521 Zeichen. Beides sitzt deshalb
+gilt für abgerufene Erinnerungen: Sie wechseln von Runde zu Runde und würden den gemeinsamen
+Präfix im System-Prompt früh brechen. Beides sitzt deshalb
 hinter dem Cache-Punkt, auf Inhalt, der ohnehin neu ist.
 
 Die Persona („die Stimme“) ist der umgekehrte Fall: Sie ändert sich nur, wenn der Nutzer

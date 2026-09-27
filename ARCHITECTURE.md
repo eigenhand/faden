@@ -345,8 +345,8 @@ The assistant knows the date and time — but they do not sit in the system prom
 sit at the end of the last user message. Prompt caching matches an exact prefix, and
 the order is tools → system → messages: a clock in the system prompt changes the first
 bytes of every request, which makes nothing behind it reusable. The same holds for
-recalled memories: in one measured conversation, memories in the system prompt broke the
-shared prefix after 1,965 of 2,521 characters. Both therefore sit behind the cache
+recalled memories: they change from turn to turn, so in the system prompt they would break
+the shared prefix early. Both therefore sit behind the cache
 point, on content that is new anyway.
 
 The persona (“the voice”) is the opposite case: it changes only when the user changes

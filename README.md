@@ -81,7 +81,8 @@ device; API keys stay in the keychain. The full table is in
   and visible and deletable entry by entry.
 - **The voice is yours.** Form of address, length, tone and free text; the settings
   show verbatim what the model is told.
-- **Answers say who wrote them** as soon as more than one model is set up.
+- **Answers say who wrote them** as soon as more than one model is set up, or when an
+  answer came from a model other than the current one.
 - **Revising rather than retyping.** Copy, regenerate, shorter, longer; quote a
   paragraph by long-pressing it; edit a question and ask it again.
 - **Waiting is explained.** The indicator says what it is waiting for after a few

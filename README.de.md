@@ -83,7 +83,8 @@ in [SECURITY.de.md](SECURITY.de.md#was-das-gerät-verlässt).
   Gerät, einsehbar und Eintrag für Eintrag löschbar.
 - **Die Stimme gehört dir.** Anrede, Ausführlichkeit, Ton und Freitext; die
   Einstellungen zeigen wörtlich, was dem Modell gesagt wird.
-- **Antworten sagen, wer sie geschrieben hat**, sobald mehr als ein Modell eingerichtet ist.
+- **Antworten sagen, wer sie geschrieben hat**, sobald mehr als ein Modell eingerichtet ist
+  oder eine Antwort von einem anderen als dem aktuellen Modell stammt.
 - **Nachbessern statt neu tippen.** Kopieren, neu holen, kürzer, ausführlicher; einen
   Absatz per langem Druck zitieren; eine Frage bearbeiten und neu stellen.
 - **Warten wird begründet.** Die Anzeige sagt nach einigen Sekunden, worauf sie wartet;
