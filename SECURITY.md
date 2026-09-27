@@ -50,11 +50,10 @@ API keys live in the **device's keychain**, never in the settings and never in a
 that travels when something is shared. A provider entry only refers to the keychain
 entry.
 
-Until September 2026 the TestFlight builds carried a key in the binary so that testers
-could start right away. That was a deliberate trade-off and is no longer one: a key in
-a shipped binary is readable by anyone who has the binary. Since then the app brings no
-provider with it. A versioned `pre-commit` hook fires when something that looks like a
-key finds its way into a commit.
+Faden ships no key and no provider of its own: every build starts without one, and the
+only keys it uses are the ones you enter. A versioned `pre-commit` hook
+(`.githooks/pre-commit`, enabled with `git config core.hooksPath .githooks`) refuses a
+commit that contains something that looks like an API key.
 
 ## The architecture this is about
 

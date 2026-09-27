@@ -52,11 +52,11 @@ API-Schlüssel liegen im **Schlüsselbund des Geräts**, nie in den Einstellunge
 in einer Datei, die beim Teilen mitgeht. Ein Anbietereintrag verweist nur auf den
 Schlüsselbund-Eintrag.
 
-Bis September 2026 trugen die TestFlight-Builds einen Schlüssel im Binary, damit
-Tester sofort loslegen konnten. Das war eine bewusste Abwägung und ist keine mehr:
-Ein Schlüssel im ausgelieferten Binary ist für jeden lesbar, der das Binary hat.
-Seitdem bringt die App keinen Anbieter mehr mit. Ein versionierter `pre-commit`-Haken
-schlägt an, wenn etwas, das nach einem Schlüssel aussieht, in einen Commit gerät.
+Faden bringt weder einen eigenen Schlüssel noch einen eigenen Anbieter mit: Jeder Build
+startet ohne, und die einzigen Schlüssel, die die App verwendet, sind die, die du
+einträgst. Ein versionierter `pre-commit`-Hook (`.githooks/pre-commit`, aktiviert mit
+`git config core.hooksPath .githooks`) lehnt einen Commit ab, der etwas enthält, das
+nach einem API-Schlüssel aussieht.
 
 ## Die Bauart, um die es geht
 
