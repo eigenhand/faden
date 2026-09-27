@@ -41,8 +41,15 @@
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>Zum Fotografieren einer Vorlage, die du dem Modell zeigen möchtest. Das Bild geht nur an den Endpoint, den du eingerichtet hast.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Damit Faden ein Modell, eine Suche oder einen Sprachdienst in deinem Heimnetz erreicht, etwa Ollama oder LM Studio auf deinem Rechner.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Zum Diktieren und für den Sprachmodus nimmt Faden auf, während du die Taste hältst.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>

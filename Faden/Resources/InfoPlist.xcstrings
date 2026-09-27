@@ -68,6 +68,23 @@
         }
       }
     },
+    "NSLocalNetworkUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Damit Faden ein Modell, eine Suche oder einen Sprachdienst in deinem Heimnetz erreicht, etwa Ollama oder LM Studio auf deinem Rechner."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "So Faden can reach a model, search or speech service on your home network, such as Ollama or LM Studio on your computer."
+          }
+        }
+      }
+    },
     "NSMicrophoneUsageDescription" : {
       "extractionState" : "manual",
       "localizations" : {

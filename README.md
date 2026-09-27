@@ -32,7 +32,9 @@ At least one chat model, from one of these:
   included for OpenAI, Anthropic, OpenRouter, Groq, Cerebras, Mistral, DeepSeek, xAI,
   Together, Fireworks and TensorX; any other endpoint can be entered by hand.
 - **A server of your own** that speaks the OpenAI format, such as Ollama, vLLM or LM
-  Studio. The key is optional; the server has to be reachable from the phone.
+  Studio. The key is optional; the server has to be reachable from the phone. In your home
+  network, plain `http://` works with an IP address or a `.local` name (iOS asks once for
+  local-network access); anything else needs `https://`.
 - **Apple's on-device model** — no endpoint, no key, nothing leaves the phone. The
   price: no tools, no images, a small context window.
 

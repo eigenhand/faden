@@ -33,7 +33,9 @@ Mindestens ein Chat-Modell, aus einer dieser Quellen:
   DeepSeek, xAI, Together, Fireworks und TensorX; jeden anderen Endpoint trägst du
   von Hand ein.
 - **Ein eigener Server**, der das OpenAI-Format spricht, etwa Ollama, vLLM oder LM
-  Studio. Der Schlüssel ist optional; der Server muss vom Telefon aus erreichbar sein.
+  Studio. Der Schlüssel ist optional; der Server muss vom iPhone aus erreichbar sein. Im
+  Heimnetz funktioniert einfaches `http://` mit einer IP-Adresse oder einem `.local`-Namen
+  (iOS fragt einmal nach dem Zugriff aufs lokale Netzwerk); alles andere braucht `https://`.
 - **Apples Modell auf dem Gerät** — kein Endpoint, kein Schlüssel, nichts verlässt das
   Telefon. Der Preis: keine Werkzeuge, keine Bilder, ein kleines Kontextfenster.
 
