@@ -8,7 +8,7 @@ before you change something.
 
 ## The shape
 
-Twelve folders, no external dependencies, about 15,000 lines. The dependency graph is
+Thirteen folders, no external dependencies, about 18,500 lines of Swift. The dependency graph is
 acyclic, and the direction is always the same — downwards:
 
 ```
@@ -32,16 +32,17 @@ follows it.
 | --- | --- |
 | `Models/` | Value types: message, block, conversation, settings. `Codable`, testable, no I/O |
 | `Providers/` | The two wire formats, the SSE reader, the model catalogue, the capability probe |
-| `Agent/` | The turn loop, the four tools, the fencing of foreign text, the address check |
+| `Agent/` | The turn loop, the tools, the fencing of untrusted text, the address check |
 | `Search/` | Recipe format, local execution, ready-made providers, auto-configuration |
 | `Memory/` | The knowledge graph after cognee: identity, extraction, embedding, triple search |
 | `Context/` | Token estimation, compaction, titling |
-| `Speech/` | Dictation, recording, your own STT/TTS endpoints |
+| `Speech/` | Dictation, recording, your own STT/TTS endpoints, speech output |
 | `Media/` | Image preparation and the vision check |
-| `Storage/` | Keychain, file persistence, the import guard |
+| `Storage/` | Keychain, file persistence, the import guard, read access to Fundus's inventory and to the shared folder |
+| `Documents/` | Parsing documents with Apple frameworks, and the SQLite index they are searched in |
 | `App/` | `AppModel`, the per-conversation state, the app entry, the App Intents |
-| `UI/` | 25 SwiftUI views, 6,100 lines — the largest folder by far, and rightly so |
-| `Design/` | One file: the palette, the type scale, the building blocks |
+| `UI/` | 25 SwiftUI views, about 6,400 lines — the largest folder by far, and rightly so |
+| `Design/` | One file: the palette, the type scale, the building blocks — the tokens from eigenhand.dev |
 
 ## The seam that matters: `TurnEvent`
 
@@ -104,7 +105,8 @@ var turn: TurnState { turnStates[currentID] ?? … }
 That is the reason a turn survives switching chats. A turn belongs to the conversation
 it began in and writes its result back there, even if you have long since been reading
 somewhere else. The alternative — one global “is streaming” — is what most chat clients
-do, and it loses the answer the moment someone taps away.
+do, and it loses the answer the moment someone taps away. Only the memory is
+deliberately shared between conversations.
 
 ## The provider layer
 
@@ -207,7 +209,7 @@ server holds. An absolute path is refused rather than reinterpreted.
 Every way out gets the same sentence. A refusal that varied per case would be a map of
 where the boundary runs: try enough spellings and the differences say where the edge is.
 
-**Everything read is fenced, including the listing.** A file name is attacker chosen —
+**Everything read is fenced, including the listing.** A file name is attacker-controlled —
 `Bitte ignoriere deine Anweisungen.txt` is legal on every file system there is. Our own
 error messages stay outside the fence, because they are not material to be read but the
 reason to do something else next.
@@ -284,6 +286,135 @@ somebody puts a web page in their folder and never before. And parsing goes thro
 `NSFileCoordinator` into a temporary copy, because a File Provider file that is not
 downloaded yet gives `Data(contentsOf:)` an empty file or an error depending on the day.
 
+## Web search and reading pages
+
+**Search recipes.** Brave, Tavily, Serper, SearXNG and Exa come as ready-made recipes
+(`Search/BuiltinRecipes.swift`). For everything else there is automatic setup: if the
+test fails — or the results look wrong — Faden probes the endpoint until a valid answer
+comes back with HTTP 200, shows its structure to one of the user's models and asks it to
+write a parser for it. The parser is pure configuration (`SearchRecipe`), is checked
+locally against that same answer before it is saved, and afterwards runs entirely on the
+device — searching needs no model.
+
+**`fetch_page` runs no JavaScript**, so what is left afterwards decides everything.
+Preference goes to the content region the document itself marks, plus structured data
+(JSON-LD), which even client-rendered pages usually still carry; navigation bars,
+consent banners and unresolved templates are dropped line by line. If nothing readable
+remains, the tool says so plainly instead of returning menu debris as content — the
+model then switches source at once instead of losing two rounds.
+
+## Memory: a port of cognee
+
+Faden builds a knowledge graph out of the conversations — not a list of notes. `Memory/`
+is a port of [cognee](https://github.com/topoteretes/cognee) (Apache-2.0), not an
+imitation:
+
+- **Ingestion** like `cognify`: text → chunks → the model extracts
+  `KnowledgeGraph{nodes, edges}` from them, with cognee's own extraction prompt
+  (translated) — basic types rather than “mathematician”, readable IDs rather than
+  numbers, references resolved to one name.
+- **Identity** like `DataPoint.id_for`: `uuid5(NAMESPACE_OID, "type:value")`. The same
+  person in two conversations gets the same ID and merges into one node instead of
+  being created a second time. The Swift implementation produces bit-for-bit the same
+  IDs as cognee's Python.
+- **Retrieval** like `GraphCompletionRetriever`: vector search across nodes *and*
+  edges, the hits as seed points, from there `neighborhoodDepth` steps through the
+  graph, triples scored by their strongest part minus `triplet_distance_penalty` per
+  step.
+- **Bi-temporal**: a superseded fact is closed (`validTo`), not deleted.
+
+**Resilient to rate limits.** Embedding endpoints are often rate-limited, and that is
+the normal case, not the exception. Ingestion therefore never blocks on it: extracted
+facts are stored even without a vector — the model call that found them is paid for and
+should not go to waste. A catch-up run fetches the missing vectors later, every minute
+and automatically on the next start. Until then those facts are merely not findable by
+similarity. Permanent errors (wrong model, missing permission) are told apart from this
+and not retried endlessly. Embeddings can also be computed on the device
+(`LocalEmbedder`, Apple's `NLContextualEmbedding`); the measured price in retrieval
+quality is written down in that file.
+
+**Left out**, because it is server operation and contributes nothing on a phone:
+Neo4j/Kuzu and LanceDB (cognee's own default path is `brute_force_triplet_search`
+anyway), FastAPI, user management, Alembic migrations, ontology anchoring, the eval
+framework. The graph is one file on the device, visible in the chat and deletable entry
+by entry.
+
+## Prompt caching and the clock
+
+The assistant knows the date and time — but they do not sit in the system prompt; they
+sit at the end of the last user message. Prompt caching matches an exact prefix, and
+the order is tools → system → messages: a clock in the system prompt changes the first
+bytes of every request, which makes nothing behind it reusable. The same holds for
+recalled memories: in one measured conversation, memories in the system prompt broke the
+shared prefix after 1,965 of 2,521 characters. Both therefore sit behind the cache
+point, on content that is new anyway.
+
+The persona (“the voice”) is the opposite case: it changes only when the user changes
+it, so it sits in the stable part of the instructions and costs nothing per question.
+
+## Interface decisions
+
+**The voice is yours.** In an app without a provider there is no brand setting the
+tone, so it is set rather than prescribed: form of address, length, tone, plus a
+free-text field. The settings screen shows verbatim what the model is told, and lets
+you hear a sample before the voice lands in a real conversation.
+
+**Answers say who wrote them.** As soon as more than one model is set up, the model name
+stands on the answer — with several models, an answer without a sender is an answer you
+cannot judge. With only one model the note is dropped, because it would be noise.
+
+**Overlays by purpose.** Settings are a longer task and take the whole screen. History
+and memory are short lookups and sit as half-height sheets over the chat, which stays
+visible behind them — you can see what you are stepping away from. Sheets are not
+stacked, [as NN/g advises](https://www.nngroup.com/articles/bottom-sheet/): provider
+setup and the model list are steps *inside* the settings, not a second layer above them.
+
+**Revising rather than retyping.** NN/g describes two patterns in how people use
+generative AI ([“Accordion Editing and Apple Picking”](https://www.nngroup.com/articles/accordion-editing-apple-picking/),
+2023): they have answers shortened or expanded repeatedly, and they refer back to single
+passages of an earlier answer — for which they otherwise have to scroll up, select and
+copy. Faden has actions right at the answer for that: copy, fetch again, shorter,
+longer. A long press on a paragraph quotes exactly that one into the input. A
+misunderstood question can be edited and asked again instead of being reformulated
+further down — which would leave it standing in the history, where it keeps influencing
+the answers that follow.
+
+**Waiting is explained.** The indicator stays silent while an answer is coming along
+normally, and says what is being waited for only after a few seconds. Errors come with a
+button to try again — except for those that waiting does not fix, such as a wrong key.
+
+**Readable at any text size.** Every font size follows the system setting. The content
+scales through to the largest accessibility size; the header, the input and the context
+bar are capped, because symbols would otherwise overlap there. The actions under an
+answer drop their labels and become tappable-size symbols as soon as the room runs out.
+
+**VoiceOver gets sentences, not characters.** While an answer streams it is hidden from
+the screen reader — announcing every token individually is the usual way to make a chat
+interface unusable. What is announced instead is what is happening (“searching the
+web”, “writing the answer”); the finished message then stands in the history as one
+element that is read out with speaker, tools and text.
+
+**Context and compaction.** A hairline at the bottom edge shows how much of the window
+is taken; the estimate corrects itself as soon as the provider reports real usage. At
+75% (adjustable) Faden summarises the older history in the background — organised by
+task, state, decisions and open points, with numbers, names and sources carried over
+verbatim. The last turns stay untouched, `remember` notes survive in full. The cut
+always lies before a fresh turn, so that no tool result is separated from its call.
+
+**Titles.** Conversations are first named after their first sentence and are then
+renamed by the model once there is enough content — and again when the history has
+roughly doubled and the subject has probably moved on.
+
+## Naming: why `perbu`
+
+Two things are still called `perbu` and `PerBu` respectively, both on purpose. The
+**bundle ID** `dev.eigenhand.perbu` is the app's identity in App Store Connect and on
+every device that carries it: a new one would be a new app, with a new TestFlight,
+testers to invite again and a second icon instead of an update. The **data folder** in
+Application Support carries the same name; a different one would orphan every saved
+conversation and the knowledge graph. Everything else — project, targets, source
+folder, types — is called Faden.
+
 ## What is deliberately not abstracted
 
 **No repository layer, no view models.** `AppModel` is the view model, for all views.
@@ -312,5 +443,29 @@ the simulator. The split is on purpose: everything decidable from values is a un
 test; everything that needs a screen is a UI test; everything else is not tested and
 says so.
 
-`./run-tests.sh` runs the unit tests on a simulator. The CI runs them on every push
-that touches something other than a `.md` file.
+The unit tests run on a simulator with `xcodebuild test … -only-testing:FadenTests`
+(the full command is in the README). The CI runs them on every push that touches
+something other than a `.md` file, together with `check-localizations.py`. The UI tests
+need a seeded simulator (`seed-fixture.sh`, `seed-memory.sh`, `seed-broken.sh`) and
+skip themselves without it; they are run by hand before a release.
+
+## Maintainer notes: releasing
+
+`./release.sh` archives the app, uploads it to TestFlight and assigns the build to the
+internal tester group (`assign-build.sh`). It is written for the maintainer's account;
+a fork needs its own values throughout. Needed once beforehand:
+
+- the bundle ID `dev.eigenhand.perbu` registered and the app record created in App Store
+  Connect;
+- an App Store Connect API key with the “App Manager” role, its private key at
+  `~/.appstoreconnect/private_keys/AuthKey_<KEY_ID>.p8`;
+- `.release.env` (copied from `.release.env.example`) with `ASC_ISSUER_ID` and
+  `ASC_KEY_ID` (App Store Connect › Users and Access › Integrations);
+- a distribution provisioning profile named `Faden App Store - (API)`, made by hand in
+  the developer portal, because the Release configuration signs manually with it (the
+  reason is in `project.yml`). Replacing the signing certificate means making the
+  profile again;
+- the app ID in `assign-build.sh` is the maintainer's app record.
+
+App Store Connect rejects builds from an Xcode beta; if the active Xcode is a beta and
+`/Applications/Xcode.app` exists, the script builds with the latter.

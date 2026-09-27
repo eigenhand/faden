@@ -4,250 +4,141 @@
 
 [![Tests](https://github.com/eigenhand/faden/actions/workflows/tests.yml/badge.svg)](https://github.com/eigenhand/faden/actions/workflows/tests.yml)
 
-Ein Chatbot fürs iPhone, der nichts mitbringt außer der Oberfläche. Modell, Endpoint,
-API-Key und Suchanbieter kommen von dir. Keine Zwischenserver, keine Konten, keine
-Telemetrie — die App spricht ausschließlich mit den Adressen, die du einträgst.
+Ein KI-Chat-Client fürs iPhone, der nur die Oberfläche mitbringt. Modell, Endpoint,
+API-Schlüssel und Suchanbieter kommen von dir. Keine Zwischenserver, keine Konten,
+keine Telemetrie — die App spricht ausschließlich mit den Adressen, die du einträgst.
 
-Design nach [eigenhand.dev](https://eigenhand.dev).
+Die Gestaltung folgt [eigenhand.dev](https://eigenhand.dev). Was die App schützt und
+was ausdrücklich nicht: [SECURITY.de.md](SECURITY.de.md). Wie sie gebaut ist:
+[ARCHITECTURE.de.md](ARCHITECTURE.de.md). Ein Assistent mit Werkzeugen liest
+fremden Text und kann handeln — [„Bewusste Kompromisse“](SECURITY.de.md#bewusste-kompromisse)
+sagt, wo die Schutzmaßnahmen enden.
 
-Was die App schützt und was ausdrücklich nicht: [SECURITY.de.md](SECURITY.de.md).
-Wie sie gebaut ist: [ARCHITECTURE.de.md](ARCHITECTURE.de.md). Ein
-Assistent mit Werkzeugen liest fremden Text und kann handeln — der Abschnitt
-„Bewusste Kompromisse" sagt, wo die Maßnahmen aufhören.
+## Stand und Voraussetzungen
 
-## Was drin ist
+- **Stand:** Version 1.0, ein Freizeitprojekt in aktiver Entwicklung. Noch nicht im
+  App Store — du baust es aus dem Quellcode.
+- **Gerät:** iPhone mit iOS 17 oder neuer. Apples Modell auf dem Gerät braucht
+  zusätzlich iOS 26 und Apple Intelligence.
+- **Werkzeuge zum Bauen:** Xcode (getestet mit Xcode 26.6, der Version der CI) und
+  [XcodeGen](https://github.com/yonaskolb/XcodeGen). Sonst keine Abhängigkeiten.
+- **Sprachen:** Deutsch und Englisch.
 
-**Eigenes Modell.** Zwei Wire-Formate: Anthropic Messages (`/v1/messages`) und
-OpenAI-kompatibel (`/v1/chat/completions`) — letzteres deckt Groq, Together,
-OpenRouter, Mistral, Ollama, vLLM, LM Studio und die meisten Proxys ab. Streaming,
-Werkzeugaufrufe und Gedankengang (`reasoning_content` bzw. `thinking`) inklusive.
+## Was du zum Benutzen brauchst
 
-**Eigene Websuche.** Fertige Rezepte für Brave, Tavily, Serper, SearXNG und Exa.
-Für alles andere gibt es die automatische Einrichtung: Schlägt der Test fehl — oder
-sehen die Treffer falsch aus — klopft Faden den Endpoint selbst ab, bis eine gültige
-Antwort mit HTTP 200 zurückkommt, zeigt deren Struktur einem deiner Modelle und lässt
-sich daraus einen Parser schreiben. Der Parser ist reine Konfiguration
-(`SearchRecipe`), wird lokal gegen dieselbe Antwort geprüft, bevor er gespeichert
-wird, und läuft danach vollständig auf dem Gerät — für Suchen wird kein Modell mehr
-gebraucht.
+Mindestens ein Chat-Modell, aus einer dieser Quellen:
 
-**Agentisch.** Der Assistent sucht von sich aus, wenn eine Frage es verlangt, führt
-mehrere gezielte Suchen statt einer breiten, lädt Seiten nach (`fetch_page`) und hält
-Wichtiges mit `remember` fest. Er kennt Datum und Zeitzone des Geräts.
+- **Ein API-Schlüssel** für die Anthropic-API oder einen OpenAI-kompatiblen Dienst.
+  Voreinstellungen gibt es für OpenAI, Anthropic, OpenRouter, Groq, Cerebras, Mistral,
+  DeepSeek, xAI, Together, Fireworks und TensorX; jeden anderen Endpoint trägst du
+  von Hand ein.
+- **Ein eigener Server**, der das OpenAI-Format spricht, etwa Ollama, vLLM oder LM
+  Studio. Der Schlüssel ist optional; der Server muss vom Telefon aus erreichbar sein.
+- **Apples Modell auf dem Gerät** — kein Endpoint, kein Schlüssel, nichts verlässt das
+  Telefon. Der Preis: keine Werkzeuge, keine Bilder, ein kleines Kontextfenster.
 
-**Seiten lesen.** `fetch_page` führt kein JavaScript aus — deshalb kommt es darauf an,
-was danach übrig bleibt. Bevorzugt wird die vom Dokument markierte Inhaltsregion, dazu
-strukturierte Daten (JSON-LD), die auch client-seitig gerenderte Seiten meist noch
-mitliefern; Navigationsleisten, Zustimmungsbanner und unaufgelöste Templates fliegen
-zeilenweise raus. Bleibt nichts Lesbares, sagt das Werkzeug das ausdrücklich, statt
-Menüreste als Inhalt auszugeben — so wechselt das Modell sofort die Quelle, statt zwei
-Runden zu verlieren.
+Optional: ein Suchanbieter (siehe Funktionen), ein Einbettungs-Endpoint für das
+Gedächtnis (oder Einbettungen auf dem Gerät) und eigene Sprach-Endpoints.
 
-**Bilder.** Kann das Modell sie lesen, erscheint im Eingabefeld ein Plus zum Anhängen.
-Ob es das kann, findet der Verbindungstest selbst heraus: er schickt ein winziges
-Zweifarbenbild und fragt, was darauf ist. Ein abgelehnter Upload heißt nein, eine
-Antwort, die beide Farben nennt, heißt ja — geraten wird nichts. Fotos werden vor dem
-Senden verkleinert, damit ein Schnappschuss nicht den halben Kontext frisst.
+## Was dein Telefon verlässt
 
-**Modelle und Grenzen.** Der Editor lädt die Modellliste direkt vom Endpoint, mit dem,
-was der Anbieter über Kontext, Ausgabelänge und Preis verrät. Sagt er nichts, liest
-die App die Grenzen aus einer Absage heraus, die sie nennt — und merkt sich sonst,
-welche Prompt-Größe nachweislich durchging. Kontextfenster und maximale Antwortlänge
-stellst du mit logarithmischen Reglern ein. Solange du die Antwortlänge nicht selbst
-gesetzt hast, wächst sie aus der Nutzung: Wird eine Antwort abgeschnitten, bevor Text
-kam, verdoppelt Faden den Vorrat und fragt noch einmal.
+Nur, was an die Dienste geht, die du eingetragen hast:
 
-**Sprechen und Hören.** Im Eingabefeld sitzt eine Mikrofontaste: gedrückt halten,
-sprechen, loslassen. Der Text kommt entweder von Apples Spracherkennung — wo möglich
-auf dem Gerät, dann verlässt nichts das iPhone — oder von deinem eigenen
-Whisper-Endpoint (`/v1/audio/transcriptions`, mit `faster-whisper` getestet).
-Antworten liest Faden auf Wunsch vor, über einen eigenen Sprachdienst
-(`/v1/audio/speech`) oder die im iPhone eingebaute Stimme. Fällt der eigene Dienst
-aus, springt die Apple-Stimme ein, statt die Antwort verstummen zu lassen.
+- **Modell-Endpoint:** die Unterhaltung, angehängte Bilder, Werkzeugergebnisse — auch
+  Einträge aus dem Bestand und Inhalte aus dem Ordner, wenn das Modell dort nachsieht.
+- **Suchanbieter:** die Suchanfrage. **Webseiten:** ein einfacher Seitenabruf.
+- **Einbettungs-Endpoint:** Text, der zur Erinnerung wird, falls du einen nutzt.
+- **Sprach-Endpoints:** deine Aufnahme und der vorzulesende Text, falls eingerichtet.
+  Apples Diktat läuft auf dem Gerät, wo das Gerät es unterstützt.
 
-**Gedächtnis (nach cognee).** Faden baut aus euren Gesprächen einen Wissensgraphen —
-nicht eine Liste von Notizen. Das System ist [cognee](https://github.com/topoteretes/cognee)
-(Apache-2.0) portiert, nicht nachempfunden:
+Verlauf, Einstellungen, Erinnerungen und der Dokumentindex bleiben im Speicher der App
+auf dem Gerät; API-Schlüssel bleiben im Schlüsselbund. Die vollständige Tabelle steht
+in [SECURITY.de.md](SECURITY.de.md#was-das-gerät-verlässt).
 
-- **Aufnahme** wie `cognify`: Text → Chunks → das Modell zieht `KnowledgeGraph{nodes, edges}`
-  daraus, mit cognees eigenem Extraktions-Prompt (übersetzt) — grundlegende Typen statt
-  „Mathematiker", lesbare IDs statt Zahlen, Referenzen auf einen Namen aufgelöst.
-- **Identität** wie `DataPoint.id_for`: `uuid5(NAMESPACE_OID, "Typ:wert")`. Dieselbe Person
-  in zwei Gesprächen bekommt dieselbe ID und verschmilzt zu einem Knoten, statt ein zweites
-  Mal angelegt zu werden. Die Swift-Implementierung erzeugt bitgenau dieselben IDs wie
-  cognees Python.
-- **Abruf** wie `GraphCompletionRetriever`: Vektorsuche über Knoten *und* Kanten, die Treffer
-  als Saatpunkte, von dort `neighborhoodDepth` Schritte durch den Graphen, Tripel bewertet
-  nach ihrem stärksten Teil abzüglich `triplet_distance_penalty` pro Schritt.
-- **Bi-temporal**: Ein überholter Fakt wird geschlossen (`validTo`), nicht gelöscht.
+## Funktionen
 
-**Der Bestand aus Fundus.** Verbinde Fundus in den Einstellungen, und der Assistent
-kann nachsehen: wo etwas liegt, wie viel davon da ist, was in einem Raum oder Regal
-steht. Gelesen wird `inventory.json` aus der App Group, die sich die beiden Apps teilen
-— nur lesen, eingetragen und geändert wird weiter in Fundus, und das sagt er, statt
-anderes zu versprechen. Eine fehlende Menge gibt er als ungezählt weiter und nicht als
-null, und eine Nummer, die ein Modell von einem Etikett gelesen hat, behält den
-Vorbehalt, dass sie abgelesen ist. Solange nicht verbunden, wird das Werkzeug gar nicht
-erst angeboten — und ohne Fundus auf dem Gerät gibt es nichts zu verbinden.
+- **Eigenes Modell.** Anthropic Messages (`/v1/messages`) und OpenAI-kompatibel
+  (`/v1/chat/completions`), mit Streaming, Werkzeugaufrufen und Gedankengang
+  (`reasoning_content` bzw. `thinking`).
+- **Eigene Websuche.** Fertige Rezepte für Brave, Tavily, Serper, SearXNG und Exa. Bei
+  jedem anderen Anbieter klopft Faden den Endpoint ab, zeigt die Struktur der Antwort
+  einem deiner Modelle und lässt sich von ihm einen Parser dafür schreiben. Der Parser
+  ist reine Konfiguration, wird lokal geprüft und läuft danach auf dem Gerät — für
+  Suchen braucht es kein Modell.
+- **Agentisch.** Der Assistent sucht, wenn eine Frage es verlangt, führt mehrere
+  gezielte Suchen, lädt Seiten nach (`fetch_page`, ohne JavaScript, nur Hauptinhalt
+  und JSON-LD) und hält Wichtiges mit `remember` fest. Er kennt Datum und Zeitzone.
+- **Bilder.** Ob ein Modell sehen kann, misst der Verbindungstest, statt zu raten.
+  Fotos werden vor dem Senden verkleinert.
+- **Modelle und Grenzen.** Die Modellliste kommt vom Endpoint; Grenzen stammen aus
+  dem, was der Anbieter veröffentlicht oder in einer Absage nennt. Kontextfenster und
+  Antwortlänge stellst du mit Reglern ein, oder der Antwortvorrat wächst mit der Nutzung.
+- **Sprechen und Hören.** Gedrückt halten zum Diktieren, über Apples Spracherkennung
+  oder deinen eigenen Whisper-Endpoint. Antworten liest dein eigener Sprachdienst vor
+  oder die eingebaute iPhone-Stimme, die auch einspringt, wenn dein Dienst ausfällt.
+- **Gedächtnis.** Ein Wissensgraph aus deinen Gesprächen — eine Portierung von
+  [cognee](https://github.com/topoteretes/cognee) (Apache-2.0), gespeichert auf dem
+  Gerät, einsehbar und Eintrag für Eintrag löschbar.
+- **Die Stimme gehört dir.** Anrede, Ausführlichkeit, Ton und Freitext; die
+  Einstellungen zeigen wörtlich, was dem Modell gesagt wird.
+- **Antworten sagen, wer sie geschrieben hat**, sobald mehr als ein Modell eingerichtet ist.
+- **Nachbessern statt neu tippen.** Kopieren, neu holen, kürzer, ausführlicher; einen
+  Absatz per langem Druck zitieren; eine Frage bearbeiten und neu stellen.
+- **Warten wird begründet.** Die Anzeige sagt nach einigen Sekunden, worauf sie wartet;
+  Fehler, die ein neuer Versuch beheben kann, kommen mit einem Knopf dafür.
+- **Overlays nach Zweck.** Einstellungen nehmen den ganzen Bildschirm; Verlauf und
+  Gedächtnis liegen als halbhohe Blätter über dem Chat.
+- **Barrierefrei.** Text skaliert bis zur größten Barrierefreiheits-Stufe; VoiceOver
+  sagt an, was gerade passiert, nicht jedes gestreamte Token.
+- **Lange Unterhaltungen.** Eine Haarlinie zeigt, wie voll der Kontext ist; ab 75 %
+  (einstellbar) wird der ältere Verlauf im Hintergrund zusammengefasst. Titel schreibt
+  das Modell.
 
-**Dateien aus Spind.** Richte die App auf einen Ordner in der Dateien-App — einen aus
-Spind, aus iCloud Drive oder vom Gerät —, und der Assistent kann darin nachsehen:
-auflisten, was da ist, eine Datei über alle Unterordner hinweg am Namen finden und
-Text-, Quell- und PDF-Dateien lesen. Nur lesen: schreiben, umbenennen und löschen kann
-er nicht, und er sagt das, statt anderes zu versprechen. Pfade, die aus dem Ordner
-herausführen, werden abgewiesen, und alles Gelesene ist als fremdes Material eingefasst
-— auch ein Dateiname ist vom Angreifer gewählt. Die Auflistung sagt je Eintrag, ob er
-noch heruntergeladen werden muss, denn davon hängt ab, ob das Lesen etwas kostet.
+**Optionale Anbindungen**, erst nach dem Verbinden in den Einstellungen angeboten und
+nur lesend:
 
-**Dokumente statt nur Dateien.** Richte die App auf einen Ordner, und sie liest, was
-darin steht: PDF (auch gescanntes, per Texterkennung), Word, Excel, PowerPoint, Pages,
-Numbers, Keynote, OpenDocument, EPUB, RTF, HTML, Text- und Quelldateien sowie Text in
-Bildern. Gelesen wird durchgehend mit Apple-Frameworks — PDFKit, `NSAttributedString`,
-Vision, `XMLParser` —, und das Ergebnis liegt in einem lokalen SQLite-Index, verknüpft
-mit der Datei und ihrem Änderungsdatum: einmal gelesen, neu gelesen, sobald sich etwas
-ändert. Gelesen wird, wenn der Assistent das erste Mal im Inhalt sucht — nicht auf einem
-Zeitgeber und nicht auf Knopfdruck —, und ein Fortschrittsbalken zeigt es. Danach
-durchsucht er den **Inhalt** des ganzen Ordners und bekommt
-Dokument, Seite oder Blatt und die Textstelle zurück — eine Antwort kann also „S. 3 des
-Bescheids" nennen statt „irgendwo in der Datei".
-
-**Ausfallsicher.** Einbettungs-Endpoints sind oft mengenbegrenzt, und das ist der
-Normalfall, nicht die Ausnahme. Deshalb blockiert die Aufnahme nie daran: extrahierte
-Fakten werden auch ohne Vektor gespeichert — der Modellaufruf, der sie gefunden hat, ist
-bezahlt und soll nicht verfallen. Fehlende Vektoren holt eine Nacharbeit später nach, im
-Minutentakt und automatisch beim nächsten Start. Bis dahin sind diese Fakten nur nicht per
-Ähnlichkeit auffindbar. Dauerhafte Fehler (falsches Modell, fehlende Berechtigung) werden
-davon unterschieden und nicht endlos wiederholt.
-
-Weggelassen, weil es Serverbetrieb ist und auf einem Telefon nichts beiträgt: Neo4j/Kuzu
-und LanceDB (cognees eigener Standardweg ist ohnehin `brute_force_triplet_search`), FastAPI,
-Nutzerverwaltung, Alembic-Migrationen, Ontologie-Verankerung, das Eval-Framework. Der Graph
-liegt als eine Datei auf dem Gerät und ist im Chat einsehbar und einzeln löschbar.
-
-**Titel.** Unterhaltungen heißen zuerst nach ihrem ersten Satz und werden dann vom
-Modell umbenannt, sobald genug Inhalt da ist — und erneut, wenn der Verlauf sich
-verdoppelt hat und das Thema vermutlich weitergewandert ist.
-
-**Zeit ohne Cache-Bruch.** Der Assistent kennt Datum und Uhrzeit — sie stehen aber
-nicht im System-Prompt, sondern am Ende der letzten Nutzernachricht. Prompt-Caching
-gleicht einen exakten Präfix ab, und die Reihenfolge ist Werkzeuge → System → Nachrichten:
-eine Uhr im System-Prompt ändert die ersten Bytes jeder Anfrage, womit nichts dahinter je
-wiederverwendbar ist. Dasselbe galt für die abgerufenen Erinnerungen — gemessen brach der
-gemeinsame Präfix dadurch schon nach 1965 von 2521 Zeichen. Beides sitzt jetzt hinter dem
-Cache-Punkt, auf Inhalt, der ohnehin neu ist.
-
-**Unterhaltungen sind getrennt.** Jeder Chat hat seinen eigenen Laufzeitzustand —
-laufende Antwort, Streaming-Text, Werkzeugliste, angehängte Bilder, Kontextfüllstand,
-Fehlermeldung, Verdichtungslauf. Ein Zug wird der Unterhaltung zugeordnet, in der er
-begann, und schreibt sein Ergebnis dorthin zurück, auch wenn währenddessen ein anderer
-Chat geöffnet wurde. Nur das Gedächtnis ist bewusst gemeinsam.
-
-**Die Stimme gehört dir.** In einer App ohne Anbieter gibt es keine fremde Marke, die
-den Ton vorgibt. Untersuchungen zu Markenidentität in Dialogsystemen finden, dass
-Engagement mit der Passung zwischen Person und Stimme steigt — also wird sie eingestellt,
-nicht vorgegeben: Anrede, Ausführlichkeit, Ton, dazu ein Freitextfeld. Der Einstellungs-
-bildschirm zeigt wörtlich, was dem Modell gesagt wird, und lässt eine Probe hören, bevor
-die Stimme in einem echten Gespräch landet. Weil sie sich nur ändert, wenn du sie
-änderst, sitzt sie im stabilen Teil der Anweisungen und kostet pro Frage nichts.
-
-**Antworten sagen, wer sie geschrieben hat.** Sobald mehr als ein Modell eingerichtet ist,
-steht der Modellname an der Antwort. Dieselbe Forschung findet, dass visuelle Gestaltung
-*ohne* Transparenz die Bereitschaft senkt, ein System weiter zu nutzen — und bei mehreren
-Modellen ist eine Antwort ohne Absender genau das. Bei nur einem Modell entfällt die
-Angabe, weil sie dann nur Rauschen wäre.
-
-**Overlays nach Zweck.** Einstellungen sind eine längere Aufgabe und nehmen den ganzen
-Bildschirm. Verlauf und Gedächtnis sind kurze Nachschlagevorgänge und liegen als halbhohe
-Blätter über dem Chat, der dahinter sichtbar bleibt — man sieht, wovon man wegwechselt.
-Gestapelte Blätter, die NN/g ausdrücklich abrät, gibt es nicht mehr: Anbieter-Einrichtung
-und Modell-Liste sind Schritte *innerhalb* der Einstellungen, keine zweite Ebene darüber.
-
-**Nachbessern statt neu tippen.** Untersuchungen dazu, wie Menschen generative KI
-tatsächlich nutzen (NN/g), zeigen zwei Muster: Sie lassen Antworten wiederholt kürzen
-oder ausweiten („accordion editing"), und sie beziehen sich auf einzelne Stellen einer
-früheren Antwort („apple picking") — wofür sie sonst hochscrollen, markieren und
-kopieren müssen. Faden hat dafür Aktionen direkt an der Antwort: Kopieren, neu holen,
-kürzer, ausführlicher. Ein langer Druck auf einen Absatz zitiert genau diesen in die
-Eingabe. Eine missverstandene Frage lässt sich bearbeiten und neu stellen, statt sie
-weiter unten noch einmal zu formulieren — was sie sonst im Verlauf stehen ließe, wo sie
-die folgenden Antworten weiter beeinflusst.
-
-**Warten wird begründet.** Studien zu Antwortverzögerungen finden, dass eine Erklärung
-des Wartens Vertrauen und wahrgenommene Transparenz stärker hebt als das Verkürzen
-selbst. Der Punkt bleibt stumm, solange eine Antwort normal entsteht, und sagt erst nach
-einigen Sekunden, worauf gewartet wird. Fehler kommen mit einem Knopf zum erneuten
-Versuch — außer bei solchen, die Warten nicht behebt, etwa einem falschen Schlüssel.
-
-**Lesbar in jeder Textgröße.** Alle Schriftgrößen wachsen mit der Systemeinstellung —
-vorher waren 112 Stellen auf feste Punktgrößen verdrahtet, sodass eine größere Systemschrift
-in Faden schlicht wirkungslos blieb. Der Inhalt skaliert bis zur größten
-Barrierefreiheits-Stufe durch; Kopfzeile, Eingabe und Kontextleiste sind begrenzt, weil
-dort sonst Symbole übereinanderlaufen. Die Aktionen unter einer Antwort lassen ihre
-Beschriftungen fallen und stehen als Symbole in Tap-Größe, sobald der Platz nicht mehr
-reicht.
-
-**VoiceOver bekommt Sätze, keine Zeichen.** Während eine Antwort streamt, ist sie für
-den Screenreader ausgeblendet — jedes Token einzeln anzusagen ist die übliche Art, ein
-Chat-Interface unbenutzbar zu machen. Angesagt wird stattdessen, was gerade passiert
-(„sucht im Web", „Antwort wird geschrieben"); die fertige Nachricht steht danach als ein
-Element im Verlauf, das mit Sprecher, Werkzeugen und Text vorgelesen wird.
-
-**Kontextanzeige.** Eine Haarlinie am unteren Rand zeigt laufend, wie viel des
-Fensters belegt ist. Die Schätzung korrigiert sich selbst, sobald der Anbieter echte
-Verbrauchszahlen meldet.
-
-**Automatisches Verdichten.** Ab 75 % (einstellbar) fasst Faden den älteren Verlauf
-im Hintergrund zusammen — gegliedert nach Auftrag, Stand, Entscheidungen und Offenem,
-mit Zahlen, Namen und Quellen wörtlich übernommen. Die letzten Turns bleiben
-unangetastet, `remember`-Notizen überleben vollständig. Der Schnitt liegt immer vor
-einem frischen Turn, damit kein Werkzeugergebnis von seinem Aufruf getrennt wird.
+- **[Fundus](https://github.com/eigenhand/fundus)**, eine Inventar-App fürs iPhone:
+  Der Assistent kann nachsehen, wo etwas liegt und wie viel davon da ist.
+- **Ein Ordner in der Dateien-App** — etwa einer aus
+  [Spind](https://github.com/eigenhand/spind), das eine Hetzner Storage Box als
+  Cloud-Laufwerk einbindet, oder aus iCloud Drive. Der Assistent kann Dateien
+  auflisten, finden und lesen und den Inhalt von PDFs (auch gescannten), Office-,
+  iWork-, OpenDocument-, EPUB-, RTF-, HTML-, Text- und Quelldateien durchsuchen —
+  mit Angabe von Dokument und Seite.
 
 ## Bauen
 
 ```bash
+brew install xcodegen
 xcodegen generate
 open Faden.xcodeproj
 ```
 
-Braucht Xcode 16+ und zielt auf iOS 17. Keine externen Abhängigkeiten.
+Im Simulator läuft das Schema `Faden` unverändert. Für ein Gerät ersetzt du vorher
+diese Werte durch deine eigenen:
 
-Zwei Dinge heißen weiterhin `perbu` beziehungsweise `PerBu`, und beide mit Absicht.
-Die **Bundle-ID** `dev.eigenhand.perbu` ist die Identität der App in App Store
-Connect und auf jedem Gerät, auf dem sie liegt: eine neue wäre eine neue App, mit
-neuem TestFlight, neu einzuladenden Testern und einem zweiten Icon statt eines
-Updates. Der **Datenordner** in Application Support trägt denselben Namen; ein
-anderer würde jede gespeicherte Unterhaltung und den Wissensgraphen verwaisen
-lassen. Alles übrige — Projekt, Ziele, Quellordner, Typen — heißt Faden.
+- `DEVELOPMENT_TEAM` in `project.yml`
+- die Bundle-IDs `dev.eigenhand.perbu` (und `.tests`, `.uitests`) in `project.yml`
+- die App Group `group.dev.eigenhand.shared` und die Schlüsselbund-Gruppen in
+  `Faden/Faden.entitlements` — ohne die App Group wird die Fundus-Anbindung einfach
+  nicht angeboten
 
-## Auf ein Gerät bringen
+Dann startest du aus Xcode (Debug, automatische Signierung). Die Release-Konfiguration
+signiert mit dem Verteilungsprofil des Maintainers; das Veröffentlichen beschreibt
+[ARCHITECTURE.de.md](ARCHITECTURE.de.md#hinweise-für-maintainer-veröffentlichen).
 
-`./release.sh` archiviert und lädt zu TestFlight hoch. Vorher einmalig nötig:
-Bundle-ID `dev.eigenhand.perbu` registrieren, App-Eintrag in App Store Connect anlegen,
-und `ASC_ISSUER_ID` setzen (App Store Connect › Users and Access › Integrations).
+Unittests:
 
-## Wo was liegt
-
-| Ordner | Inhalt |
-|---|---|
-| `Design/` | Farben, Typografie und Bausteine — die Tokens von eigenhand.dev |
-| `Models/` | Nachrichten, Blöcke, Einstellungen, ein dynamischer JSON-Typ |
-| `Providers/` | Die beiden Wire-Formate und der SSE-Leser |
-| `Search/` | Rezept-Format, lokale Ausführung, fertige Anbieter, Autokonfiguration |
-| `Agent/` | Werkzeuge und die Schleife, die sie ausführt |
-| `Context/` | Token-Schätzung und das Verdichten |
-| `Media/` | Bildaufbereitung und die Vision-Prüfung |
-| `Speech/` | Diktat, Aufnahme, eigene STT-/TTS-Endpoints, Sprachausgabe |
-| `Memory/` | Der Wissensgraph nach cognee: Identität, Extraktion, Einbettung, Tripel-Suche |
-| `Storage/` | Schlüsselbund, Dateipersistenz, Lesezugriff auf Fundus' Bestand und den freigegebenen Ordner |
-| `Documents/` | Dokumente mit Apple-Frameworks parsen, und der SQLite-Index, in dem sie durchsucht werden |
-| `UI/` | Chat, Kontextleiste, Einstellungen, Einrichtungsassistent |
-
-Keys liegen im Schlüsselbund des Geräts, alles andere als JSON in Application Support.
+```bash
+xcodebuild test -project Faden.xcodeproj -scheme Faden \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' \
+  -only-testing:FadenTests CODE_SIGNING_ALLOWED=NO
+```
 
 ## Lizenz
 
 Apache-2.0. Siehe [LICENSE](LICENSE). Copyright 2026 Christoph Lindl-Guk.
 
-Permissiv und nicht Copyleft: Faden läuft auf einem Telefon und spricht mit Endpoints,
-die dem Nutzer gehören — es gibt hier nichts, was jemand als Dienst übernehmen und
-schliessen könnte. Apache-2.0 statt MIT wegen der ausdrücklichen Patentlizenz.
+Freizügig, kein Copyleft: Faden läuft auf deinem Telefon und spricht mit Endpoints, die
+dir gehören — es gibt hier nichts, was jemand zu einem geschlossenen gehosteten Dienst
+machen könnte. Apache-2.0 statt MIT wegen der ausdrücklichen Patentlizenz.

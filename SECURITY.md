@@ -24,15 +24,22 @@ into the conversation it already belongs to.
 | Model endpoint | The whole conversation, images, tool results | On every turn |
 | Search provider | The search query | When the model searches |
 | Arbitrary web pages | Nothing but a page request | When the model loads a page |
-| Embedding endpoint | Text that becomes memories | When the memory is on |
+| Embedding endpoint | Text that becomes memories | When the memory is on and uses an embedding endpoint |
 | Model endpoint | Entries from the Fundus inventory | When the model looks in the stock |
 | Model endpoint | Names and contents of files from the shared folder | When the model looks in the folder |
+| Speech-to-text endpoint | The recording | When you dictate through your own endpoint |
+| Text-to-speech endpoint | The text to be read aloud | When an answer is read aloud through your own service |
 | Nowhere | The parsed text of the documents | Stays in a local index in Application Support |
 
-The inventory is the only data Faden reads that it did not itself produce. It stays
-on the device until the model reaches for it, and what goes out then are the entries
-that matched — not the whole stock. None of it goes anywhere until Fundus is
-connected in the settings; unconnected, the tool is not offered at all.
+The inventory and the folder are the only data Faden reads that it did not produce
+itself. They stay on the device until the model reaches for them, and what goes out
+then is what matched or was read — not the whole stock or the whole folder. None of it
+goes anywhere until Fundus or the folder is connected in the settings; unconnected,
+the tool is not offered at all.
+
+Dictation through Apple's speech recognition runs on the device wherever the device
+supports it; where it does not, the recording goes to Apple's speech recognition
+service. Apple's on-device language model, if chosen as the model, sends nothing.
 
 Everything else — history, settings, memories — lies in Application Support on the
 device.
@@ -51,10 +58,10 @@ key finds its way into a commit.
 
 ## The architecture this is about
 
-An assistant with tools reads foreign text and can act. To a language model both are
+An assistant with tools reads untrusted text and can act. To a language model both are
 first of all the same thing: text. Most of what follows comes out of that.
 
-**Foreign content is fenced.** What `web_search` and `fetch_page` return stands between
+**Untrusted content is fenced.** What `web_search`, `fetch_page` and `files` return stands between
 marks carrying an identifier rolled per call, and the system instruction says what
 holds inside them: material, not instruction. Without the roll it would be decoration —
 a prepared page would write the closing mark and then its instructions, which would
@@ -109,7 +116,7 @@ answer.
 **A folder is as trustworthy as what is in it.** The `files` tool reads what the user
 pointed it at, and a synced folder holds what the server holds — including what somebody
 else put there through one of Spind's share links. Everything read out of it is fenced,
-listing included, because a file name is attacker chosen too. What that buys is the
+listing included, because a file name is attacker-controlled too. What that buys is the
 difference between reading a document and obeying it; it is not a guarantee, for the
 reason in the paragraph above. What keeps the consequence small is that the tool cannot
 write: the worst a prepared document achieves is a wrong answer about another file.
