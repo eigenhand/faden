@@ -15,7 +15,7 @@ struct Persona: Codable, Equatable {
     enum Address: String, Codable, CaseIterable, Identifiable {
         case informal, formal
         var id: String { rawValue }
-        var label: String { self == .informal ? "Du" : "Sie" }
+        var label: String { self == .informal ? String(localized: "Du") : String(localized: "Sie") }
     }
 
     enum Length: String, Codable, CaseIterable, Identifiable {
@@ -23,9 +23,9 @@ struct Persona: Codable, Equatable {
         var id: String { rawValue }
         var label: String {
             switch self {
-            case .terse:    return "Knapp"
-            case .balanced: return "Ausgewogen"
-            case .thorough: return "Ausführlich"
+            case .terse:    return String(localized: "Knapp")
+            case .balanced: return String(localized: "Ausgewogen")
+            case .thorough: return String(localized: "Ausführlich")
             }
         }
     }
@@ -35,9 +35,9 @@ struct Persona: Codable, Equatable {
         var id: String { rawValue }
         var label: String {
             switch self {
-            case .plain: return "Sachlich"
-            case .warm:  return "Zugewandt"
-            case .dry:   return "Trocken"
+            case .plain: return String(localized: "Sachlich")
+            case .warm:  return String(localized: "Zugewandt")
+            case .dry:   return String(localized: "Trocken")
             }
         }
     }

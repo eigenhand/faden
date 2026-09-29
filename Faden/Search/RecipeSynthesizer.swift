@@ -11,11 +11,11 @@ enum SynthesisStep: Equatable {
 
     var text: String {
         switch self {
-        case .probing(let what):        return "Probiere \(what) …"
-        case .gotResponse(let s, let b):return "HTTP \(s), \(b) Bytes empfangen."
-        case .asking(let m):            return "\(m) liest die Antwortstruktur …"
-        case .validating:               return "Prüfe den erzeugten Parser lokal …"
-        case .success(let n):           return "Fertig — \(n) Treffer über den neuen Parser."
+        case .probing(let what):        return String(localized: "Probiere \(what) …")
+        case .gotResponse(let s, let b):return String(localized: "HTTP \(s), \(b) Bytes empfangen.")
+        case .asking(let m):            return String(localized: "\(m) liest die Antwortstruktur …")
+        case .validating:               return String(localized: "Prüfe den erzeugten Parser lokal …")
+        case .success(let n):           return String(localized: "Fertig — \(n) Treffer über den neuen Parser.")
         case .failed(let m):            return m
         }
     }
@@ -179,13 +179,15 @@ struct RecipeSynthesizer {
         let provider = ProviderFactory.make(for: config.wireFormat)
 
         var attempt = 0
-        var lastProblem: String?
+        // The model reads its feedback in German like the rest of its prompt; the
+        // user reads the same problem in the app's language.
+        var lastProblem: (model: String, user: String)?
 
         while attempt < 2 {
             attempt += 1
             var built = "Struktur der Antwort:\n```json\n\(pretty)\n```"
             if let lastProblem {
-                built += "\n\nDein vorheriger Vorschlag hat nicht funktioniert: \(lastProblem)\n"
+                built += "\n\nDein vorheriger Vorschlag hat nicht funktioniert: \(lastProblem.model)\n"
                     + "Sieh dir die Struktur erneut an und liefere korrigierte Pfade."
             }
             let prompt = built
@@ -203,11 +205,12 @@ struct RecipeSynthesizer {
                         maxTokens: max(4000, min(8000, config.maxOutputTokens)))
                 }
             } catch {
-                return .failure(SynthesisFailure(message: "Das Modell war nicht erreichbar: \(error.localizedDescription)"))
+                return .failure(SynthesisFailure(message: String(localized: "Das Modell war nicht erreichbar: \(error.localizedDescription)")))
             }
 
             guard let spec = Self.extractJSONObject(reply) else {
-                lastProblem = "Die Antwort war kein JSON-Objekt."
+                lastProblem = ("Die Antwort war kein JSON-Objekt.",
+                               String(localized: "Die Antwort war kein JSON-Objekt."))
                 continue
             }
 
@@ -225,7 +228,8 @@ struct RecipeSynthesizer {
             await onStep(.validating)
             let parsed = RecipeEngine.parse(json, with: recipe, limit: 10)
             if parsed.results.isEmpty {
-                lastProblem = "Unter \"\(recipe.resultsPath)\" standen keine Treffer mit einer URL."
+                lastProblem = ("Unter \"\(recipe.resultsPath)\" standen keine Treffer mit einer URL.",
+                               String(localized: "Unter \"\(recipe.resultsPath)\" standen keine Treffer mit einer URL."))
                 continue
             }
             // A URL alone is not enough: when the title field does not exist, the
@@ -233,21 +237,24 @@ struct RecipeSynthesizer {
             // would be quietly saved half-wrong.
             let titled = parsed.results.filter { !$0.title.isEmpty && $0.title != $0.url }
             if titled.isEmpty {
-                lastProblem = "Das Feld \"\(recipe.titleKey)\" gibt es in den Treffern nicht — "
-                    + "dort stand kein Titel. Nenne das Feld, das den Titel wirklich enthält."
+                lastProblem = ("Das Feld \"\(recipe.titleKey)\" gibt es in den Treffern nicht — "
+                    + "dort stand kein Titel. Nenne das Feld, das den Titel wirklich enthält.",
+                    String(localized: "Das Feld \"\(recipe.titleKey)\" gibt es in den Treffern nicht — dort stand kein Titel. Nenne das Feld, das den Titel wirklich enthält."))
                 continue
             }
             let described = parsed.results.filter { !$0.snippet.isEmpty }
             if described.isEmpty {
-                lastProblem = "Das Feld \"\(recipe.snippetKey)\" gibt es in den Treffern nicht — "
-                    + "dort stand kein Text. Nenne das Feld mit dem beschreibenden Text."
+                lastProblem = ("Das Feld \"\(recipe.snippetKey)\" gibt es in den Treffern nicht — "
+                    + "dort stand kein Text. Nenne das Feld mit dem beschreibenden Text.",
+                    String(localized: "Das Feld \"\(recipe.snippetKey)\" gibt es in den Treffern nicht — dort stand kein Text. Nenne das Feld mit dem beschreibenden Text."))
                 continue
             }
             await onStep(.success(resultCount: parsed.results.count))
             return .success(recipe)
         }
 
-        return .failure(SynthesisFailure(message: lastProblem ?? "Der Parser ließ sich nicht ableiten."))
+        return .failure(SynthesisFailure(message: lastProblem?.user
+                                          ?? String(localized: "Der Parser ließ sich nicht ableiten.")))
     }
 
     /// Models sometimes wrap JSON in prose or a fence; take the outermost object.

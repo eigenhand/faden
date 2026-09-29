@@ -68,7 +68,10 @@ llm = str(uuid.uuid4())
               "baseURL": "https://api.tensorx.ai", "path": "/v1/chat/completions",
               "model": "z-ai/glm-5.3-flash", "contextWindow": 128000,
               "maxOutputTokens": 8192, "supportsVision": True, "keychainAccount": "seed"}],
-    "activeLLMID": llm, "recipes": [], "searchEnabled": True, "showThinking": True},
+    "activeLLMID": llm, "recipes": [], "searchEnabled": True, "showThinking": True,
+    # Agreed already, as a real user would have: otherwise the data-sharing
+    # question opens over the chat on launch and every UI test finds a sheet.
+    "dataSharing": {"agreed": {"api.tensorx.ai": ["chat"]}}},
     indent=2))
 PY
 echo "Test data in $DIR"

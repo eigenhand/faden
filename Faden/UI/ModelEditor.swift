@@ -40,7 +40,7 @@ struct ModelEditor: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 22) {
 
-                        field("Name", text: $model.settings.llms[i].name, placeholder: "Mein Modell")
+                        field("Name", text: $model.settings.llms[i].name, placeholder: String(localized: "Mein Modell"))
 
                         VStack(alignment: .leading, spacing: 8) {
                             EH.label("Format")
@@ -59,7 +59,7 @@ struct ModelEditor: View {
 
                         if model.settings.llms[i].wireFormat.needsEndpoint {
                             field("Endpoint", text: $model.settings.llms[i].baseURL,
-                                  placeholder: "https://api.beispiel.dev", mono: true, url: true)
+                                  placeholder: String(localized: "https://api.beispiel.dev"), mono: true, url: true)
                             field("Pfad", text: $model.settings.llms[i].path,
                                   placeholder: "/v1/chat/completions", mono: true)
                             VStack(alignment: .leading, spacing: 8) {
@@ -103,12 +103,10 @@ struct ModelEditor: View {
 
                             VStack(alignment: .leading, spacing: 8) {
                                 EH.label("Ausweichmodell")
-                                modelField("leer: gar nicht ausweichen",
+                                modelField(String(localized: "leer: gar nicht ausweichen"),
                                            text: $model.settings.llms[i].fallbackModel,
                                            candidates: allModels(model.settings.llms[i]))
-                                Text("Wenn das Hauptmodell nicht antwortet, geht der Zug einmal "
-                                     + "hierher — nach den Wartepausen und nur, solange noch nichts "
-                                     + "angekommen ist.")
+                                Text("Wenn das Hauptmodell nicht antwortet, geht der Zug einmal hierher — nach den Wartepausen und nur, solange noch nichts angekommen ist.")
                                     .font(.eh(12, .caption)).foregroundStyle(EH.muted)
                             }
 
@@ -172,17 +170,14 @@ struct ModelEditor: View {
                                 if separateVisionModel {
                                     VStack(alignment: .leading, spacing: 8) {
                                         EH.label("Vision-Modell")
-                                        modelField("z. B. anbieter/modell-name",
+                                        modelField(String(localized: "z. B. anbieter/modell-name"),
                                                    text: $model.settings.llms[i].visionModel,
                                                    candidates: visionCandidates(model.settings.llms[i]))
                                         EH.label("Vision-Ausweichmodell")
-                                        modelField("leer: gar nicht ausweichen",
+                                        modelField(String(localized: "leer: gar nicht ausweichen"),
                                                    text: $model.settings.llms[i].visionFallbackModel,
                                                    candidates: visionCandidates(model.settings.llms[i]))
-                                        Text("Hängt an einem Zug ein Bild, geht genau dieser Zug an "
-                                             + "das Vision-Modell — alle anderen bleiben beim "
-                                             + "Hauptmodell. Für Modelle, die alles besser können "
-                                             + "ausser sehen.")
+                                        Text("Hängt an einem Zug ein Bild, geht genau dieser Zug an das Vision-Modell — alle anderen bleiben beim Hauptmodell. Für Modelle, die alles besser können ausser sehen.")
                                             .font(.eh(12, .caption)).foregroundStyle(EH.muted)
                                     }
                                     .padding(.leading, 2)
@@ -199,8 +194,7 @@ struct ModelEditor: View {
                                         Text(note.text).font(.eh(12, .caption)).foregroundStyle(EH.slate)
                                     }
                                 } else {
-                                    Text("Der Verbindungstest ruft ein Werkzeug auf, das nichts tut. "
-                                         + "Kommt dabei ein Gedankengang mit, steht auch das fest.")
+                                    Text("Der Verbindungstest ruft ein Werkzeug auf, das nichts tut. Kommt dabei ein Gedankengang mit, steht auch das fest.")
                                         .font(.eh(12, .caption)).foregroundStyle(EH.muted)
                                 }
                             }
@@ -325,16 +319,16 @@ struct ModelEditor: View {
         if let c = picked.contextLength {
             model.settings.llms[i].reportedContextLimit = c
             model.settings.llms[i].contextWindow = c
-            learned.append("Kontext \(RemoteModel.compact(c))")
+            learned.append(String(localized: "Kontext \(RemoteModel.compact(c))"))
         }
         if let o = picked.maxOutput {
             model.settings.llms[i].reportedOutputLimit = o
             model.settings.llms[i].maxOutputTokens = min(model.settings.llms[i].maxOutputTokens, o)
-            learned.append("Ausgabe \(RemoteModel.compact(o))")
+            learned.append(String(localized: "Ausgabe \(RemoteModel.compact(o))"))
         }
         limitNote = learned.isEmpty
-            ? "Der Anbieter nennt für dieses Modell keine Grenzen — die Regler bleiben deine Schätzung."
-            : "Vom Anbieter übernommen: " + learned.joined(separator: ", ") + "."
+            ? String(localized: "Der Anbieter nennt für dieses Modell keine Grenzen — die Regler bleiben deine Schätzung.")
+            : String(localized: "Vom Anbieter übernommen: \(learned.joined(separator: ", ")).")
         visionNote = nil
         model.persist()
     }
@@ -365,11 +359,11 @@ struct ModelEditor: View {
     }
 
     private func contextFootnote(_ c: LLMConfig) -> String? {
-        if let r = c.reportedContextLimit { return "vom Anbieter: \(RemoteModel.compact(r))" }
+        if let r = c.reportedContextLimit { return String(localized: "vom Anbieter: \(RemoteModel.compact(r))") }
         if c.observedMaxPromptTokens > 0 {
-            return "mindestens \(RemoteModel.compact(c.observedMaxPromptTokens)) belegt"
+            return String(localized: "mindestens \(RemoteModel.compact(c.observedMaxPromptTokens)) belegt")
         }
-        return "Anbieter nennt keine Grenze"
+        return String(localized: "Anbieter nennt keine Grenze")
     }
 
     /// What stands there instead of an address, a key and a model name.
@@ -422,13 +416,13 @@ struct ModelEditor: View {
     /// Two checks in sequence: can we talk to the model at all, and does it take
     /// images. The second one decides the vision switch, so nobody has to guess.
     private func runTest(_ config: LLMConfig) {
-        testState = .running("Verbindung …")
+        testState = .running(String(localized: "Verbindung …"))
         visionNote = nil
         let key = Keychain.get(account: config.keychainAccount) ?? ""
 
         Task {
             guard config.isComplete else {
-                testState = .failed("Endpoint oder Modellname fehlt.")
+                testState = .failed(String(localized: "Endpoint oder Modellname fehlt."))
                 return
             }
             if !config.wireFormat.needsEndpoint, !AppleModel.status.isUsable {
@@ -447,8 +441,8 @@ struct ModelEditor: View {
                 // test is the same one and checks there whether the system hands the
                 // model out and whether it answers.
                 connectionLine = config.wireFormat.needsEndpoint
-                    ? "Verbindung steht. Antwort: „\(trimmed.prefix(60))“"
-                    : "Das Modell antwortet: „\(trimmed.prefix(60))“"
+                    ? String(localized: "Verbindung steht. Antwort: „\(String(trimmed.prefix(60)))“")
+                    : String(localized: "Das Modell antwortet: „\(String(trimmed.prefix(60)))“")
                 testState = .ok(connectionLine)
             } catch {
                 testState = .failed((error as? LocalizedError)?.errorDescription ?? error.localizedDescription)
@@ -466,57 +460,53 @@ struct ModelEditor: View {
             if let i = index {
                 var known: [String] = []
                 if let c = model.settings.llms[i].reportedContextLimit {
-                    known.append("Kontext \(RemoteModel.compact(c))")
+                    known.append(String(localized: "Kontext \(RemoteModel.compact(c))"))
                 }
                 if let o = model.settings.llms[i].reportedOutputLimit {
-                    known.append("Ausgabe \(RemoteModel.compact(o))")
+                    known.append(String(localized: "Ausgabe \(RemoteModel.compact(o))"))
                 }
                 limitNote = known.isEmpty
-                    ? "Der Anbieter nennt keine Token-Grenzen. Die Regler bleiben deine "
-                    + "Schätzung — stösst eine Antwort wirklich an eine Grenze, trägt die "
-                    + "App sie hier ein."
-                    : "Vom Anbieter genannt: " + known.joined(separator: ", ") + "."
+                    ? String(localized: "Der Anbieter nennt keine Token-Grenzen. Die Regler bleiben deine Schätzung — stösst eine Antwort wirklich an eine Grenze, trägt die App sie hier ein.")
+                    : String(localized: "Vom Anbieter genannt: \(known.joined(separator: ", ")).")
             }
 
             // Only worth asking once the endpoint answers at all.
-            testState = .running("Bilder …")
+            testState = .running(String(localized: "Bilder …"))
             let outcome = await VisionProbe.run(config: config, apiKey: key)
             guard let i = index else { return }
 
             switch outcome {
             case .supported:
                 model.settings.llms[i].supportsVision = true
-                visionNote = ("Bilder werden unterstützt — das Modell hat das Testbild richtig beschrieben.", true)
+                visionNote = (String(localized: "Bilder werden unterstützt — das Modell hat das Testbild richtig beschrieben."), true)
             case .acceptedButUnconfirmed(let reply):
                 model.settings.llms[i].supportsVision = true
-                visionNote = ("Bilder wurden angenommen, die Beschreibung war aber unklar („\(reply)“). "
-                              + "Anhängen ist freigeschaltet.", true)
+                visionNote = (String(localized: "Bilder wurden angenommen, die Beschreibung war aber unklar („\(reply)“). Anhängen ist freigeschaltet."), true)
             case .notSupported(let why):
                 model.settings.llms[i].supportsVision = false
-                visionNote = ("Keine Bilder: \(why)", false)
+                visionNote = (String(localized: "Keine Bilder: \(why)"), false)
             case .inconclusive(let why):
-                visionNote = ("Nicht feststellbar: \(why) Der Schalter bleibt, wie er ist.", false)
+                visionNote = (String(localized: "Nicht feststellbar: \(why) Der Schalter bleibt, wie er ist."), false)
             }
 
             // Tools and reasoning in one call — both stand in the same answer, and a
             // second request would only cost a second time.
-            testState = .running("Werkzeuge …")
+            testState = .running(String(localized: "Werkzeuge …"))
             let reading = await CapabilityProbe.toolsAndReasoning(config: config, apiKey: key)
             guard let i = index else { return }
 
             switch reading.tools {
             case .used:
                 model.settings.llms[i].supportsTools = true
-                toolNote = ("Werkzeuge laufen — das Modell hat das Prüfwerkzeug aufgerufen.", true)
+                toolNote = (String(localized: "Werkzeuge laufen — das Modell hat das Prüfwerkzeug aufgerufen."), true)
             case .acceptedButUnused:
                 model.settings.llms[i].supportsTools = true
-                toolNote = ("Werkzeuge wurden angenommen, das Modell hat aber lieber geantwortet. "
-                            + "Kein Fehler, nur kein Beweis.", true)
+                toolNote = (String(localized: "Werkzeuge wurden angenommen, das Modell hat aber lieber geantwortet. Kein Fehler, nur kein Beweis."), true)
             case .refused(let why):
                 model.settings.llms[i].supportsTools = false
-                toolNote = ("Keine Werkzeuge: \(why)", false)
+                toolNote = (String(localized: "Keine Werkzeuge: \(why)"), false)
             case .inconclusive(let why):
-                toolNote = ("Werkzeuge nicht feststellbar: \(why)", false)
+                toolNote = (String(localized: "Werkzeuge nicht feststellbar: \(why)"), false)
             }
             // Reasoning seen is a yes. None seen is not a no — most providers hold it
             // back unless you ask for it.

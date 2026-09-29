@@ -54,7 +54,7 @@ struct AppleProvider: LLMProvider {
         // request here: the session keeps its own transcript, and the prompt is only the
         // new turn.
         guard let lastUser = messages.last(where: { $0.role == .user }) else {
-            throw LLMError.transport("Keine Frage in der Unterhaltung gefunden.")
+            throw LLMError.transport(String(localized: "Keine Frage in der Unterhaltung gefunden."))
         }
         let history = messages.prefix { $0.id != lastUser.id }
 
@@ -135,36 +135,30 @@ struct AppleProvider: LLMProvider {
             // “SensitiveContentAnalysisML 15” and sends everyone on the wrong hunt.
             let ns = error as NSError
             if ns.domain.contains("SensitiveContentAnalysis") {
-                return LLMError.transport(
-                    "Apples Sicherheitsprüfung ist auf diesem System nicht verfügbar — "
-                    + "im Simulator fehlt sie immer. Auf einem echten iPhone mit "
-                    + "eingeschalteter Apple Intelligence läuft es.")
+                return LLMError.transport(String(localized:
+                    "Apples Sicherheitsprüfung ist auf diesem System nicht verfügbar — im Simulator fehlt sie immer. Auf einem echten iPhone mit eingeschalteter Apple Intelligence läuft es."))
             }
             return LLMError.transport(error.localizedDescription)
         }
         switch generation {
         case .exceededContextWindowSize:
-            return LLMError.transport(
-                "Die Unterhaltung ist zu lang für das Modell auf dem Gerät. Sein "
-                + "Kontextfenster ist klein — verdichten oder neu anfangen.")
+            return LLMError.transport(String(localized:
+                "Die Unterhaltung ist zu lang für das Modell auf dem Gerät. Sein Kontextfenster ist klein — verdichten oder neu anfangen."))
         case .guardrailViolation, .refusal:
-            return LLMError.transport(
-                "Apples Modell hat die Antwort verweigert. Die Sperren sitzen im "
-                + "System und lassen sich von hier nicht abschalten.")
+            return LLMError.transport(String(localized:
+                "Apples Modell hat die Antwort verweigert. Die Sperren sitzen im System und lassen sich von hier nicht abschalten."))
         case .unsupportedLanguageOrLocale:
-            return LLMError.transport("Diese Sprache beherrscht das Modell auf dem Gerät nicht.")
+            return LLMError.transport(String(localized: "Diese Sprache beherrscht das Modell auf dem Gerät nicht."))
         case .rateLimited:
-            return LLMError.transport("Das System hat die Anfragen gedrosselt — gleich noch einmal.")
+            return LLMError.transport(String(localized: "Das System hat die Anfragen gedrosselt — gleich noch einmal."))
         case .concurrentRequests:
-            return LLMError.transport(
-                "Es läuft schon eine Anfrage an das Modell. Das System nimmt nur eine "
-                + "auf einmal.")
+            return LLMError.transport(String(localized:
+                "Es läuft schon eine Anfrage an das Modell. Das System nimmt nur eine auf einmal."))
         case .assetsUnavailable:
-            return LLMError.transport(
-                "Das Modell liegt gerade nicht auf dem Gerät. Das System lädt es bei "
-                + "Netz und Ladekabel nach.")
+            return LLMError.transport(String(localized:
+                "Das Modell liegt gerade nicht auf dem Gerät. Das System lädt es bei Netz und Ladekabel nach."))
         case .decodingFailure, .unsupportedGuide:
-            return LLMError.transport("Die Antwort des Modells war nicht lesbar.")
+            return LLMError.transport(String(localized: "Die Antwort des Modells war nicht lesbar."))
         @unknown default:
             return LLMError.transport(generation.localizedDescription)
         }
@@ -176,15 +170,18 @@ struct AppleProvider: LLMProvider {
 /// the provider say the same thing.
 enum AppleModel {
 
-    static let needsOS = "Apples Modell auf dem Gerät gibt es ab iOS 26."
+    // Computed, not stored: the interface language can change at runtime.
+    static var needsOS: String { String(localized: "Apples Modell auf dem Gerät gibt es ab iOS 26.") }
 
     /// The limits, unvarnished. They stand like this in the settings.
-    static let limitations = [
-        "Keine Werkzeuge: keine Websuche, kein Gedächtnisabruf, keine Dateien.",
-        "Keine Bilder — das Modell liest nur Text.",
-        "Kleines Kontextfenster; lange Unterhaltungen brechen früher ab.",
-        "Deutlich schwächer als ein großes Modell am Endpoint.",
-    ]
+    static var limitations: [String] {
+        [
+            String(localized: "Keine Werkzeuge: keine Websuche, kein Gedächtnisabruf, keine Dateien."),
+            String(localized: "Keine Bilder — das Modell liest nur Text."),
+            String(localized: "Kleines Kontextfenster; lange Unterhaltungen brechen früher ab."),
+            String(localized: "Deutlich schwächer als ein großes Modell am Endpoint."),
+        ]
+    }
 
     struct Status {
         var isUsable: Bool
@@ -201,31 +198,27 @@ enum AppleModel {
     static var status: Status {
         #if canImport(FoundationModels)
         guard #available(iOS 26.0, *) else {
-            return Status(isUsable: false, headline: "Ab iOS 26", detail: needsOS)
+            return Status(isUsable: false, headline: String(localized: "Ab iOS 26"), detail: needsOS)
         }
         switch SystemLanguageModel.default.availability {
         case .available:
-            return Status(isUsable: true, headline: "Bereit",
-                          detail: "Das Modell liegt auf dem Gerät. Gespräche damit "
-                                + "verlassen das Telefon nicht.")
+            return Status(isUsable: true, headline: String(localized: "Bereit"),
+                          detail: String(localized: "Das Modell liegt auf dem Gerät. Gespräche damit verlassen das Telefon nicht."))
         case .unavailable(.deviceNotEligible):
-            return Status(isUsable: false, headline: "Gerät zu alt",
-                          detail: "Dieses iPhone unterstützt Apple Intelligence nicht. "
-                                + "Nötig ist ein iPhone 15 Pro oder neuer.")
+            return Status(isUsable: false, headline: String(localized: "Gerät zu alt"),
+                          detail: String(localized: "Dieses iPhone unterstützt Apple Intelligence nicht. Nötig ist ein iPhone 15 Pro oder neuer."))
         case .unavailable(.appleIntelligenceNotEnabled):
-            return Status(isUsable: false, headline: "Apple Intelligence ist aus",
-                          detail: "In den Systemeinstellungen unter „Apple Intelligence & Siri“ "
-                                + "einschalten, dann hier zurückkommen.")
+            return Status(isUsable: false, headline: String(localized: "Apple Intelligence ist aus"),
+                          detail: String(localized: "In den Systemeinstellungen unter „Apple Intelligence & Siri“ einschalten, dann hier zurückkommen."))
         case .unavailable(.modelNotReady):
-            return Status(isUsable: false, headline: "Modell wird noch geladen",
-                          detail: "Das System lädt das Modell im Hintergrund — das "
-                                + "passiert bei Netz und Ladekabel. Später erneut versuchen.")
+            return Status(isUsable: false, headline: String(localized: "Modell wird noch geladen"),
+                          detail: String(localized: "Das System lädt das Modell im Hintergrund — das passiert bei Netz und Ladekabel. Später erneut versuchen."))
         @unknown default:
-            return Status(isUsable: false, headline: "Nicht verfügbar",
-                          detail: "Das System gibt das Modell gerade nicht frei.")
+            return Status(isUsable: false, headline: String(localized: "Nicht verfügbar"),
+                          detail: String(localized: "Das System gibt das Modell gerade nicht frei."))
         }
         #else
-        return Status(isUsable: false, headline: "Ab iOS 26", detail: needsOS)
+        return Status(isUsable: false, headline: String(localized: "Ab iOS 26"), detail: needsOS)
         #endif
     }
 }

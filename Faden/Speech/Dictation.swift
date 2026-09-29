@@ -43,11 +43,11 @@ final class Dictation {
     /// the spoken sentence is not simply lost.
     nonisolated static func transcribeFile(at url: URL, locale: Locale = .current) async throws -> String {
         guard await askSpeechPermission() == .authorized else {
-            throw SpeechError.notConfigured("Die Spracherkennung")
+            throw SpeechError.notConfigured(String(localized: "Die Spracherkennung"))
         }
         guard let recognizer = SFSpeechRecognizer(locale: locale) ?? SFSpeechRecognizer(),
               recognizer.isAvailable else {
-            throw SpeechError.notConfigured("Apples Spracherkennung")
+            throw SpeechError.notConfigured(String(localized: "Apples Spracherkennung"))
         }
 
         let request = SFSpeechURLRecognitionRequest(url: url)
@@ -90,7 +90,7 @@ final class Dictation {
 
         let recognizer = SFSpeechRecognizer(locale: locale) ?? SFSpeechRecognizer()
         guard let recognizer, recognizer.isAvailable else {
-            state = .failed("Für \(locale.identifier) steht keine Spracherkennung bereit.")
+            state = .failed(String(localized: "Für \(locale.identifier) steht keine Spracherkennung bereit."))
             return
         }
         self.recognizer = recognizer
@@ -134,8 +134,7 @@ final class Dictation {
                 format = engine.inputNode.inputFormat(forBus: 0)
             }
             guard format.sampleRate > 0, format.channelCount > 0 else {
-                state = .failed("Das Mikrofon meldet sich nicht. Läuft gerade eine Aufnahme "
-                                + "in einer anderen App, oder ist ein Headset im Wechsel?")
+                state = .failed(String(localized: "Das Mikrofon meldet sich nicht. Läuft gerade eine Aufnahme in einer anderen App, oder ist ein Headset im Wechsel?"))
                 cleanUp()
                 return
             }
@@ -147,7 +146,7 @@ final class Dictation {
             engine.prepare()
             try engine.start()
         } catch {
-            state = .failed("Das Mikrofon ließ sich nicht öffnen: \(error.localizedDescription)")
+            state = .failed(String(localized: "Das Mikrofon ließ sich nicht öffnen: \(error.localizedDescription)"))
             cleanUp()
             return
         }
@@ -251,11 +250,11 @@ final class Dictation {
 
     private func requestPermissions() async -> Bool {
         guard await Self.askSpeechPermission() == .authorized else {
-            state = .denied("Die Spracherkennung ist nicht erlaubt. In den iOS-Einstellungen unter Faden freigeben.")
+            state = .denied(String(localized: "Die Spracherkennung ist nicht erlaubt. In den iOS-Einstellungen unter Faden freigeben."))
             return false
         }
         guard await Self.askMicrophonePermission() else {
-            state = .denied("Das Mikrofon ist nicht erlaubt. In den iOS-Einstellungen unter Faden freigeben.")
+            state = .denied(String(localized: "Das Mikrofon ist nicht erlaubt. In den iOS-Einstellungen unter Faden freigeben."))
             return false
         }
         return true

@@ -22,6 +22,14 @@ targets:
     platform: iOS
     sources:
       - path: Faden
+        excludes:
+          - PrivacyInfo.xcprivacy
+      # The privacy manifest, named on its own line so that it lands in the bundle
+      # as a resource whatever XcodeGen's default for the extension happens to be.
+      # App Store Connect rejects an upload whose required-reason APIs are not
+      # declared there. There are no extension targets; a new one needs its own.
+      - path: Faden/PrivacyInfo.xcprivacy
+        buildPhase: resources
     dependencies:
       # The system SQLite, for the document index. FTS5 is compiled into it on iOS, so
       # full-text search over the parsed documents costs this line and no dependency.

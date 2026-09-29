@@ -104,6 +104,7 @@ final class AppModel {
     /// retype the question, which is why chats fill up with near-identical prompts.
     func regenerateLastAnswer() {
         guard var conversation = current, !turn.isStreaming else { return }
+        guard mayShareForTurn(then: { [weak self] in self?.regenerateLastAnswer() }) else { return }
         // Drop everything after the last real user question — the answer and any
         // tool round trips that produced it.
         guard let lastUser = conversation.messages.lastIndex(where: { m in
@@ -120,6 +121,7 @@ final class AppModel {
     /// Tries the last question again after a failure, without retyping it.
     func retryLastTurn() {
         guard var conversation = current, !turn.isStreaming else { return }
+        guard mayShareForTurn(then: { [weak self] in self?.retryLastTurn() }) else { return }
         turn.errorMessage = nil
         turn.note = nil
         guard let lastUser = conversation.messages.lastIndex(where: { m in
@@ -146,6 +148,9 @@ final class AppModel {
 
         let trimmed = newText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
+        guard mayShareForTurn(then: { [weak self] in
+            self?.edit(messageID: messageID, newText: newText)
+        }) else { return }
 
         // Keep any images that were attached to the original question.
         let images = conversation.messages[index].blocks.filter {
@@ -169,6 +174,7 @@ final class AppModel {
     /// Sends a message that is already assembled, used where `send` cannot rebuild it.
     private func appendAndRun(_ message: Message) {
         guard var conversation = current, let config = settings.activeLLM, config.isComplete else { return }
+        guard mayShareForTurn(then: { [weak self] in self?.appendAndRun(message) }) else { return }
         conversation.messages.append(message)
         conversation.updatedAt = Date()
         writeBack(conversation)
@@ -191,6 +197,8 @@ final class AppModel {
     /// Shown when a search returns 200 but cannot be parsed — the entry point to
     /// automatic endpoint configuration.
     var pendingAutoConfig: PendingAutoConfig?
+    /// The disclosure waiting for an answer before something leaves the device.
+    var consentRequest: DataSharingRequest?
 
     private var compactionTask: Task<Void, Never>?
     private var titleTask: Task<Void, Never>?
@@ -245,8 +253,46 @@ final class AppModel {
         conversations = await Store.shared.loadConversations()
         openOnLaunch()
         isLoaded = true
+        // An install from before the consent existed has providers set up but has
+        // agreed to nothing. Ask now, before anything is sent, rather than on the
+        // first question — and send nothing until the answer is yes.
+        if let config = settings.activeLLM, config.isComplete {
+            let missing = settings.dataSharing.missing(settings.sharingNeeds(forTurnWith: config))
+            if !missing.isEmpty { consentRequest = DataSharingRequest(needs: missing) }
+        }
         // Anything that could not be embedded last time is picked up now.
         runBackfill()
+    }
+
+    // MARK: Data sharing
+
+    /// Whether everything in `needs` has been agreed to.
+    func mayShare(_ needs: [SharingNeed]) -> Bool {
+        settings.dataSharing.missing(needs).isEmpty
+    }
+
+    /// Whether everything in `needs` has been agreed to — and if not, asks, and runs
+    /// `resume` once the answer is yes. The caller stops when this returns false.
+    func mayShare(_ needs: [SharingNeed], then resume: @escaping () -> Void) -> Bool {
+        let missing = settings.dataSharing.missing(needs)
+        guard !missing.isEmpty else { return true }
+        consentRequest = DataSharingRequest(needs: missing, onAgree: resume)
+        return false
+    }
+
+    /// The same, for everything a chat turn with the active model may send.
+    private func mayShareForTurn(then resume: @escaping () -> Void) -> Bool {
+        guard let config = settings.activeLLM, config.isComplete else { return true }
+        var needs = settings.sharingNeeds(forTurnWith: config)
+        // A spoken conversation reads every answer aloud, whatever the setting says.
+        if voiceModeActive, let n = settings.remoteSpeechNeed { needs.append(n) }
+        return mayShare(needs, then: resume)
+    }
+
+    /// Records the user's yes.
+    func grant(_ needs: [SharingNeed]) {
+        settings.dataSharing.grant(needs)
+        persist()
     }
 
     /// Takes in a conversation someone passed along.
@@ -361,8 +407,12 @@ final class AppModel {
     /// *before* asking here, and this procedure has three silent bail-outs. If one
     /// applied, the typed text was gone and nothing said why — “the message does not go
     /// through”. Whoever destroys the text has to know beforehand that it arrived.
+    ///
+    /// `resume` runs when the message was held back for the data-sharing consent and
+    /// the user then agreed. The composer passes its own submit, so that the field is
+    /// cleared the usual way; everyone else gets the message sent again as it was.
     @discardableResult
-    func send(_ text: String) -> Bool {
+    func send(_ text: String, resume: (() -> Void)? = nil) -> Bool {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         let staged = attachments
         guard !trimmed.isEmpty || !staged.isEmpty else { return false }
@@ -375,6 +425,11 @@ final class AppModel {
         }
         guard let config = settings.activeLLM, config.isComplete else {
             errorMessage = String(localized: "Richte zuerst ein Modell ein: Endpoint, Key und Modellname.")
+            return false
+        }
+        // Nothing leaves the device before the user has agreed to where it goes. The
+        // text stays in the composer meanwhile, and the attachments stay staged.
+        guard mayShareForTurn(then: resume ?? { [weak self] in self?.send(text) }) else {
             return false
         }
         guard var conversation = current else {
@@ -410,6 +465,12 @@ final class AppModel {
         // user opens meanwhile.
         let conversationID = conversation.id
         let state = turn
+        // The last line of defence: every caller asks first, and if one ever does
+        // not, the turn fails rather than sending without consent.
+        guard mayShare(settings.sharingNeeds(forTurnWith: config)) else {
+            state.errorMessage = String(localized: "Nichts gesendet: Der Weitergabe an diesen Anbieter hast du noch nicht zugestimmt.")
+            return
+        }
         state.isStreaming = true
         state.clearLive()
         state.errorMessage = nil
@@ -509,7 +570,7 @@ final class AppModel {
             state.liveThinking += d
         case .toolStarted(let id, let name, _):
             if !state.liveTools.contains(where: { $0.id == id }) {
-                state.liveTools.append(ToolActivity(id: id, name: name, summary: "läuft"))
+                state.liveTools.append(ToolActivity(id: id, name: name, summary: String(localized: "läuft")))
             }
         case .toolProgress(let id, let done, let total):
             if let i = state.liveTools.firstIndex(where: { $0.id == id }) {
@@ -623,6 +684,10 @@ final class AppModel {
     func startVoiceInput(onPartial: @escaping @MainActor (String) -> Void) {
         voiceError = nil
         player.stop()
+        // Asked before recording, not after: whoever has just spoken a sentence
+        // should not lose it to a question.
+        if effectiveSTT == .remote, let need = settings.remoteTranscriptionNeed,
+           !mayShare([need], then: {}) { return }
         switch effectiveSTT {
         case .apple:
             Task { await dictation.start(onText: onPartial) }
@@ -647,6 +712,7 @@ final class AppModel {
         case .remote:
             let recordingURL = recorder.fileURL
             guard let audio = recorder.stop(), audio.count > 4_000 else { return nil }
+            if let need = settings.remoteTranscriptionNeed, !mayShare([need]) { return nil }
             transcribing = true
             defer { transcribing = false }
             let key = Keychain.get(account: settings.speech.sttKeychainAccount) ?? ""
@@ -683,6 +749,13 @@ final class AppModel {
     /// listen again — until it is switched off.
     func startVoiceConversation() {
         guard voiceStage == .off else { return }
+        var needs: [SharingNeed] = []
+        if let config = settings.activeLLM, config.isComplete {
+            needs += settings.sharingNeeds(forTurnWith: config)
+        }
+        if effectiveSTT == .remote, let n = settings.remoteTranscriptionNeed { needs.append(n) }
+        if let n = settings.remoteSpeechNeed { needs.append(n) }
+        guard mayShare(needs, then: { [weak self] in self?.startVoiceConversation() }) else { return }
         voiceError = nil
         beginListening()
     }
@@ -773,6 +846,8 @@ final class AppModel {
         case .apple:
             player.speakLocally(spoken, config: settings.speech)
         case .remote:
+            if let need = settings.remoteSpeechNeed,
+               !mayShare([need], then: { [weak self] in self?.speak(text) }) { return }
             let key = Keychain.get(account: settings.speech.ttsKeychainAccount) ?? ""
             let config = settings.speech
             Task { [weak self] in
@@ -883,6 +958,7 @@ final class AppModel {
     private func maybeRemember() {
         guard settings.memory.isReady, settings.memory.automatic, !memoryBusy,
               let config = settings.activeLLM, config.isComplete,
+              mayShare(memoryNeeds(config)),
               let conversation = current
         else { return }
 
@@ -934,6 +1010,9 @@ final class AppModel {
     /// that those facts are not yet findable by similarity.
     func runBackfill() {
         guard settings.memory.isReady, backfillTask == nil else { return }
+        // Waits for the consent rather than asking: this runs by itself, and a
+        // question nobody prompted would come out of nowhere.
+        if let need = settings.embeddingNeed, !mayShare([need]) { return }
         let memoryConfig = settings.memory
         let embeddingKey = Keychain.get(account: memoryConfig.embeddingKeychainAccount) ?? ""
 
@@ -967,6 +1046,8 @@ final class AppModel {
         guard let config = settings.activeLLM, config.isComplete,
               settings.memory.isReady, let conversation = current, !memoryBusy
         else { return }
+        guard mayShare(memoryNeeds(config), then: { [weak self] in self?.rememberConversation() })
+        else { return }
         memoryBusy = true
         memoryError = nil
         let text = Compactor.render(conversation.messages)
@@ -986,6 +1067,23 @@ final class AppModel {
         }
     }
 
+    /// Remembering sends the exchange to the chat model, which extracts the facts,
+    /// and the facts to the embedding endpoint.
+    private func memoryNeeds(_ config: LLMConfig) -> [SharingNeed] {
+        var needs: [SharingNeed] = []
+        if config.wireFormat.needsEndpoint, let n = SharingNeed(.chat, url: config.endpointURL) {
+            needs.append(n)
+        }
+        if let n = settings.embeddingNeed { needs.append(n) }
+        return needs
+    }
+
+    /// The chat model alone — titles and compaction send nothing else.
+    private func mayShareWithModel(_ config: LLMConfig) -> Bool {
+        guard config.wireFormat.needsEndpoint else { return true }
+        return mayShare([SharingNeed(.chat, url: config.endpointURL)].compactMap { $0 })
+    }
+
     // MARK: Naming the conversation
 
     /// Replaces the provisional title once the thread has enough substance, and
@@ -993,7 +1091,8 @@ final class AppModel {
     private func maybeRetitle() {
         guard let conversation = current,
               Titler.shouldTitle(conversation),
-              let config = settings.activeLLM, config.isComplete
+              let config = settings.activeLLM, config.isComplete,
+              mayShareWithModel(config)
         else { return }
 
         let titler = Titler(config: config, apiKey: apiKey(for: config))
@@ -1018,6 +1117,7 @@ final class AppModel {
         guard settings.autoCompactEnabled,
               !usage.compacting,
               let config = settings.activeLLM, config.isComplete,
+              mayShareWithModel(config),
               usage.fraction >= settings.compactionThreshold,
               var conversation = current
         else { return }
@@ -1082,6 +1182,8 @@ final class AppModel {
         let state = turn
         guard let config = settings.activeLLM, config.isComplete, !state.usage.compacting else { return }
         guard let conversation = current else { return }
+        if config.wireFormat.needsEndpoint, let need = SharingNeed(.chat, url: config.endpointURL),
+           !mayShare([need], then: { [weak self] in self?.compactNow() }) { return }
         state.usage.compacting = true
         let compactor = Compactor(config: config, apiKey: apiKey(for: config))
         let snapshot = conversation.messages

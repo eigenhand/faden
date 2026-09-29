@@ -7,8 +7,8 @@ enum STTSource: String, Codable, CaseIterable, Identifiable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .apple:  return "Apple (auf dem Gerät)"
-        case .remote: return "Eigener Endpoint"
+        case .apple:  return String(localized: "Apple (auf dem Gerät)")
+        case .remote: return String(localized: "Eigener Endpoint")
         }
     }
 }
@@ -21,9 +21,9 @@ enum TTSSource: String, Codable, CaseIterable, Identifiable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .off:    return "Aus"
-        case .apple:  return "Apple-Stimme"
-        case .remote: return "Eigener Endpoint"
+        case .off:    return String(localized: "Aus")
+        case .apple:  return String(localized: "Apple-Stimme")
+        case .remote: return String(localized: "Eigener Endpoint")
         }
     }
 }

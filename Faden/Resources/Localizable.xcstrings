@@ -11,12 +11,72 @@
         }
       }
     },
+    "$%@/$%@ pro M": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "$%@/$%@ per M"
+          }
+        }
+      }
+    },
+    "%@\n\nFaden kann den Endpoint selbst abklopfen, sich die Antwort ansehen und den Parser von einem deiner Modelle ableiten lassen. Der fertige Parser läuft danach lokal auf diesem Gerät.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@\n\nFaden can probe the endpoint itself, look at the answer and have one of your models derive the parser. The finished parser then runs locally on this device."
+          }
+        }
+      }
+    },
+    "%@ Ausgabe": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ output"
+          }
+        }
+      }
+    },
+    "%@ Kontext": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ context"
+          }
+        }
+      }
+    },
     "%@ ist nicht eingerichtet.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "%@ is not set up."
+          }
+        }
+      }
+    },
+    "%@ liest die Antwortstruktur …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is reading the response structure …"
+          }
+        }
+      }
+    },
+    "%@ · %lld Abschnitte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · %2$lld sections"
           }
         }
       }
@@ -37,6 +97,46 @@
         }
       }
     },
+    "%@ · %lld Zeichen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · %2$lld characters"
+          }
+        }
+      }
+    },
+    "%@ · %lld gleichzeitig": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %lld at once"
+          }
+        }
+      }
+    },
+    "%@ · Abschnitt %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · section %2$lld"
+          }
+        }
+      }
+    },
+    "%@ · Bilder: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · images: %@"
+          }
+        }
+      }
+    },
     "%@, %@": {
       "localizations": {
         "de": {
@@ -49,6 +149,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@, %@"
+          }
+        }
+      }
+    },
+    "%@: leer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: empty"
           }
         }
       }
@@ -79,6 +189,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld %% used"
+          }
+        }
+      }
+    },
+    "%lld %% · verdichtet gleich": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld %% · compacting soon"
+          }
+        }
+      }
+    },
+    "%lld Bilder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld images"
+          }
+        }
+      }
+    },
+    "%lld Dateien angesehen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld files viewed"
           }
         }
       }
@@ -125,6 +265,26 @@
         }
       }
     },
+    "%lld Einträge": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld entries"
+          }
+        }
+      }
+    },
+    "%lld Gedankengänge": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld reasoning passages"
+          }
+        }
+      }
+    },
     "%lld Modelle": {
       "localizations": {
         "en": {
@@ -165,6 +325,26 @@
         }
       }
     },
+    "%lld Notizen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld notes"
+          }
+        }
+      }
+    },
+    "%lld Orte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld places"
+          }
+        }
+      }
+    },
     "%lld Quellen": {
       "localizations": {
         "en": {
@@ -175,12 +355,62 @@
         }
       }
     },
+    "%lld Seiten gelesen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld pages read"
+          }
+        }
+      }
+    },
+    "%lld Suchen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld searches"
+          }
+        }
+      }
+    },
     "%lld Treffer": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "%lld results"
+          }
+        }
+      }
+    },
+    "%lld Zeichen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld characters"
+          }
+        }
+      }
+    },
+    "%lld als „Zusammenfassung“ markierte Züge": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld turns marked as “summary”"
+          }
+        }
+      }
+    },
+    "%lld fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld failed"
           }
         }
       }
@@ -211,12 +441,52 @@
         }
       }
     },
+    "%lld unvollständige Werkzeugschritte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld incomplete tool steps"
+          }
+        }
+      }
+    },
+    "%lld von %lld Token": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of %lld tokens"
+          }
+        }
+      }
+    },
+    "%lld von %lld Token (geschätzt)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of %lld tokens (estimated)"
+          }
+        }
+      }
+    },
     "%lld warten auf Einbettung": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "%lld waiting to be embedded"
+          }
+        }
+      }
+    },
+    "%lld ältere Nachrichten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld older messages"
           }
         }
       }
@@ -231,12 +501,92 @@
         }
       }
     },
+    "%lld/%lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld/%lld"
+          }
+        }
+      }
+    },
+    "%lld× %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld× %@"
+          }
+        }
+      }
+    },
+    "%lld× im Bestand nachgesehen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checked the inventory %lld×"
+          }
+        }
+      }
+    },
+    "%lld× im Gedächtnis nachgesehen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checked memory %lld×"
+          }
+        }
+      }
+    },
     "%lld× verdichtet": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "compacted %lld×"
+          }
+        }
+      }
+    },
+    "1 Datei angesehen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 file viewed"
+          }
+        }
+      }
+    },
+    "1 Notiz": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 note"
+          }
+        }
+      }
+    },
+    "1 Seite gelesen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 page read"
+          }
+        }
+      }
+    },
+    "1 Suche": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 search"
           }
         }
       }
@@ -252,12 +602,32 @@
         }
       }
     },
+    "Ab iOS 26": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS 26 or later"
+          }
+        }
+      }
+    },
     "Abbrechen": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Cancel"
+          }
+        }
+      }
+    },
+    "Abgebrochen nach %lld Werkzeugrunden.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stopped after %lld tool rounds."
           }
         }
       }
@@ -279,6 +649,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Copy the paragraph"
+          }
+        }
+      }
+    },
+    "Adresse und Format kommen aus der Vorlage. Den Schlüssel trägst du selbst ein — er liegt im Schlüsselbund des Geräts.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Address and format come from the template. You enter the key yourself — it is kept in the device's keychain."
           }
         }
       }
@@ -335,6 +715,26 @@
         }
       }
     },
+    "Alles bereit. So klingt die Stimme, die deine Antworten vorliest.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All set. This is how the voice that reads your answers sounds."
+          }
+        }
+      }
+    },
+    "Alles selbst eintragen — für alles, was OpenAI- oder Anthropic-Format spricht.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter everything yourself — for anything that speaks the OpenAI or Anthropic format."
+          }
+        }
+      }
+    },
     "Alles vergessen": {
       "localizations": {
         "en": {
@@ -366,6 +766,16 @@
         }
       }
     },
+    "Anbieter ausgelastet, neuer Versuch in einer Minute (%lld) …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Provider busy, trying again in a minute (%lld) …"
+          }
+        }
+      }
+    },
     "Anbieter entfernen": {
       "localizations": {
         "en": {
@@ -386,12 +796,42 @@
         }
       }
     },
+    "Anbieter nennt keine Grenze": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Provider states no limit"
+          }
+        }
+      }
+    },
     "Anderen wählen": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Choose another"
+          }
+        }
+      }
+    },
+    "Anfrage": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Request"
+          }
+        }
+      }
+    },
+    "Angehängte Bilder sowie Dokumente und Einträge aus Ordner oder Fundus, die du freigibst": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Attached images, and documents and entries from the folder or Fundus that you share"
           }
         }
       }
@@ -414,6 +854,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Anthropic"
+          }
+        }
+      }
+    },
+    "Anthropic API und alles, was /v1/messages spricht.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Anthropic API and anything that speaks /v1/messages."
           }
         }
       }
@@ -449,6 +899,36 @@
         }
       }
     },
+    "Antwort wird erstellt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Working on an answer"
+          }
+        }
+      }
+    },
+    "Antwort wird geschrieben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Answer is being written"
+          }
+        }
+      }
+    },
+    "Antwort wird vorbereitet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Answer is being prepared"
+          }
+        }
+      }
+    },
     "Antworten vorlesen": {
       "localizations": {
         "en": {
@@ -469,12 +949,122 @@
         }
       }
     },
+    "Apple (auf dem Gerät)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple (on the device)"
+          }
+        }
+      }
+    },
+    "Apple Intelligence ist aus": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Intelligence is off"
+          }
+        }
+      }
+    },
     "Apple lädt das Modell im Hintergrund. Einen Fortschritt meldet das System dabei nicht — du kannst die App in der Zwischenzeit benutzen.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Apple downloads the model in the background. The system reports no progress while it does — you can keep using the app meanwhile."
+          }
+        }
+      }
+    },
+    "Apple · auf dem Gerät": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple · on device"
+          }
+        }
+      }
+    },
+    "Apple, auf dem Gerät": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple, on the device"
+          }
+        }
+      }
+    },
+    "Apple-Diktat": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple dictation"
+          }
+        }
+      }
+    },
+    "Apple-Stimme": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple voice"
+          }
+        }
+      }
+    },
+    "Apples Modell auf dem Gerät gibt es ab iOS 26.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple's on-device model requires iOS 26 or later."
+          }
+        }
+      }
+    },
+    "Apples Modell hat die Antwort verweigert. Die Sperren sitzen im System und lassen sich von hier nicht abschalten.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple's model refused to answer. The guardrails sit in the system and cannot be switched off from here."
+          }
+        }
+      }
+    },
+    "Apples Modell kennt keine Werkzeuge.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple's model has no tools."
+          }
+        }
+      }
+    },
+    "Apples Sicherheitsprüfung ist auf diesem System nicht verfügbar — im Simulator fehlt sie immer. Auf einem echten iPhone mit eingeschalteter Apple Intelligence läuft es.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple's safety check is not available on this system — the simulator never has it. It works on a real iPhone with Apple Intelligence turned on."
+          }
+        }
+      }
+    },
+    "Apples Spracherkennung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple's speech recognition"
           }
         }
       }
@@ -490,12 +1080,42 @@
         }
       }
     },
+    "Arbeitet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Working"
+          }
+        }
+      }
+    },
+    "Assistent": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Assistant"
+          }
+        }
+      }
+    },
     "Auf dem Gerät": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "On device"
+          }
+        }
+      }
+    },
+    "Aus": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off"
           }
         }
       }
@@ -520,6 +1140,26 @@
         }
       }
     },
+    "Ausführlich": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thorough"
+          }
+        }
+      }
+    },
+    "Ausführlicher": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More detail"
+          }
+        }
+      }
+    },
     "Ausführlichkeit": {
       "extractionState": "manual",
       "localizations": {
@@ -527,6 +1167,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Length"
+          }
+        }
+      }
+    },
+    "Ausgabe %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Output %@"
+          }
+        }
+      }
+    },
+    "Ausgewogen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Balanced"
           }
         }
       }
@@ -563,6 +1223,16 @@
         }
       }
     },
+    "Auszug": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snippet"
+          }
+        }
+      }
+    },
     "Auszug-Feld": {
       "extractionState": "manual",
       "localizations": {
@@ -570,6 +1240,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Snippet field"
+          }
+        }
+      }
+    },
+    "Auszüge aus deinen Gesprächen und die daraus gemerkten Fakten, damit sie sich wiederfinden lassen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Excerpts from your conversations and the facts remembered from them, so they can be found again"
           }
         }
       }
@@ -666,6 +1346,16 @@
         }
       }
     },
+    "Beim Übernehmen entfernt: %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Removed on import: %@."
+          }
+        }
+      }
+    },
     "Bereit": {
       "extractionState": "manual",
       "localizations": {
@@ -703,6 +1393,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Read the inventory"
+          }
+        }
+      }
+    },
+    "Bevor etwas gesendet wird": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Before anything is sent"
           }
         }
       }
@@ -758,6 +1458,36 @@
         }
       }
     },
+    "Bilder werden unterstützt — das Modell hat das Testbild richtig beschrieben.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Images are supported — the model described the test image correctly."
+          }
+        }
+      }
+    },
+    "Bilder wurden angenommen, die Beschreibung war aber unklar („%@“). Anhängen ist freigeschaltet.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Images were accepted, but the description was unclear (“%@”). Attaching is enabled."
+          }
+        }
+      }
+    },
+    "Bilder …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Images …"
+          }
+        }
+      }
+    },
     "Body-Vorlage": {
       "extractionState": "manual",
       "localizations": {
@@ -785,6 +1515,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Code copied"
+          }
+        }
+      }
+    },
+    "Codeblock.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Code block."
           }
         }
       }
@@ -819,6 +1559,96 @@
         }
       }
     },
+    "Das Feld \"%@\" gibt es in den Treffern nicht — dort stand kein Text. Nenne das Feld mit dem beschreibenden Text.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The results have no field \"%@\" — no text was found there. Name the field with the descriptive text."
+          }
+        }
+      }
+    },
+    "Das Feld \"%@\" gibt es in den Treffern nicht — dort stand kein Titel. Nenne das Feld, das den Titel wirklich enthält.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The results have no field \"%@\" — no title was found there. Name the field that actually holds the title."
+          }
+        }
+      }
+    },
+    "Das Mikrofon": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The microphone"
+          }
+        }
+      }
+    },
+    "Das Mikrofon ist nicht erlaubt. In den iOS-Einstellungen unter Faden freigeben.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The microphone is not allowed. Turn it on in the iOS Settings under Faden."
+          }
+        }
+      }
+    },
+    "Das Mikrofon ließ sich nicht öffnen: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The microphone could not be opened: %@"
+          }
+        }
+      }
+    },
+    "Das Mikrofon meldet sich nicht. Läuft gerade eine Aufnahme in einer anderen App, oder ist ein Headset im Wechsel?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The microphone is not responding. Is another app recording right now, or is a headset being switched?"
+          }
+        }
+      }
+    },
+    "Das Modell antwortet: „%@“": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The model replies: “%@”"
+          }
+        }
+      }
+    },
+    "Das Modell hat keinen Text geliefert.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The model returned no text."
+          }
+        }
+      }
+    },
+    "Das Modell hat nichts zurückgegeben.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The model returned nothing."
+          }
+        }
+      }
+    },
     "Das Modell hat nur nachgedacht und keinen Text geliefert. Eine höhere maximale Antwortlänge hilft.": {
       "localizations": {
         "en": {
@@ -829,12 +1659,182 @@
         }
       }
     },
+    "Das Modell im System. Ohne Endpoint, ohne Schlüssel, ohne Netz — und ohne Werkzeuge und Bilder.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The model built into the system. No endpoint, no key, no network — and no tools or images."
+          }
+        }
+      }
+    },
+    "Das Modell konnte nicht geladen werden (%lld).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The model could not be downloaded (%lld)."
+          }
+        }
+      }
+    },
+    "Das Modell liegt auf dem Gerät. Gespräche damit verlassen das Telefon nicht.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The model is on the device. Conversations with it do not leave the phone."
+          }
+        }
+      }
+    },
+    "Das Modell liegt gerade nicht auf dem Gerät. Das System lädt es bei Netz und Ladekabel nach.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The model is not on the device right now. The system downloads it when there is a network and a charger."
+          }
+        }
+      }
+    },
+    "Das Modell war nicht erreichbar: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The model could not be reached: %@"
+          }
+        }
+      }
+    },
+    "Das Modell wurde nicht geladen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The model was not downloaded."
+          }
+        }
+      }
+    },
+    "Das System gibt das Modell gerade nicht frei.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The system is not making the model available right now."
+          }
+        }
+      }
+    },
+    "Das System hat die Anfragen gedrosselt — gleich noch einmal.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The system is throttling requests — try again in a moment."
+          }
+        }
+      }
+    },
+    "Das System hat noch nicht geantwortet. Der Download läuft unter Umständen weiter — beim nächsten Öffnen steht hier, ob er angekommen ist.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The system has not answered yet. The download may still be running — next time you open this, it will say whether it arrived."
+          }
+        }
+      }
+    },
+    "Das System lädt das Modell im Hintergrund — das passiert bei Netz und Ladekabel. Später erneut versuchen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The system downloads the model in the background — that happens with a network and a charger. Try again later."
+          }
+        }
+      }
+    },
+    "Das Testbild ließ sich nicht erzeugen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The test image could not be created."
+          }
+        }
+      }
+    },
+    "Das gewählte Modell ist nicht vollständig eingerichtet.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The chosen model is not fully set up."
+          }
+        }
+      }
+    },
+    "Das lokale Modell": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The local model"
+          }
+        }
+      }
+    },
+    "Das lokale Modell ist noch nicht geladen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The local model is not downloaded yet."
+          }
+        }
+      }
+    },
+    "Datum, Uhrzeit und Zeitzone deines Geräts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your device's date, time and time zone"
+          }
+        }
+      }
+    },
     "Dein Endpoint": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Your endpoint"
+          }
+        }
+      }
+    },
+    "Deine Nachrichten, den bisherigen Verlauf der Unterhaltung und deine Anweisungen an Faden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your messages, the conversation so far and your instructions to Faden"
+          }
+        }
+      }
+    },
+    "Deine Sprachaufnahmen, um sie in Text umzuwandeln": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your voice recordings, to turn them into text"
           }
         }
       }
@@ -882,6 +1882,76 @@
           "stringUnit": {
             "state": "translated",
             "value": "The provider is throttling right now (HTTP %lld) — still, after two waits."
+          }
+        }
+      }
+    },
+    "Der Anbieter nennt für dieses Modell keine Grenzen — die Regler bleiben deine Schätzung.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The provider states no limits for this model — the sliders remain your estimate."
+          }
+        }
+      }
+    },
+    "Der Anbieter nennt keine Token-Grenzen. Die Regler bleiben deine Schätzung — stösst eine Antwort wirklich an eine Grenze, trägt die App sie hier ein.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The provider states no token limits. The sliders remain your estimate — if an answer actually hits a limit, the app fills it in here."
+          }
+        }
+      }
+    },
+    "Der Anbieter verarbeitet diese Daten nach seinen eigenen Bedingungen und seiner Datenschutzerklärung. Faden fragt pro Anbieter einmal; ohne dein Einverständnis wird nichts gesendet.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The provider processes this data under its own terms and privacy policy. Faden asks once per provider; without your agreement, nothing is sent."
+          }
+        }
+      }
+    },
+    "Der Einbettungs-Endpoint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The embedding endpoint"
+          }
+        }
+      }
+    },
+    "Der Endpoint für Sprachausgabe": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The speech output endpoint"
+          }
+        }
+      }
+    },
+    "Der Endpoint für Spracherkennung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The speech recognition endpoint"
+          }
+        }
+      }
+    },
+    "Der Endpoint hat das Bild abgelehnt (HTTP %lld). ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The endpoint rejected the image (HTTP %lld). "
           }
         }
       }
@@ -946,6 +2016,16 @@
         }
       }
     },
+    "Der Parser ließ sich nicht ableiten.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The parser could not be derived."
+          }
+        }
+      }
+    },
     "Der Parser wurde von %@ aus einer echten Antwort dieses Endpoints abgeleitet und läuft seitdem lokal auf diesem Gerät.": {
       "localizations": {
         "en": {
@@ -956,12 +2036,42 @@
         }
       }
     },
+    "Der Test lieferte zwar Treffer, aber du hältst sie für falsch.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The test did return results, but you think they are wrong."
+          }
+        }
+      }
+    },
+    "Der Text konnte nicht eingebettet werden.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The text could not be embedded."
+          }
+        }
+      }
+    },
     "Der Verbindungstest probiert es selbst aus und setzt den Schalter entsprechend.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "The connection test tries it out itself and sets the switch accordingly."
+          }
+        }
+      }
+    },
+    "Der Verbindungstest ruft ein Werkzeug auf, das nichts tut. Kommt dabei ein Gedankengang mit, steht auch das fest.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The connection test calls a tool that does nothing. If reasoning comes back with it, that is settled too."
           }
         }
       }
@@ -1017,12 +2127,32 @@
         }
       }
     },
+    "Deutlich schwächer als ein großes Modell am Endpoint.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clearly weaker than a large model at an endpoint."
+          }
+        }
+      }
+    },
     "Die Antwort darauf und alles danach wird verworfen und neu beantwortet.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "The answer to this and everything after it is discarded and answered again."
+          }
+        }
+      }
+    },
+    "Die Antwort des Modells war nicht lesbar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The model's answer could not be read."
           }
         }
       }
@@ -1037,12 +2167,32 @@
         }
       }
     },
+    "Die Antwort war kein JSON-Objekt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The response was not a JSON object."
+          }
+        }
+      }
+    },
     "Die Antwort war leer.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "The answer was empty."
+          }
+        }
+      }
+    },
+    "Die Antworten, die vorgelesen werden sollen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The answers to be read aloud"
           }
         }
       }
@@ -1083,6 +2233,36 @@
         }
       }
     },
+    "Die Liste enthielt keine Modelle.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The list contained no models."
+          }
+        }
+      }
+    },
+    "Die Spracherkennung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speech recognition"
+          }
+        }
+      }
+    },
+    "Die Spracherkennung ist nicht erlaubt. In den iOS-Einstellungen unter Faden freigeben.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speech recognition is not allowed. Turn it on in the iOS Settings under Faden."
+          }
+        }
+      }
+    },
     "Die Stimme gehört zum festen Teil der Anweisungen und ändert sich nur, wenn du sie änderst — sie kostet daher keine zusätzlichen Token pro Frage.": {
       "localizations": {
         "en": {
@@ -1099,6 +2279,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "The search provider's URL is not valid."
+          }
+        }
+      }
+    },
+    "Die Unterhaltung ist zu lang für das Modell auf dem Gerät. Sein Kontextfenster ist klein — verdichten oder neu anfangen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The conversation is too long for the model on the device. Its context window is small — compact it or start over."
           }
         }
       }
@@ -1133,6 +2323,16 @@
         }
       }
     },
+    "Diese Sprache beherrscht das Modell auf dem Gerät nicht.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The model on the device does not speak this language."
+          }
+        }
+      }
+    },
     "Diese Vektoren zählen nicht mit — sie stammen aus einem anderen Raum. Beim nächsten Nachholen werden sie ersetzt.": {
       "localizations": {
         "en": {
@@ -1163,6 +2363,36 @@
         }
       }
     },
+    "Dieses iPhone unterstützt Apple Intelligence nicht. Nötig ist ein iPhone 15 Pro oder neuer.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This iPhone does not support Apple Intelligence. It needs an iPhone 15 Pro or newer."
+          }
+        }
+      }
+    },
+    "Diktat und Vorlesen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dictation and reading aloud"
+          }
+        }
+      }
+    },
+    "Du": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You"
+          }
+        }
+      }
+    },
     "Dunkel": {
       "extractionState": "manual",
       "localizations": {
@@ -1185,12 +2415,92 @@
         }
       }
     },
+    "Eigener Anbieter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Custom provider"
+          }
+        }
+      }
+    },
+    "Eigener Endpoint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Custom endpoint"
+          }
+        }
+      }
+    },
+    "Eigenes Format. Erweitertes Denken und Prompt-Caching gibt es nur hier.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Its own format. Extended thinking and prompt caching are only available here."
+          }
+        }
+      }
+    },
     "Eigenes Modell für Bilder": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Separate model for images"
+          }
+        }
+      }
+    },
+    "Ein Bild aus der Mediathek erklären lassen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Have an image from the library explained"
+          }
+        }
+      }
+    },
+    "Ein Endpoint lässt sich jederzeit daneben einrichten. Dann steht beides zur Wahl, und diese Unterhaltung hier bleibt auf dem Gerät.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An endpoint can be set up alongside at any time. Then both are available to choose from, and this conversation stays on the device."
+          }
+        }
+      }
+    },
+    "Ein Foto aufnehmen und erklären lassen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Take a photo and have it explained"
+          }
+        }
+      }
+    },
+    "Ein Schritt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One step"
+          }
+        }
+      }
+    },
+    "Ein Wechsel macht den vorhandenen Index unbrauchbar — die Vektoren der anderen Quelle liegen in einem anderen Raum. Sie werden ersetzt, unten steht wie viele.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Switching makes the existing index unusable — the vectors from the other source live in a different space. They will be replaced; how many is shown below."
           }
         }
       }
@@ -1221,6 +2531,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Test embedding"
+          }
+        }
+      }
+    },
+    "Einbettung wartet auf den Anbieter (Versuch %lld) …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Embedding is waiting for the provider (attempt %lld) …"
           }
         }
       }
@@ -1287,6 +2607,16 @@
         }
       }
     },
+    "Einverstanden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agree"
+          }
+        }
+      }
+    },
     "Einzelne Schritte anzeigen": {
       "localizations": {
         "en": {
@@ -1314,6 +2644,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Set up the endpoint automatically?"
+          }
+        }
+      }
+    },
+    "Endpoint oder Modellname fehlt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The endpoint or model name is missing."
+          }
+        }
+      }
+    },
+    "Erinnerungen pro Antwort": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memories per answer"
           }
         }
       }
@@ -1348,6 +2698,26 @@
         }
       }
     },
+    "Es kamen %lld Vektoren für %lld Texte zurück.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Got %lld vectors back for %lld texts."
+          }
+        }
+      }
+    },
+    "Es läuft schon eine Anfrage an das Modell. Das System nimmt nur eine auf einmal.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A request to the model is already running. The system takes only one at a time."
+          }
+        }
+      }
+    },
     "Faden": {
       "localizations": {
         "en": {
@@ -1378,12 +2748,12 @@
         }
       }
     },
-    "Faden bringt kein Modell und keinen Suchanbieter mit. Trage deinen Endpoint, deinen Key und den Modellnamen ein — alles bleibt auf diesem Gerät.": {
+    "Faden bringt kein Modell und keinen Suchanbieter mit. Trage deinen Endpoint, deinen Key und den Modellnamen ein — deine Chats liegen nur auf diesem Gerät und gehen nur an den Anbieter, den du einrichtest.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Faden brings no model and no search provider with it. Enter your endpoint, your key and the model name — all of it stays on this device."
+            "value": "Faden brings no model and no search provider with it. Enter your endpoint, your key and the model name — your chats are stored only on this device and go only to the provider you set up."
           }
         }
       }
@@ -1394,6 +2764,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ask Faden"
+          }
+        }
+      }
+    },
+    "Faden hat keinen eigenen Server. Damit du eine Antwort bekommst, geht Folgendes direkt an den Anbieter, den du eingerichtet hast:": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faden has no server of its own. To get you an answer, the following goes directly to the provider you set up:"
           }
         }
       }
@@ -1409,12 +2789,42 @@
         }
       }
     },
+    "Fasse das kürzer — die Hälfte, gleiche Substanz.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Make that shorter — half the length, same substance."
+          }
+        }
+      }
+    },
     "Fasst den älteren Verlauf im Hintergrund zusammen, sobald die Schwelle erreicht ist.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Summarises the older history in the background once the threshold is reached."
+          }
+        }
+      }
+    },
+    "Fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed"
+          }
+        }
+      }
+    },
+    "Feld `data` fehlt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The `data` field is missing."
           }
         }
       }
@@ -1429,6 +2839,16 @@
         }
       }
     },
+    "Fertig — %lld Treffer über den neuen Parser.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done — %lld results through the new parser."
+          }
+        }
+      }
+    },
     "Format": {
       "extractionState": "manual",
       "localizations": {
@@ -1436,6 +2856,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Format"
+          }
+        }
+      }
+    },
+    "Formulier mir eine kurze, freundliche Absage.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write me a short, friendly decline."
           }
         }
       }
@@ -1512,12 +2942,42 @@
         }
       }
     },
+    "Funktioniert — %lld Dimensionen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Works — %lld dimensions."
+          }
+        }
+      }
+    },
     "Fällt der Dienst aus, liest Apple dieselbe Aufnahme — gesprochenes geht nicht verloren.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "If the service fails, Apple reads the same recording — nothing spoken is lost."
+          }
+        }
+      }
+    },
+    "Für %@ steht keine Spracherkennung bereit.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No speech recognition is available for %@."
+          }
+        }
+      }
+    },
+    "Für das Gedächtnis": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For memory"
           }
         }
       }
@@ -1538,6 +2998,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Finding things again takes vectors. They are made at your provider."
+          }
+        }
+      }
+    },
+    "Für die Antworten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For answers"
+          }
+        }
+      }
+    },
+    "Für die Sprachausgabe": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For speech output"
+          }
+        }
+      }
+    },
+    "Für die Spracherkennung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For speech recognition"
+          }
+        }
+      }
+    },
+    "Für die Websuche": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For web search"
           }
         }
       }
@@ -1615,12 +3115,82 @@
         }
       }
     },
+    "Geh darauf genauer ein.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go into more detail on that."
+          }
+        }
+      }
+    },
+    "Gelesen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read"
+          }
+        }
+      }
+    },
     "Gelöscht wird nur der Index, nicht das Gemerkte. Die Fakten bleiben; bis ein neuer Index steht, findet die Ähnlichkeitssuche sie nicht. Solange das Gedächtnis an ist und ein Endpoint steht, baut Faden ihn von selbst wieder auf.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Only the index is deleted, not what was remembered. The facts stay; until a new index exists, the similarity search will not find them. As long as the memory is on and an endpoint is set, Faden rebuilds it by itself."
+          }
+        }
+      }
+    },
+    "Gerät zu alt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device too old"
+          }
+        }
+      }
+    },
+    "Gespeicherte Gedanken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved thoughts"
+          }
+        }
+      }
+    },
+    "Gesprochen. Nichts gehört? Dann Lautstärke und Stummschalter prüfen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spoken. Heard nothing? Then check the volume and the mute switch."
+          }
+        }
+      }
+    },
+    "Gestern": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yesterday"
+          }
+        }
+      }
+    },
+    "Gesucht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Searched"
           }
         }
       }
@@ -1662,6 +3232,36 @@
         }
       }
     },
+    "HTTP %lld — das sagt nichts über Bilder aus.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HTTP %lld — that says nothing about images."
+          }
+        }
+      }
+    },
+    "HTTP %lld — das sagt nichts über Werkzeuge aus.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HTTP %lld — that says nothing about tools."
+          }
+        }
+      }
+    },
+    "HTTP %lld, %lld Bytes empfangen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HTTP %1$lld, received %2$lld bytes."
+          }
+        }
+      }
+    },
     "Header": {
       "localizations": {
         "en": {
@@ -1683,12 +3283,72 @@
         }
       }
     },
+    "Heute": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
+          }
+        }
+      }
+    },
+    "Hole %lld Einbettungen nach …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Catching up on %lld embeddings …"
+          }
+        }
+      }
+    },
+    "Hängt an einem Zug ein Bild, geht genau dieser Zug an das Vision-Modell — alle anderen bleiben beim Hauptmodell. Für Modelle, die alles besser können ausser sehen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When a turn carries an image, that turn alone goes to the vision model — all others stay with the main model. For models that do everything better except see."
+          }
+        }
+      }
+    },
+    "Im Bestand nachgesehen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checked the inventory"
+          }
+        }
+      }
+    },
+    "Im Gedächtnis nachgesehen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checked memory"
+          }
+        }
+      }
+    },
     "Im Gedächtnis suchen": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Search the memory"
+          }
+        }
+      }
+    },
+    "Im Sprachmodus sendet Faden von selbst, sobald du eine Weile still bist, liest die Antwort vor und hört dann wieder zu. Zu erreichen über das Wellen-Symbol oben im Chat.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In voice mode, Faden sends on its own once you have been quiet for a moment, reads the answer aloud and then listens again. Reach it via the wave symbol at the top of the chat."
           }
         }
       }
@@ -1704,6 +3364,16 @@
         }
       }
     },
+    "In den Systemeinstellungen unter „Apple Intelligence & Siri“ einschalten, dann hier zurückkommen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn it on in Settings under “Apple Intelligence & Siri”, then come back here."
+          }
+        }
+      }
+    },
     "Index": {
       "extractionState": "manual",
       "localizations": {
@@ -1711,6 +3381,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Index"
+          }
+        }
+      }
+    },
+    "Index löschen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete index"
           }
         }
       }
@@ -1775,12 +3455,32 @@
         }
       }
     },
+    "Kein Modell eingetragen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No model entered"
+          }
+        }
+      }
+    },
     "Kein Modell konfiguriert. Endpoint, Key und Modellname fehlen.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "No model configured. The endpoint, the key and the model name are missing."
+          }
+        }
+      }
+    },
+    "Kein Satz verlässt das Telefon, und es braucht keinen Endpoint. Dafür trifft es gröber: auf neun Fragen gegen vierzehn Erinnerungen fünfmal richtig gegen siebenmal beim Netzmodell. Eingebettet wird in 8 ms je Satz statt gut acht Sekunden für eine ganze Aufnahme.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No sentence leaves the phone, and no endpoint is needed. In return it is less precise: on nine questions against fourteen memories it was right five times, against seven for the network model. Embedding takes 8 ms per sentence instead of a good eight seconds for a whole recording."
           }
         }
       }
@@ -1795,12 +3495,112 @@
         }
       }
     },
+    "Kein Vektor erhalten.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No vector received."
+          }
+        }
+      }
+    },
+    "Keine Bilder — das Modell liest nur Text.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No images — the model reads only text."
+          }
+        }
+      }
+    },
+    "Keine Bilder: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No images: %@"
+          }
+        }
+      }
+    },
+    "Keine Frage in der Unterhaltung gefunden.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No question found in the conversation."
+          }
+        }
+      }
+    },
+    "Keine HTTP-Antwort": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No HTTP response"
+          }
+        }
+      }
+    },
+    "Keine JSON-Liste.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not a JSON list."
+          }
+        }
+      }
+    },
+    "Keine Tokenvektoren.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No token vectors."
+          }
+        }
+      }
+    },
     "Keine Unterhaltung offen — öffne eine neue und versuche es nochmal.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "No conversation open — open a new one and try again."
+          }
+        }
+      }
+    },
+    "Keine Werkzeuge: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No tools: %@"
+          }
+        }
+      }
+    },
+    "Keine Werkzeuge: keine Websuche, kein Gedächtnisabruf, keine Dateien.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No tools: no web search, no memory recall, no files."
+          }
+        }
+      }
+    },
+    "Keine der ausprobierten Anfragevarianten kam mit HTTP 200 und einer JSON-Antwort zurück. Prüfe URL und Key.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None of the request variants tried came back with HTTP 200 and a JSON answer. Check the URL and key."
           }
         }
       }
@@ -1825,6 +3625,26 @@
         }
       }
     },
+    "Kleines Kontextfenster; lange Unterhaltungen brechen früher ab.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Small context window; long conversations break off sooner."
+          }
+        }
+      }
+    },
+    "Knapp": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Brief"
+          }
+        }
+      }
+    },
     "Kontext": {
       "extractionState": "manual",
       "localizations": {
@@ -1832,6 +3652,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Context"
+          }
+        }
+      }
+    },
+    "Kontext %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Context %@"
           }
         }
       }
@@ -1862,6 +3692,16 @@
         }
       }
     },
+    "Kontextfenster": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Context window"
+          }
+        }
+      }
+    },
     "Kopieren": {
       "localizations": {
         "en": {
@@ -1872,12 +3712,72 @@
         }
       }
     },
+    "Kürzer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shorter"
+          }
+        }
+      }
+    },
     "Leeren": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Clear"
+          }
+        }
+      }
+    },
+    "Leerer Text.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empty text."
+          }
+        }
+      }
+    },
+    "Letzte 30 Tage": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last 30 days"
+          }
+        }
+      }
+    },
+    "Letzte 7 Tage": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last 7 days"
+          }
+        }
+      }
+    },
+    "Liest ein": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading in"
+          }
+        }
+      }
+    },
+    "Liest eine Seite": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading a page"
           }
         }
       }
@@ -1935,12 +3835,62 @@
         }
       }
     },
+    "Länger": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Longer"
+          }
+        }
+      }
+    },
     "Löschen": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Delete"
+          }
+        }
+      }
+    },
+    "Maximale Antwortlänge": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maximum answer length"
+          }
+        }
+      }
+    },
+    "Mein Anbieter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "My provider"
+          }
+        }
+      }
+    },
+    "Mein Modell": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "My model"
+          }
+        }
+      }
+    },
+    "Merkt sich etwas": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noting something"
           }
         }
       }
@@ -2038,6 +3988,16 @@
         }
       }
     },
+    "Modell wird noch geladen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Model still downloading"
+          }
+        }
+      }
+    },
     "Modelle": {
       "localizations": {
         "en": {
@@ -2080,6 +4040,16 @@
         }
       }
     },
+    "Nachgedacht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thought it through"
+          }
+        }
+      }
+    },
     "Nachricht einklappen": {
       "localizations": {
         "en": {
@@ -2112,6 +4082,16 @@
         }
       }
     },
+    "Neu aufbauen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rebuild"
+          }
+        }
+      }
+    },
     "Neu senden": {
       "localizations": {
         "en": {
@@ -2129,6 +4109,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "New conversation"
+          }
+        }
+      }
+    },
+    "Nicht feststellbar: %@ Der Schalter bleibt, wie er ist.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not be determined: %@ The switch stays as it is."
           }
         }
       }
@@ -2163,6 +4153,16 @@
         }
       }
     },
+    "Nicht verfügbar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not available"
+          }
+        }
+      }
+    },
     "Nichts gefunden.": {
       "localizations": {
         "en": {
@@ -2173,12 +4173,32 @@
         }
       }
     },
+    "Nichts gesendet: Der Weitergabe an diesen Anbieter hast du noch nicht zugestimmt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing was sent: you have not yet agreed to sharing data with this provider."
+          }
+        }
+      }
+    },
     "Niedriger heißt: mehr wird erinnert, auch Entfernteres.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Lower means: more is recalled, including things further afield."
+          }
+        }
+      }
+    },
+    "Noch kein Anbieter hinterlegt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No provider added yet."
           }
         }
       }
@@ -2235,12 +4255,52 @@
         }
       }
     },
+    "Nochmal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Again"
+          }
+        }
+      }
+    },
+    "Nochmal antworten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Answer again"
+          }
+        }
+      }
+    },
     "Nochmal versuchen": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Try again"
+          }
+        }
+      }
+    },
+    "Notiert": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noted"
+          }
+        }
+      }
+    },
+    "Nullvektor.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zero vector."
           }
         }
       }
@@ -2265,6 +4325,26 @@
         }
       }
     },
+    "OpenAI, Groq, Together, OpenRouter, Mistral, Ollama, vLLM, LM Studio …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenAI, Groq, Together, OpenRouter, Mistral, Ollama, vLLM, LM Studio …"
+          }
+        }
+      }
+    },
+    "OpenAI-kompatibel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenAI-compatible"
+          }
+        }
+      }
+    },
     "Ordner": {
       "localizations": {
         "en": {
@@ -2275,12 +4355,32 @@
         }
       }
     },
+    "Ordner weg": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "folder gone"
+          }
+        }
+      }
+    },
     "Ordner wählen": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Choose a folder"
+          }
+        }
+      }
+    },
+    "Ort unbekannt: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "unknown place: %@"
           }
         }
       }
@@ -2347,12 +4447,32 @@
         }
       }
     },
+    "Probiere %@ …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trying %@ …"
+          }
+        }
+      }
+    },
     "Prompt-Caching nutzen": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Use prompt caching"
+          }
+        }
+      }
+    },
+    "Prüfe den erzeugten Parser lokal …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking the generated parser locally …"
           }
         }
       }
@@ -2431,12 +4551,32 @@
         }
       }
     },
+    "Sachlich": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Matter-of-fact"
+          }
+        }
+      }
+    },
     "Schließen": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Close"
+          }
+        }
+      }
+    },
+    "Schnell. Der Pfad hat das „/openai“ mittendrin — eine der Adressen, die man nicht errät.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fast. The path has “/openai” in the middle — one of those addresses nobody guesses."
           }
         }
       }
@@ -2461,6 +4601,16 @@
         }
       }
     },
+    "SearXNG (eigene Instanz)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SearXNG (own instance)"
+          }
+        }
+      }
+    },
     "Selbst eintragen": {
       "localizations": {
         "en": {
@@ -2481,12 +4631,52 @@
         }
       }
     },
+    "Sie": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Formal"
+          }
+        }
+      }
+    },
     "Sieht falsch aus — automatisch einrichten": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Looks wrong — set it up automatically"
+          }
+        }
+      }
+    },
+    "Sieht im Bestand nach": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking the inventory"
+          }
+        }
+      }
+    },
+    "Sieht im Gedächtnis nach": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking memory"
+          }
+        }
+      }
+    },
+    "Sieht im Ordner nach": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking the folder"
           }
         }
       }
@@ -2626,6 +4816,16 @@
         }
       }
     },
+    "Suchanfragen, die das Modell aus deinen Fragen formuliert": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search queries the model writes from your questions"
+          }
+        }
+      }
+    },
     "Suchbegriff zum Ausprobieren": {
       "localizations": {
         "en": {
@@ -2666,6 +4866,26 @@
         }
       }
     },
+    "Suchergebnisse und Webseiten, die Faden für eine Antwort abruft": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search results and web pages Faden fetches for an answer"
+          }
+        }
+      }
+    },
+    "Sucht im Web": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Searching the web"
+          }
+        }
+      }
+    },
     "Tempo": {
       "localizations": {
         "en": {
@@ -2694,6 +4914,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Text to speech"
+          }
+        }
+      }
+    },
+    "Titel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Title"
           }
         }
       }
@@ -2730,12 +4960,42 @@
         }
       }
     },
+    "Treffer pro Suche": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Results per search"
+          }
+        }
+      }
+    },
+    "Treffer unter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Results at"
+          }
+        }
+      }
+    },
     "Trennen": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Disconnect"
+          }
+        }
+      }
+    },
+    "Trocken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dry"
           }
         }
       }
@@ -2762,6 +5022,56 @@
         }
       }
     },
+    "Unerwarteter Wert im Vektor.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unexpected value in the vector."
+          }
+        }
+      }
+    },
+    "Unklar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unclear."
+          }
+        }
+      }
+    },
+    "Unter \"%@\" standen keine Treffer mit einer URL.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There were no results with a URL under \"%@\"."
+          }
+        }
+      }
+    },
+    "Unterhaltung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conversation"
+          }
+        }
+      }
+    },
+    "Verbindung steht. Antwort: „%@“": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connected. Reply: “%@”"
+          }
+        }
+      }
+    },
     "Verbindung testen": {
       "extractionState": "manual",
       "localizations": {
@@ -2769,6 +5079,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Test the connection"
+          }
+        }
+      }
+    },
+    "Verbindung …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connection …"
           }
         }
       }
@@ -2855,6 +5175,16 @@
         }
       }
     },
+    "Viele Anbieter unter einer Adresse und einem Schlüssel.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Many providers under one address and one key."
+          }
+        }
+      }
+    },
     "Vision-Ausweichmodell": {
       "extractionState": "manual",
       "localizations": {
@@ -2873,6 +5203,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vision model"
+          }
+        }
+      }
+    },
+    "Vom Anbieter genannt: %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stated by the provider: %@."
+          }
+        }
+      }
+    },
+    "Vom Anbieter übernommen: %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Taken from the provider: %@."
           }
         }
       }
@@ -2897,6 +5247,26 @@
         }
       }
     },
+    "Vorlage wählen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a template"
+          }
+        }
+      }
+    },
+    "Was Faden sich über dich gemerkt hat, wenn das Gedächtnis an ist": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What Faden has remembered about you, if memory is on"
+          }
+        }
+      }
+    },
     "Was es nicht kann": {
       "extractionState": "manual",
       "localizations": {
@@ -2908,12 +5278,32 @@
         }
       }
     },
+    "Was ist heute in den Nachrichten wichtig?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What matters in the news today?"
+          }
+        }
+      }
+    },
     "Was möchtest du wissen?": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "What would you like to know?"
+          }
+        }
+      }
+    },
+    "Was weißt du bislang über mich?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What do you know about me so far?"
           }
         }
       }
@@ -2960,6 +5350,36 @@
         }
       }
     },
+    "Wenn das Hauptmodell nicht antwortet, geht der Zug einmal hierher — nach den Wartepausen und nur, solange noch nichts angekommen ist.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If the main model does not answer, the turn goes here once — after the retry pauses, and only while nothing has arrived yet."
+          }
+        }
+      }
+    },
+    "Werkzeuge laufen — das Modell hat das Prüfwerkzeug aufgerufen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tools work — the model called the test tool."
+          }
+        }
+      }
+    },
+    "Werkzeuge nicht feststellbar: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tools could not be determined: %@"
+          }
+        }
+      }
+    },
     "Werkzeuge und Gedankengang": {
       "extractionState": "manual",
       "localizations": {
@@ -2967,6 +5387,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tools and reasoning"
+          }
+        }
+      }
+    },
+    "Werkzeuge wurden angenommen, das Modell hat aber lieber geantwortet. Kein Fehler, nur kein Beweis.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tools were accepted, but the model preferred to answer directly. Not an error, just no proof."
+          }
+        }
+      }
+    },
+    "Werkzeuge …": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tools …"
           }
         }
       }
@@ -2992,6 +5432,16 @@
         }
       }
     },
+    "Wie weit im Graph gesucht wird": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How far the graph is searched"
+          }
+        }
+      }
+    },
     "Wird einmal im Schlüsselbund abgelegt und von allen Modellen dieses Anbieters genutzt.": {
       "localizations": {
         "en": {
@@ -3012,6 +5462,16 @@
         }
       }
     },
+    "Wissensgraph": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge graph"
+          }
+        }
+      }
+    },
     "Wissensgraph nicht ableitbar: %@": {
       "localizations": {
         "en": {
@@ -3028,6 +5488,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Where from"
+          }
+        }
+      }
+    },
+    "Zeitüberschreitung nach %lld Sekunden.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timed out after %lld seconds."
+          }
+        }
+      }
+    },
+    "Zugewandt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Warm"
           }
         }
       }
@@ -3083,12 +5563,52 @@
         }
       }
     },
+    "abgewiesen: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "refused: %@"
+          }
+        }
+      }
+    },
+    "aktiv · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "active · %@"
+          }
+        }
+      }
+    },
+    "alles": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "everything"
+          }
+        }
+      }
+    },
     "anbieter/modell-name": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "provider/model-name"
+          }
+        }
+      }
+    },
+    "ansehen und einzeln löschen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "view and delete one by one"
           }
         }
       }
@@ -3113,12 +5633,82 @@
         }
       }
     },
+    "arbeitet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "working"
+          }
+        }
+      }
+    },
+    "aus": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "off"
+          }
+        }
+      }
+    },
+    "automatisch eingerichtet · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "set up automatically · %@"
+          }
+        }
+      }
+    },
     "beantwortet von %@": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "answered by %@"
+          }
+        }
+      }
+    },
+    "das Modell denkt noch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "the model is still thinking"
+          }
+        }
+      }
+    },
+    "das dauert länger als sonst — Stopp bricht ab": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "this is taking longer than usual — Stop cancels"
+          }
+        }
+      }
+    },
+    "de — leer heißt automatisch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "en — empty means automatic"
+          }
+        }
+      }
+    },
+    "de-DE": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "en-US"
           }
         }
       }
@@ -3133,12 +5723,52 @@
         }
       }
     },
+    "eigene Stimme": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "own voice"
+          }
+        }
+      }
+    },
+    "eigener STT-Endpoint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "own STT endpoint"
+          }
+        }
+      }
+    },
     "eigenhand.dev": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "eigenhand.dev"
+          }
+        }
+      }
+    },
+    "ein Bild": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "one image"
+          }
+        }
+      }
+    },
+    "fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "failed"
           }
         }
       }
@@ -3164,12 +5794,142 @@
         }
       }
     },
+    "hat eine Seite gelesen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "read a page"
+          }
+        }
+      }
+    },
+    "hat gesucht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "searched"
+          }
+        }
+      }
+    },
+    "hat im Gedächtnis nachgesehen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "checked memory"
+          }
+        }
+      }
+    },
+    "hat sich etwas gemerkt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "noted something"
+          }
+        }
+      }
+    },
+    "https://api.beispiel.dev": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "https://api.example.dev"
+          }
+        }
+      }
+    },
+    "https://api.beispiel.dev/search": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "https://api.example.dev/search"
+          }
+        }
+      }
+    },
     "hört zu": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "listening"
+          }
+        }
+      }
+    },
+    "kein Abschnitt %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no section %lld"
+          }
+        }
+      }
+    },
+    "kein Ordner: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "not a folder: %@"
+          }
+        }
+      }
+    },
+    "kein Text: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no text: %@"
+          }
+        }
+      }
+    },
+    "kein Vorlesen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no reading aloud"
+          }
+        }
+      }
+    },
+    "keine Orte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no places"
+          }
+        }
+      }
+    },
+    "kopiert": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "copied"
+          }
+        }
+      }
+    },
+    "leer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "empty"
           }
         }
       }
@@ -3185,12 +5945,112 @@
         }
       }
     },
+    "liest eine Seite": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "reading a page"
+          }
+        }
+      }
+    },
+    "läuft": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "running"
+          }
+        }
+      }
+    },
     "läuft …": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "running …"
+          }
+        }
+      }
+    },
+    "mindestens %@ belegt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "at least %@ used"
+          }
+        }
+      }
+    },
+    "nicht da: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "missing: %@"
+          }
+        }
+      }
+    },
+    "nicht eingerichtet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "not set up"
+          }
+        }
+      }
+    },
+    "nicht erreichbar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "unreachable"
+          }
+        }
+      }
+    },
+    "nicht gefunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "not found"
+          }
+        }
+      }
+    },
+    "nicht ladbar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "could not load"
+          }
+        }
+      }
+    },
+    "nicht lesbar: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "unreadable: %@"
+          }
+        }
+      }
+    },
+    "nichts gefunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "nothing found"
           }
         }
       }
@@ -3228,6 +6088,66 @@
         }
       }
     },
+    "ohne": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "none"
+          }
+        }
+      }
+    },
+    "ohne Anfrage": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no query"
+          }
+        }
+      }
+    },
+    "ohne Kennung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no ID"
+          }
+        }
+      }
+    },
+    "ohne Pfad": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no path"
+          }
+        }
+      }
+    },
+    "ohne Suchbegriff": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no search term"
+          }
+        }
+      }
+    },
+    "ohne URL": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no URL"
+          }
+        }
+      }
+    },
     "sk-…": {
       "localizations": {
         "en": {
@@ -3255,6 +6175,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "speaking — tap to stop"
+          }
+        }
+      }
+    },
+    "sucht im Web": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "searching the web"
+          }
+        }
+      }
+    },
+    "unbekannt: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "unknown: %@"
+          }
+        }
+      }
+    },
+    "unvollständig": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "incomplete"
+          }
+        }
+      }
+    },
+    "verdichte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "compacting"
           }
         }
       }
@@ -3289,12 +6249,42 @@
         }
       }
     },
+    "wartet auf das Modell": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "waiting for the model"
+          }
+        }
+      }
+    },
     "wächst mit, wenn eine Antwort nicht hineinpasst": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "grows when an answer does not fit"
+          }
+        }
+      }
+    },
+    "z. B. Systran/faster-whisper-large-v3": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "e.g. Systran/faster-whisper-large-v3"
+          }
+        }
+      }
+    },
+    "z. B. TensorX": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "e.g. TensorX"
           }
         }
       }
@@ -3310,12 +6300,42 @@
         }
       }
     },
+    "z. B. chatterbox-turbo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "e.g. chatterbox-turbo"
+          }
+        }
+      }
+    },
+    "z. B. qwen/qwen3-embedding-8b": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "e.g. qwen/qwen3-embedding-8b"
+          }
+        }
+      }
+    },
     "z. B. „Nenne bei Code immer die Sprache.“": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "e.g. “Always name the language for code.”"
+          }
+        }
+      }
+    },
+    "zu groß: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "too large: %@"
           }
         }
       }
@@ -3336,6 +6356,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "· mentioned %lld×"
+          }
+        }
+      }
+    },
+    "Älter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Older"
           }
         }
       }
@@ -3365,7 +6395,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Take it over"
+            "value": "Save"
           }
         }
       }
@@ -3376,6 +6406,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "—"
+          }
+        }
+      }
+    },
+    "— keine URL eingetragen —": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "— no URL entered —"
           }
         }
       }

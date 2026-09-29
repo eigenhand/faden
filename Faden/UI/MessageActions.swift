@@ -57,17 +57,17 @@ struct MessageActions: View {
                     model.regenerateLastAnswer()
                 }
                 iconAction("arrow.down.right.and.arrow.up.left", label: "Kürzer") {
-                    onFollowUp("Fasse das kürzer — die Hälfte, gleiche Substanz.")
+                    onFollowUp(String(localized: "Fasse das kürzer — die Hälfte, gleiche Substanz."))
                 }
                 iconAction("arrow.up.left.and.arrow.down.right", label: "Ausführlicher") {
-                    onFollowUp("Geh darauf genauer ein.")
+                    onFollowUp(String(localized: "Geh darauf genauer ein."))
                 }
             }
             Spacer(minLength: 0)
         }
     }
 
-    private func iconAction(_ icon: String, label: String, run: @escaping () -> Void) -> some View {
+    private func iconAction(_ icon: String, label: LocalizedStringKey, run: @escaping () -> Void) -> some View {
         Button(action: run) {
             Image(systemName: icon)
                 .font(.eh(15, .callout))
@@ -99,10 +99,10 @@ struct MessageActions: View {
                 }
                 // Accordion editing, made one tap instead of a retyped prompt.
                 action("arrow.down.right.and.arrow.up.left", label: "Kürzer") {
-                    onFollowUp("Fasse das kürzer — die Hälfte, gleiche Substanz.")
+                    onFollowUp(String(localized: "Fasse das kürzer — die Hälfte, gleiche Substanz."))
                 }
                 action("arrow.up.left.and.arrow.down.right", label: "Länger") {
-                    onFollowUp("Geh darauf genauer ein.")
+                    onFollowUp(String(localized: "Geh darauf genauer ein."))
                 }
             }
             Spacer(minLength: 0)
@@ -122,7 +122,7 @@ struct MessageActions: View {
         }
     }
 
-    private func action(_ icon: String, label: String, run: @escaping () -> Void) -> some View {
+    private func action(_ icon: String, label: LocalizedStringKey, run: @escaping () -> Void) -> some View {
         Button(action: run) {
             HStack(spacing: 4) {
                 Image(systemName: icon).font(.eh(10, .caption2, weight: .medium))

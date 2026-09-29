@@ -61,13 +61,11 @@ enum Builtins {
             ModelProvider("OpenAI", "https://api.openai.com"),
             ModelProvider("Anthropic", "https://api.anthropic.com",
                           path: "/v1/messages", format: .anthropic,
-                          note: "Eigenes Format. Erweitertes Denken und Prompt-Caching "
-                              + "gibt es nur hier."),
+                          note: String(localized: "Eigenes Format. Erweitertes Denken und Prompt-Caching gibt es nur hier.")),
             ModelProvider("OpenRouter", "https://openrouter.ai/api",
-                          note: "Viele Anbieter unter einer Adresse und einem Schlüssel."),
+                          note: String(localized: "Viele Anbieter unter einer Adresse und einem Schlüssel.")),
             ModelProvider("Groq", "https://api.groq.com/openai",
-                          note: "Schnell. Der Pfad hat das „/openai“ mittendrin — "
-                              + "eine der Adressen, die man nicht errät."),
+                          note: String(localized: "Schnell. Der Pfad hat das „/openai“ mittendrin — eine der Adressen, die man nicht errät.")),
             ModelProvider("Cerebras", "https://api.cerebras.ai"),
             ModelProvider("Mistral", "https://api.mistral.ai"),
             ModelProvider("DeepSeek", "https://api.deepseek.com"),
@@ -75,9 +73,8 @@ enum Builtins {
             ModelProvider("Together", "https://api.together.xyz"),
             ModelProvider("Fireworks", "https://api.fireworks.ai/inference"),
             ModelProvider("TensorX", "https://api.tensorx.ai"),
-            ModelProvider("Eigener Endpoint", "",
-                          note: "Alles selbst eintragen — für alles, was OpenAI- oder "
-                              + "Anthropic-Format spricht."),
+            ModelProvider(String(localized: "Eigener Endpoint"), "",
+                          note: String(localized: "Alles selbst eintragen — für alles, was OpenAI- oder Anthropic-Format spricht.")),
         ]
     }
 

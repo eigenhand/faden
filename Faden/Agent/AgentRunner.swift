@@ -224,10 +224,10 @@ struct AgentRunner {
         switch name {
         case "web_search":
             guard let query = input["query"]?.stringValue, !query.isEmpty else {
-                return ("Fehler: Es wurde keine Suchanfrage übergeben.", false, "ohne Anfrage")
+                return ("Fehler: Es wurde keine Suchanfrage übergeben.", false, String(localized: "ohne Anfrage"))
             }
             guard let recipe = settings.activeRecipe else {
-                return ("Fehler: Es ist kein Suchanbieter eingerichtet.", false, "nicht eingerichtet")
+                return ("Fehler: Es ist kein Suchanbieter eingerichtet.", false, String(localized: "nicht eingerichtet"))
             }
             let key = searchKey ?? ""
             do {
@@ -239,38 +239,38 @@ struct AgentRunner {
                 // without anyone having to call it up.
                 let fenced = UntrustedContent.wrap(Self.render(outcome),
                                                    source: "Websuche „\(query)“")
-                return (fenced, true, "\(outcome.results.count) Treffer")
+                return (fenced, true, String(localized: "\(outcome.results.count) Treffer"))
             } catch {
                 let msg = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-                return ("Die Suche schlug fehl: \(msg)", false, "fehlgeschlagen")
+                return ("Die Suche schlug fehl: \(msg)", false, String(localized: "fehlgeschlagen"))
             }
 
         case "fetch_page":
             guard let url = input["url"]?.stringValue, !url.isEmpty else {
-                return ("Fehler: Es wurde keine URL übergeben.", false, "ohne URL")
+                return ("Fehler: Es wurde keine URL übergeben.", false, String(localized: "ohne URL"))
             }
             let text = await PageFetcher.fetch(url)
             let ok = !text.hasPrefix("Fehler")
             // An error message comes from us and stays unwrapped; everything else is
             // the text of a foreign page.
             return (ok ? UntrustedContent.wrap(text, source: url) : text,
-                    ok, ok ? "\(text.count) Zeichen" : "nicht ladbar")
+                    ok, ok ? String(localized: "\(text.count) Zeichen") : String(localized: "nicht ladbar"))
 
         case "memory":
             guard settings.memory.isReady else {
-                return ("Fehler: Es ist kein Gedächtnis eingerichtet.", false, "nicht eingerichtet")
+                return ("Fehler: Es ist kein Gedächtnis eingerichtet.", false, String(localized: "nicht eingerichtet"))
             }
             return await Self.runMemory(input, memory: settings.memory, embeddingKey: embeddingKey)
 
         case "inventory":
             guard settings.inventoryEnabled, FundusInventory.isPresent else {
-                return ("Fehler: Es ist kein Bestand erreichbar.", false, "nicht erreichbar")
+                return ("Fehler: Es ist kein Bestand erreichbar.", false, String(localized: "nicht erreichbar"))
             }
             return await Self.runInventory(input)
 
         case "files":
             guard let bookmark = settings.folder.bookmark else {
-                return ("Fehler: Es ist kein Ordner freigegeben.", false, "nicht eingerichtet")
+                return ("Fehler: Es ist kein Ordner freigegeben.", false, String(localized: "nicht eingerichtet"))
             }
             return await FolderReader.shared.run(input, bookmark: bookmark,
                                                  name: settings.folder.name,
@@ -278,7 +278,7 @@ struct AgentRunner {
 
         case "remember":
             guard let note = input["note"]?.stringValue, !note.isEmpty else {
-                return ("Fehler: Es wurde keine Notiz übergeben.", false, "leer")
+                return ("Fehler: Es wurde keine Notiz übergeben.", false, String(localized: "leer"))
             }
             return ("Notiert.", true, note.count > 40 ? String(note.prefix(40)) + "…" : note)
 
@@ -290,7 +290,7 @@ struct AgentRunner {
                                         folderEnabled: settings.folder.isSet)
                 .map(\.name).joined(separator: ", ")
             return ("Es gibt kein Werkzeug namens „\(name)“. Verfügbar sind: \(available).",
-                    false, "unbekannt: \(name)")
+                    false, String(localized: "unbekannt: \(name)"))
         }
     }
 
@@ -329,13 +329,13 @@ struct AgentRunner {
         switch action {
         case "search":
             guard let query = input["query"]?.stringValue, !query.isEmpty else {
-                return ("Fehler: „search“ braucht eine `query`.", false, "ohne Suchbegriff")
+                return ("Fehler: „search“ braucht eine `query`.", false, String(localized: "ohne Suchbegriff"))
             }
             do {
                 let triplets = try await Cognify.recall(question: query, memory: memory,
                                                         embeddingKey: embeddingKey)
                 guard !triplets.isEmpty else {
-                    return ("Dazu ist im Gedächtnis nichts hinterlegt.", true, "nichts gefunden")
+                    return ("Dazu ist im Gedächtnis nichts hinterlegt.", true, String(localized: "nichts gefunden"))
                 }
                 // The triplet reads as a sentence; the handles below it are what the
                 // model needs to change or drop anything.
@@ -347,10 +347,10 @@ struct AgentRunner {
                         lines.append("  [\(handle(n.id))] \(n.name)")
                     }
                 }
-                return (lines.joined(separator: "\n"), true, "\(triplets.count) Treffer")
+                return (lines.joined(separator: "\n"), true, String(localized: "\(triplets.count) Treffer"))
             } catch {
                 let msg = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-                return ("Die Suche im Gedächtnis schlug fehl: \(msg)", false, "fehlgeschlagen")
+                return ("Die Suche im Gedächtnis schlug fehl: \(msg)", false, String(localized: "fehlgeschlagen"))
             }
 
         case "list":
@@ -358,20 +358,20 @@ struct AgentRunner {
                 .filter(\.isValid)
                 .sorted { ($0.mentions, $0.updatedAt) > ($1.mentions, $1.updatedAt) }
             guard !nodes.isEmpty else {
-                return ("Das Gedächtnis ist noch leer.", true, "leer")
+                return ("Das Gedächtnis ist noch leer.", true, String(localized: "leer"))
             }
             let shown = nodes.prefix(30).map(line).joined(separator: "\n")
             let rest = nodes.count > 30 ? "\n\n[… \(nodes.count - 30) weitere]" : ""
-            return (shown + rest, true, "\(nodes.count) Einträge")
+            return (shown + rest, true, String(localized: "\(nodes.count) Einträge"))
 
         case "update":
             guard let raw = input["id"]?.stringValue,
                   let fact = input["fact"]?.stringValue,
                   !fact.trimmingCharacters(in: .whitespaces).isEmpty else {
-                return ("Fehler: „update“ braucht `id` und `fact`.", false, "unvollständig")
+                return ("Fehler: „update“ braucht `id` und `fact`.", false, String(localized: "unvollständig"))
             }
             guard var node = resolve(raw, in: await MemoryStore.shared.allNodes()) else {
-                return ("Es gibt keinen Eintrag mit der Kennung „\(raw)“.", false, "nicht gefunden")
+                return ("Es gibt keinen Eintrag mit der Kennung „\(raw)“.", false, String(localized: "nicht gefunden"))
             }
             let before = node.name
             node.nodeDescription = fact
@@ -386,10 +386,10 @@ struct AgentRunner {
 
         case "forget":
             guard let raw = input["id"]?.stringValue else {
-                return ("Fehler: „forget“ braucht eine `id`.", false, "ohne Kennung")
+                return ("Fehler: „forget“ braucht eine `id`.", false, String(localized: "ohne Kennung"))
             }
             guard let node = resolve(raw, in: await MemoryStore.shared.allNodes()) else {
-                return ("Es gibt keinen Eintrag mit der Kennung „\(raw)“.", false, "nicht gefunden")
+                return ("Es gibt keinen Eintrag mit der Kennung „\(raw)“.", false, String(localized: "nicht gefunden"))
             }
             await MemoryStore.shared.forget(nodeID: node.id)
             return ("Vergessen: \(node.name). Die Verknüpfungen dazu sind mit entfernt.",
@@ -397,7 +397,7 @@ struct AgentRunner {
 
         default:
             return ("Unbekannte Aktion „\(action)“. Möglich sind: search, list, update, forget.",
-                    false, "unbekannt: \(action)")
+                    false, String(localized: "unbekannt: \(action)"))
         }
     }
 
@@ -454,12 +454,13 @@ struct AgentRunner {
         switch action {
         case "places":
             return (inventory.renderPlaces(), true,
-                    inventory.places.isEmpty ? "keine Orte" : "\(inventory.places.count) Orte")
+                    inventory.places.isEmpty ? String(localized: "keine Orte")
+                        : String(localized: "\(inventory.places.count) Orte"))
 
         case "search":
             guard !inventory.items.isEmpty else {
                 return ("Der Bestand ist leer — in Fundus ist noch nichts eingetragen.",
-                        true, "leer")
+                        true, String(localized: "leer"))
             }
             // A place the inventory does not know is worth its own answer: the model
             // asked for a shelf by a name it guessed, and the list of real names turns
@@ -470,17 +471,17 @@ struct AgentRunner {
                     Einen Ort „\(place)“ gibt es im Bestand nicht.
 
                     \(inventory.renderPlaces())
-                    """, false, "Ort unbekannt: \(place)")
+                    """, false, String(localized: "Ort unbekannt: \(place)"))
             }
             let lookup = inventory.search(query, place: place)
             let text = FundusInventory.render(lookup, query: query, place: place)
             let label = query.trimmingCharacters(in: .whitespaces).isEmpty
-                ? (place ?? "alles") : query
-            return (text, true, "\(lookup.total)× \(label)")
+                ? (place ?? String(localized: "alles")) : query
+            return (text, true, String(localized: "\(lookup.total)× \(label)"))
 
         default:
             return ("Es gibt keine Aktion „\(action)“. Möglich sind: search, places.",
-                    false, "unbekannt: \(action)")
+                    false, String(localized: "unbekannt: \(action)"))
         }
     }
 
@@ -733,7 +734,7 @@ struct AgentRunner {
             for c in pendingCalls { blocks.append(.toolUse(id: c.id, name: c.name, input: c.input)) }
 
             if blocks.isEmpty {
-                await onEvent(.failed("Das Modell hat nichts zurückgegeben."))
+                await onEvent(.failed(String(localized: "Das Modell hat nichts zurückgegeben.")))
                 return
             }
             var reply = Message(role: .assistant, blocks: blocks)
@@ -779,6 +780,6 @@ struct AgentRunner {
             history.append(Message(role: .user, blocks: results.compactMap { $0 }))
         }
 
-        await onEvent(.failed("Abgebrochen nach \(maxIterations) Werkzeugrunden."))
+        await onEvent(.failed(String(localized: "Abgebrochen nach \(maxIterations) Werkzeugrunden.")))
     }
 }

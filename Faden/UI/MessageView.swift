@@ -21,17 +21,17 @@ struct MessageView: View {
     /// through a conversation should move message by message, and each stop should
     /// say who is speaking before it reads the text.
     private var spokenLabel: String {
-        let who = message.role == .user ? "Du" : "Assistent"
+        let who = message.role == .user ? String(localized: "Du") : String(localized: "Assistent")
         var parts = [who]
         let images = message.blocks.filter { if case .image = $0 { return true }; return false }.count
-        if images > 0 { parts.append(images == 1 ? "ein Bild" : "\(images) Bilder") }
+        if images > 0 { parts.append(images == 1 ? String(localized: "ein Bild") : String(localized: "\(images) Bilder")) }
         let tools = message.blocks.compactMap { block -> String? in
             if case .toolUse(_, let name, _) = block {
                 switch name {
-                case "web_search": return "hat gesucht"
-                case "fetch_page": return "hat eine Seite gelesen"
-                case "remember":   return "hat sich etwas gemerkt"
-                case "memory":     return "hat im Gedächtnis nachgesehen"
+                case "web_search": return String(localized: "hat gesucht")
+                case "fetch_page": return String(localized: "hat eine Seite gelesen")
+                case "remember":   return String(localized: "hat sich etwas gemerkt")
+                case "memory":     return String(localized: "hat im Gedächtnis nachgesehen")
                 default:           return nil
                 }
             }
@@ -301,12 +301,12 @@ struct ToolChip: View {
     }
     private var label: String {
         switch name {
-        case "web_search": return "Gesucht"
-        case "fetch_page": return "Gelesen"
-        case "remember":   return "Notiert"
-        case "memory":     return "Gedächtnis"
-        case "inventory":  return "Bestand"
-        case "files":      return progress == nil ? "Ordner" : "Liest ein"
+        case "web_search": return String(localized: "Gesucht")
+        case "fetch_page": return String(localized: "Gelesen")
+        case "remember":   return String(localized: "Notiert")
+        case "memory":     return String(localized: "Gedächtnis")
+        case "inventory":  return String(localized: "Bestand")
+        case "files":      return progress == nil ? String(localized: "Ordner") : String(localized: "Liest ein")
         default:           return name
         }
     }

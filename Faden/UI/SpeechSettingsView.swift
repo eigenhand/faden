@@ -35,13 +35,13 @@ struct SpeechSettingsView: View {
                                 .font(.eh(12, .caption)).foregroundStyle(EH.muted)
                         } else {
                             field("Endpoint", text: $model.settings.speech.sttBaseURL,
-                                  placeholder: "https://api.beispiel.dev", mono: true)
+                                  placeholder: String(localized: "https://api.beispiel.dev"), mono: true)
                             field("Pfad", text: $model.settings.speech.sttPath,
                                   placeholder: "/v1/audio/transcriptions", mono: true)
                             field("Modell", text: $model.settings.speech.sttModel,
-                                  placeholder: "z. B. Systran/faster-whisper-large-v3", mono: true)
+                                  placeholder: String(localized: "z. B. Systran/faster-whisper-large-v3"), mono: true)
                             field("Sprache (optional)", text: $model.settings.speech.sttLanguage,
-                                  placeholder: "de — leer heißt automatisch", mono: true)
+                                  placeholder: String(localized: "de — leer heißt automatisch"), mono: true)
                             keyField("API-Key", text: $sttKey, stored: sttStored,
                                      account: model.settings.speech.sttKeychainAccount) { sttStored = true }
 
@@ -82,11 +82,11 @@ struct SpeechSettingsView: View {
                             }
                         case .remote:
                             field("Endpoint", text: $model.settings.speech.ttsBaseURL,
-                                  placeholder: "https://api.beispiel.dev", mono: true)
+                                  placeholder: String(localized: "https://api.beispiel.dev"), mono: true)
                             field("Pfad", text: $model.settings.speech.ttsPath,
                                   placeholder: "/v1/audio/speech", mono: true)
                             field("Modell", text: $model.settings.speech.ttsModel,
-                                  placeholder: "z. B. chatterbox-turbo", mono: true)
+                                  placeholder: String(localized: "z. B. chatterbox-turbo"), mono: true)
                             HStack(spacing: 10) {
                                 field("Stimme", text: $model.settings.speech.ttsVoice,
                                       placeholder: "alloy", mono: true)
@@ -112,9 +112,7 @@ struct SpeechSettingsView: View {
                     // ---- Hands-free
                     VStack(alignment: .leading, spacing: 10) {
                         EH.label("Freihändig sprechen")
-                        Text("Im Sprachmodus sendet Faden von selbst, sobald du eine Weile still bist, "
-                             + "liest die Antwort vor und hört dann wieder zu. Zu erreichen über das "
-                             + "Wellen-Symbol oben im Chat.")
+                        Text("Im Sprachmodus sendet Faden von selbst, sobald du eine Weile still bist, liest die Antwort vor und hört dann wieder zu. Zu erreichen über das Wellen-Symbol oben im Chat.")
                             .font(.eh(12, .caption)).foregroundStyle(EH.muted)
                         HStack {
                             Text("Pause bis zum Senden").font(EH.bodySmall).foregroundStyle(EH.slate)
@@ -177,15 +175,18 @@ struct SpeechSettingsView: View {
     }
 
     private func testSpeaking() {
+        // The test is the moment this endpoint is first used — the place to ask.
+        if let need = model.settings.remoteSpeechNeed,
+           !model.mayShare([need], then: { testSpeaking() }) { return }
         testing = true
         ttsTest = nil
-        let sample = "Alles bereit. So klingt die Stimme, die deine Antworten vorliest."
+        let sample = String(localized: "Alles bereit. So klingt die Stimme, die deine Antworten vorliest.")
         model.speak(sample)
         // The remote path answers asynchronously; give it a moment before judging.
         Task {
             try? await Task.sleep(nanoseconds: 2_500_000_000)
             testing = false
-            ttsTest = model.voiceError ?? "Gesprochen. Nichts gehört? Dann Lautstärke und Stummschalter prüfen."
+            ttsTest = model.voiceError ?? String(localized: "Gesprochen. Nichts gehört? Dann Lautstärke und Stummschalter prüfen.")
         }
     }
 

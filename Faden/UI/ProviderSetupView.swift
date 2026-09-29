@@ -38,6 +38,8 @@ struct ProviderSetupView: View {
     /// together. Today the path happens to match the default for every preset; the next
     /// entry in the list must not rely on that coincidence.
     @State private var applyingPreset = false
+    /// The disclosure shown before an endpoint is saved.
+    @State private var consent: DataSharingRequest?
 
     private var shown: [RemoteModel] {
         guard !search.isEmpty else { return models }
@@ -80,7 +82,7 @@ struct ProviderSetupView: View {
                                 }
                             } label: {
                                 HStack(spacing: 6) {
-                                    Text(name.isEmpty ? "Vorlage wählen" : name)
+                                    Text(name.isEmpty ? String(localized: "Vorlage wählen") : name)
                                         .font(EH.body)
                                         .foregroundStyle(name.isEmpty ? EH.muted : EH.navy)
                                     Spacer(minLength: 0)
@@ -95,7 +97,7 @@ struct ProviderSetupView: View {
                                     .stroke(EH.hair, lineWidth: EH.hairWidth))
                             }
                             Text(presetNote.isEmpty
-                                 ? "Adresse und Format kommen aus der Vorlage. Den Schlüssel trägst du selbst ein — er liegt im Schlüsselbund des Geräts."
+                                 ? String(localized: "Adresse und Format kommen aus der Vorlage. Den Schlüssel trägst du selbst ein — er liegt im Schlüsselbund des Geräts.")
                                  : presetNote)
                                 .font(.eh(12, .caption)).foregroundStyle(EH.muted)
                         }
@@ -115,8 +117,8 @@ struct ProviderSetupView: View {
                         }
 
                         if wireFormat.needsEndpoint {
-                            field("Name des Anbieters", text: $name, placeholder: "z. B. TensorX")
-                            field("Endpoint", text: $baseURL, placeholder: "https://api.beispiel.dev", mono: true)
+                            field("Name des Anbieters", text: $name, placeholder: String(localized: "z. B. TensorX"))
+                            field("Endpoint", text: $baseURL, placeholder: String(localized: "https://api.beispiel.dev"), mono: true)
                             field("Pfad", text: $path, placeholder: LLMConfig.defaultPath(for: wireFormat), mono: true)
 
                             VStack(alignment: .leading, spacing: 8) {
@@ -227,6 +229,7 @@ struct ProviderSetupView: View {
             }
             .navigationTitle("Anbieter hinzufügen")
             .navigationBarTitleDisplayMode(.inline)
+            .dataSharingConsent($consent, model: model)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Übernehmen") { apply() }
@@ -265,8 +268,7 @@ struct ProviderSetupView: View {
                 }
             }
 
-            Text("Ein Endpoint lässt sich jederzeit daneben einrichten. Dann steht "
-                 + "beides zur Wahl, und diese Unterhaltung hier bleibt auf dem Gerät.")
+            Text("Ein Endpoint lässt sich jederzeit daneben einrichten. Dann steht beides zur Wahl, und diese Unterhaltung hier bleibt auf dem Gerät.")
                 .font(.eh(12, .caption)).foregroundStyle(EH.muted)
         }
     }
@@ -297,9 +299,22 @@ struct ProviderSetupView: View {
         }
     }
 
+    /// Asks before saving, the first time this address is set up: from here on the
+    /// conversations go there. "Cancel" leaves the form as it is and saves nothing.
     private func apply() {
         guard wireFormat.needsEndpoint else { return applyApple() }
+        var probe = LLMConfig()
+        probe.baseURL = baseURL
+        probe.path = path
+        if let need = SharingNeed(.chat, url: probe.endpointURL),
+           !model.settings.dataSharing.covers(need) {
+            consent = DataSharingRequest(needs: [need], onAgree: { save() })
+            return
+        }
+        save()
+    }
 
+    private func save() {
         // One keychain item for the whole provider — every model added here points at it.
         let account = "provider.\(UUID().uuidString)"
         if !key.isEmpty { Keychain.set(key, account: account) }
@@ -349,7 +364,7 @@ struct ProviderSetupView: View {
     /// the first longer conversation.
     private func applyApple() {
         var c = LLMConfig()
-        c.name = "Apple · auf dem Gerät"
+        c.name = String(localized: "Apple · auf dem Gerät")
         c.wireFormat = .appleOnDevice
         c.model = "apple-system"
         c.contextWindow = 4_000

@@ -6,7 +6,7 @@ import SwiftUI
 /// travel in values nobody picks. This maps the position logarithmically, which gives
 /// the small end the room it needs and still reaches the ceiling.
 struct TokenSlider: View {
-    let title: String
+    let title: LocalizedStringKey
     @Binding var value: Int
     var range: ClosedRange<Int>
     /// Shown under the slider, e.g. where the ceiling comes from.

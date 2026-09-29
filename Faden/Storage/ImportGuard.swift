@@ -94,13 +94,14 @@ enum ImportGuard {
         }
 
         var parts: [String] = []
-        if droppedMessages > 0 { parts.append("\(droppedMessages) ältere Nachrichten") }
-        if droppedThinking > 0 { parts.append("\(droppedThinking) Gedankengänge") }
-        if droppedSummaries > 0 { parts.append("\(droppedSummaries) als „Zusammenfassung“ markierte Züge") }
-        if droppedToolBlocks > 0 { parts.append("\(droppedToolBlocks) unvollständige Werkzeugschritte") }
+        if droppedMessages > 0 { parts.append(String(localized: "\(droppedMessages) ältere Nachrichten")) }
+        if droppedThinking > 0 { parts.append(String(localized: "\(droppedThinking) Gedankengänge")) }
+        if droppedSummaries > 0 { parts.append(String(localized: "\(droppedSummaries) als „Zusammenfassung“ markierte Züge")) }
+        if droppedToolBlocks > 0 { parts.append(String(localized: "\(droppedToolBlocks) unvollständige Werkzeugschritte")) }
 
+        let removed = parts.joined(separator: ", ")
         return Outcome(conversation: c,
                        note: parts.isEmpty ? nil
-                           : "Beim Übernehmen entfernt: " + parts.joined(separator: ", ") + ".")
+                           : String(localized: "Beim Übernehmen entfernt: \(removed)."))
     }
 }

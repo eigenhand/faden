@@ -34,6 +34,8 @@ struct RootView: View {
     @State private var showHistory = false
 
     var body: some View {
+        @Bindable var model = model
+
         ZStack {
             EH.scene
             BrandWatermark()
@@ -53,6 +55,15 @@ struct RootView: View {
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
                 .presentationBackgroundInteraction(.enabled(upThrough: .medium))
+        }
+        // While the settings are open they present it themselves: one view can only
+        // show one sheet, and this one is already showing the settings. The history
+        // gives way — it is a glance, and the question is the thing to answer now.
+        .dataSharingConsent(Binding(
+            get: { showSettings || showHistory ? nil : model.consentRequest },
+            set: { model.consentRequest = $0 }), model: model)
+        .onChange(of: model.consentRequest?.id) { _, id in
+            if id != nil, !showSettings { showHistory = false }
         }
     }
 }

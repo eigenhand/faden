@@ -31,9 +31,9 @@ struct SearchEditor: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 22) {
 
-                        field("Name", text: $model.settings.recipes[i].name, placeholder: "Mein Anbieter")
+                        field("Name", text: $model.settings.recipes[i].name, placeholder: String(localized: "Mein Anbieter"))
                         field("URL", text: $model.settings.recipes[i].url,
-                              placeholder: "https://api.beispiel.dev/search", mono: true, url: true)
+                              placeholder: String(localized: "https://api.beispiel.dev/search"), mono: true, url: true)
 
                         VStack(alignment: .leading, spacing: 8) {
                             EH.label("API-Key")
@@ -106,7 +106,7 @@ struct SearchEditor: View {
                                         // land on a stray array. Let the user say so.
                                         Button("Sieht falsch aus — automatisch einrichten") {
                                             offerAutoConfig = AutoConfigOffer(
-                                                reason: "Der Test lieferte zwar Treffer, aber du hältst sie für falsch.")
+                                                reason: String(localized: "Der Test lieferte zwar Treffer, aber du hältst sie für falsch."))
                                         }
                                         .font(.eh(12, .caption))
                                         .foregroundStyle(EH.slate)
@@ -215,7 +215,7 @@ struct SearchEditor: View {
                 showAdvanced = true
             }
         } message: { offer in
-            Text(offer.reason + "\n\nFaden kann den Endpoint selbst abklopfen, sich die Antwort ansehen und den Parser von einem deiner Modelle ableiten lassen. Der fertige Parser läuft danach lokal auf diesem Gerät.")
+            Text("\(offer.reason)\n\nFaden kann den Endpoint selbst abklopfen, sich die Antwort ansehen und den Parser von einem deiner Modelle ableiten lassen. Der fertige Parser läuft danach lokal auf diesem Gerät.")
         }
     }
 
@@ -235,7 +235,7 @@ struct SearchEditor: View {
                 let first = outcome.results.first.map { "\($0.title) — \($0.url)" } ?? ""
                 testState = .ok(outcome.results.count, first)
             } catch let error as SearchError {
-                testState = .failed(error.errorDescription ?? "Fehlgeschlagen")
+                testState = .failed(error.errorDescription ?? String(localized: "Fehlgeschlagen"))
                 switch error {
                 case .unparsable, .http:
                     offerAutoConfig = AutoConfigOffer(reason: error.errorDescription ?? "")

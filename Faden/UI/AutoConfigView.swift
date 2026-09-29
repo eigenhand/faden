@@ -13,10 +13,14 @@ struct AutoConfigView: View {
 
     @State private var chosenModelID: UUID?
     @State private var steps: [String] = []
+    /// Whether the last line in `steps` came from a probing step — decided by the step
+    /// kind, not its text, which is localized.
+    @State private var lastStepWasProbing = false
     @State private var running = false
     @State private var finished: SearchRecipe?
     @State private var failure: String?
     @State private var probeQuery = "Berlin"
+    @State private var consent: DataSharingRequest?
 
     private var chosenModel: LLMConfig? {
         model.settings.llms.first { $0.id == chosenModelID } ?? model.settings.activeLLM
@@ -32,7 +36,7 @@ struct AutoConfigView: View {
                         HairlineCard(padding: 14, fill: EH.surfaceSunk) {
                             VStack(alignment: .leading, spacing: 6) {
                                 EH.label("Endpoint")
-                                Text(pending.recipe.url.isEmpty ? "— keine URL eingetragen —" : pending.recipe.url)
+                                Text(pending.recipe.url.isEmpty ? String(localized: "— keine URL eingetragen —") : pending.recipe.url)
                                     .font(EH.mono)
                                     .foregroundStyle(EH.navy)
                                     .lineLimit(3)
@@ -161,9 +165,10 @@ struct AutoConfigView: View {
                 }
             }
         }
+        .dataSharingConsent($consent, model: model)
     }
 
-    private func detailRow(_ label: String, _ value: String) -> some View {
+    private func detailRow(_ label: LocalizedStringKey, _ value: String) -> some View {
         HStack(alignment: .top, spacing: 10) {
             Text(label)
                 .font(.eh(11, .caption, weight: .medium))
@@ -181,10 +186,10 @@ struct AutoConfigView: View {
 
     private func start() {
         guard let llm = chosenModel, llm.isComplete else {
-            failure = "Das gewählte Modell ist nicht vollständig eingerichtet."
+            failure = String(localized: "Das gewählte Modell ist nicht vollständig eingerichtet.")
             return
         }
-        steps = []; failure = nil; finished = nil; running = true
+        steps = []; lastStepWasProbing = false; failure = nil; finished = nil; running = true
 
         let base = pending.recipe
         let searchKey = Keychain.get(account: base.keychainAccount) ?? ""
@@ -200,7 +205,7 @@ struct AutoConfigView: View {
                 onStep: { step in append(step) })
             else {
                 running = false
-                failure = "Keine der ausprobierten Anfragevarianten kam mit HTTP 200 und einer JSON-Antwort zurück. Prüfe URL und Key."
+                failure = String(localized: "Keine der ausprobierten Anfragevarianten kam mit HTTP 200 und einer JSON-Antwort zurück. Prüfe URL und Key.")
                 return
             }
 
@@ -219,14 +224,27 @@ struct AutoConfigView: View {
     @MainActor
     private func append(_ step: SynthesisStep) {
         // Probing is chatty; keep only the last attempt line so the list stays readable.
-        if case .probing = step, case .some(let last) = steps.last, last.hasPrefix("Probiere") {
+        let isProbing: Bool
+        if case .probing = step { isProbing = true } else { isProbing = false }
+        if isProbing, lastStepWasProbing, !steps.isEmpty {
             steps[steps.count - 1] = step.text
         } else {
             steps.append(step.text)
         }
+        lastStepWasProbing = isProbing
     }
 
+    /// Once saved, this provider receives the search queries — asked first.
     private func save(_ recipe: SearchRecipe) {
+        if let need = SearchRecipe.sharingNeed(for: recipe.url),
+           !model.settings.dataSharing.covers(need) {
+            consent = DataSharingRequest(needs: [need], onAgree: { store(recipe) })
+            return
+        }
+        store(recipe)
+    }
+
+    private func store(_ recipe: SearchRecipe) {
         if let i = model.settings.recipes.firstIndex(where: { $0.id == recipe.id }) {
             model.settings.recipes[i] = recipe
         } else {

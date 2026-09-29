@@ -24,7 +24,7 @@ enum RemoteSTT {
 
     static func transcribe(audio: Data, filename: String, config: SpeechConfig, apiKey: String) async throws -> String {
         guard let url = config.sttURL, !config.sttModel.isEmpty else {
-            throw SpeechError.notConfigured("Der Endpoint für Spracherkennung")
+            throw SpeechError.notConfigured(String(localized: "Der Endpoint für Spracherkennung"))
         }
 
         let boundary = "perbu.\(UUID().uuidString)"
@@ -74,7 +74,7 @@ enum RemoteTTS {
 
     static func synthesize(text: String, config: SpeechConfig, apiKey: String) async throws -> Data {
         guard let url = config.ttsURL, !config.ttsModel.isEmpty else {
-            throw SpeechError.notConfigured("Der Endpoint für Sprachausgabe")
+            throw SpeechError.notConfigured(String(localized: "Der Endpoint für Sprachausgabe"))
         }
         var body: [String: Any] = [
             "model": config.ttsModel,

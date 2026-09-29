@@ -89,7 +89,7 @@ struct Cognify {
             var vectors: [[Float]] = []
             do {
                 vectors = try await embedder.embed(texts, onWait: { attempt in
-                    onProgress?("Einbettung wartet auf den Anbieter (Versuch \(attempt)) …")
+                    onProgress?(String(localized: "Einbettung wartet auf den Anbieter (Versuch \(attempt)) …"))
                 })
             } catch {
                 outcome.pendingEmbeddings += newNodes.count + newEdges.count
@@ -143,10 +143,10 @@ struct Cognify {
 
         let embedder = Embedder(config: memory, apiKey: embeddingKey)
         let texts = nodes.map(\.embeddableText) + edges.map(\.embeddableText)
-        onProgress?("Hole \(texts.count) Einbettungen nach …")
+        onProgress?(String(localized: "Hole \(texts.count) Einbettungen nach …"))
 
         guard let vectors = try? await embedder.embed(texts, onWait: { attempt in
-            onProgress?("Anbieter ausgelastet, neuer Versuch in einer Minute (\(attempt)) …")
+            onProgress?(String(localized: "Anbieter ausgelastet, neuer Versuch in einer Minute (\(attempt)) …"))
         }) else { return 0 }
 
         for (i, node) in nodes.enumerated() where vectors.indices.contains(i) {

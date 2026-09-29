@@ -85,11 +85,12 @@ enum ConversationTransfer {
     }
 
     private static func filename(for conversation: Conversation) -> String {
-        let title = conversation.title
+        // The display title, so an unnamed conversation is named in the user's language.
+        let title = conversation.displayTitle
             .replacingOccurrences(of: "/", with: "-")
             .replacingOccurrences(of: ":", with: "-")
             .trimmingCharacters(in: .whitespacesAndNewlines)
-        let stem = title.isEmpty ? "Unterhaltung" : String(title.prefix(60))
+        let stem = title.isEmpty ? String(localized: "Unterhaltung") : String(title.prefix(60))
         // New files are called .faden; .perbu stays in the Info.plist as a valid
         // extension so that the ones from earlier builds still open.
         return stem + ".faden"

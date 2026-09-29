@@ -23,7 +23,7 @@ final class AudioRecorder {
         guard !isRecording else { return }
         // Same reason as in Dictation: this callback arrives off the main thread.
         guard await Dictation.askMicrophonePermission() else {
-            throw SpeechError.notConfigured("Das Mikrofon")
+            throw SpeechError.notConfigured(String(localized: "Das Mikrofon"))
         }
 
         let session = AVAudioSession.sharedInstance()
@@ -37,7 +37,7 @@ final class AudioRecorder {
             waited += 1
         }
         guard session.inputNumberOfChannels > 0 else {
-            throw SpeechError.notConfigured("Das Mikrofon")
+            throw SpeechError.notConfigured(String(localized: "Das Mikrofon"))
         }
 
         let settings: [String: Any] = [
@@ -124,7 +124,9 @@ final class SpeechPlayer: NSObject {
         }
         if utterance.voice == nil {
             utterance.voice = AVSpeechSynthesisVoice(language: Locale.current.identifier)
-                ?? AVSpeechSynthesisVoice(language: "de-DE")
+                // The fallback follows the interface language, which the catalog carries.
+                ?? AVSpeechSynthesisVoice(language: String(localized: "de-DE",
+                                                           comment: "BCP-47 code of the fallback voice for spoken answers"))
         }
         // AVSpeechUtteranceDefaultSpeechRate sits near 0.5; the setting maps onto it.
         utterance.rate = Float(config.appleRate) * 2 * AVSpeechUtteranceDefaultSpeechRate
@@ -144,7 +146,7 @@ final class SpeechPlayer: NSObject {
     /// Strips what should not be read aloud: fences, markup, bare URLs.
     static func speakable(_ markdown: String, limit: Int = 1200) -> String {
         var t = markdown
-        t = t.replacingOccurrences(of: "```[\\s\\S]*?```", with: " Codeblock. ", options: .regularExpression)
+        t = t.replacingOccurrences(of: "```[\\s\\S]*?```", with: " " + String(localized: "Codeblock.") + " ", options: .regularExpression)
         t = t.replacingOccurrences(of: "`([^`]*)`", with: "$1", options: .regularExpression)
         t = t.replacingOccurrences(of: "!?\\[([^\\]]*)\\]\\([^)]*\\)", with: "$1", options: .regularExpression)
         t = t.replacingOccurrences(of: "https?://\\S+", with: " ", options: .regularExpression)

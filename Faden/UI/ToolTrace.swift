@@ -160,16 +160,16 @@ struct ToolTrace: View {
         if running, let active {
             let others = steps.filter { !$0.finished }.count - 1
             let verb = Self.runningVerb(active.name)
-            return (others > 0 ? "\(verb) · \(others + 1) gleichzeitig" : verb, "")
+            return (others > 0 ? String(localized: "\(verb) · \(others + 1) gleichzeitig") : verb, "")
         }
         var parts = Self.counts(of: steps)
         // "Nachgedacht" earns its place only when it is all that happened. Beside a
         // list of tool calls it is the least informative part of the line, and on a
         // phone it pushed the one part that matters — a failure — off the end.
-        if showsThinking, parts.isEmpty { parts.append("Nachgedacht") }
-        let done = parts.isEmpty ? "Ein Schritt" : parts.joined(separator: " · ")
+        if showsThinking, parts.isEmpty { parts.append(String(localized: "Nachgedacht")) }
+        let done = parts.isEmpty ? String(localized: "Ein Schritt") : parts.joined(separator: " · ")
         guard !failures.isEmpty else { return (done, "") }
-        return (parts.isEmpty ? "" : done + " · ", "\(failures.count) fehlgeschlagen")
+        return (parts.isEmpty ? "" : done + " · ", String(localized: "\(failures.count) fehlgeschlagen"))
     }
 
     /// What a screen reader hears, and what the button is called.
@@ -177,13 +177,13 @@ struct ToolTrace: View {
 
     private static func runningVerb(_ name: String) -> String {
         switch name {
-        case "web_search": return "Sucht im Web"
-        case "fetch_page": return "Liest eine Seite"
-        case "remember":   return "Merkt sich etwas"
-        case "memory":     return "Sieht im Gedächtnis nach"
-        case "inventory":  return "Sieht im Bestand nach"
-        case "files":      return "Sieht im Ordner nach"
-        default:           return "Arbeitet"
+        case "web_search": return String(localized: "Sucht im Web")
+        case "fetch_page": return String(localized: "Liest eine Seite")
+        case "remember":   return String(localized: "Merkt sich etwas")
+        case "memory":     return String(localized: "Sieht im Gedächtnis nach")
+        case "inventory":  return String(localized: "Sieht im Bestand nach")
+        case "files":      return String(localized: "Sieht im Ordner nach")
+        default:           return String(localized: "Arbeitet")
         }
     }
 
@@ -198,15 +198,15 @@ struct ToolTrace: View {
         return order.compactMap { name in
             guard let n = tally[name] else { return nil }
             switch name {
-            case "web_search": return n == 1 ? "1 Suche" : "\(n) Suchen"
-            case "fetch_page": return n == 1 ? "1 Seite gelesen" : "\(n) Seiten gelesen"
-            case "remember":   return n == 1 ? "1 Notiz" : "\(n) Notizen"
-            case "memory":     return n == 1 ? "Im Gedächtnis nachgesehen"
-                                             : "\(n)× im Gedächtnis nachgesehen"
-            case "inventory":  return n == 1 ? "Im Bestand nachgesehen"
-                                             : "\(n)× im Bestand nachgesehen"
-            case "files":      return n == 1 ? "1 Datei angesehen"
-                                             : "\(n) Dateien angesehen"
+            case "web_search": return n == 1 ? String(localized: "1 Suche") : String(localized: "\(n) Suchen")
+            case "fetch_page": return n == 1 ? String(localized: "1 Seite gelesen") : String(localized: "\(n) Seiten gelesen")
+            case "remember":   return n == 1 ? String(localized: "1 Notiz") : String(localized: "\(n) Notizen")
+            case "memory":     return n == 1 ? String(localized: "Im Gedächtnis nachgesehen")
+                                             : String(localized: "\(n)× im Gedächtnis nachgesehen")
+            case "inventory":  return n == 1 ? String(localized: "Im Bestand nachgesehen")
+                                             : String(localized: "\(n)× im Bestand nachgesehen")
+            case "files":      return n == 1 ? String(localized: "1 Datei angesehen")
+                                             : String(localized: "\(n) Dateien angesehen")
             default:           return n == 1 ? name : "\(n)× \(name)"
             }
         }

@@ -99,8 +99,8 @@ struct SettingsView: View {
                                     SearchEditor(recipeID: recipe.id)
                                 } label: {
                                     row(title: recipe.name,
-                                        subtitle: recipe.synthesizedBy.map { "automatisch eingerichtet · \($0)" }
-                                            ?? (recipe.url.isEmpty ? "unvollständig" : host(recipe.url)),
+                                        subtitle: recipe.synthesizedBy.map { String(localized: "automatisch eingerichtet · \($0)") }
+                                            ?? (recipe.url.isEmpty ? String(localized: "unvollständig") : host(recipe.url)),
                                         active: model.settings.activeRecipeID == recipe.id
                                              || (model.settings.activeRecipeID == nil && model.settings.recipes.first?.id == recipe.id))
                                 }
@@ -113,9 +113,15 @@ struct SettingsView: View {
                                         var r = preset
                                         r.id = UUID()
                                         r.keychainAccount = UUID().uuidString
-                                        model.settings.recipes.append(r)
-                                        model.settings.activeRecipeID = r.id
-                                        model.persist()
+                                        let add = {
+                                            model.settings.recipes.append(r)
+                                            model.settings.activeRecipeID = r.id
+                                            model.persist()
+                                        }
+                                        // The search queries go there from now on — asked
+                                        // before the provider is added, not after.
+                                        let needs = [SearchRecipe.sharingNeed(for: r.url)].compactMap { $0 }
+                                        if model.mayShare(needs, then: add) { add() }
                                     }
                                 }
                             } label: {
@@ -150,7 +156,7 @@ struct SettingsView: View {
                             NavigationLink {
                                 SpeechSettingsView()
                             } label: {
-                                row(title: "Diktat und Vorlesen",
+                                row(title: String(localized: "Diktat und Vorlesen"),
                                     subtitle: speechSubtitle,
                                     active: model.settings.speech.sttSource == .remote
                                          || model.settings.speech.ttsSource != .off)
@@ -162,10 +168,11 @@ struct SettingsView: View {
                             NavigationLink {
                                 MemorySettingsView()
                             } label: {
-                                row(title: "Wissensgraph",
+                                row(title: String(localized: "Wissensgraph"),
                                     subtitle: model.settings.memory.isReady
-                                        ? "aktiv · \(model.settings.memory.embeddingModel)"
-                                        : (model.settings.memory.enabled ? "unvollständig" : "aus"),
+                                        ? String(localized: "aktiv · \(model.settings.memory.embeddingModel)")
+                                        : (model.settings.memory.enabled ? String(localized: "unvollständig")
+                                                                         : String(localized: "aus")),
                                     active: model.settings.memory.isReady)
                             }
                             .buttonStyle(EHTap())
@@ -176,9 +183,10 @@ struct SettingsView: View {
                             NavigationLink {
                                 MemoryView()
                             } label: {
-                                row(title: "Gespeicherte Gedanken",
+                                row(title: String(localized: "Gespeicherte Gedanken"),
                                     subtitle: model.settings.memory.isReady
-                                        ? "ansehen und einzeln löschen" : "noch nichts gemerkt",
+                                        ? String(localized: "ansehen und einzeln löschen")
+                                        : String(localized: "noch nichts gemerkt"),
                                     active: false)
                             }
                             .buttonStyle(EHTap())
@@ -211,7 +219,7 @@ struct SettingsView: View {
                             }
 
                             serviceRow(title: model.settings.folder.isSet
-                                              ? model.settings.folder.name : "Ordner",
+                                              ? model.settings.folder.name : String(localized: "Ordner"),
                                        state: folderState,
                                        connected: model.settings.folder.isSet && folderReachable) {
                                 VStack(alignment: .leading, spacing: 8) {
@@ -249,8 +257,9 @@ struct SettingsView: View {
                                     Text(model.usage.compacting ? "Verdichtet gerade …"
                                                                 : "\(model.usage.percent) % belegt")
                                         .font(EH.body).foregroundStyle(EH.navy).monospacedDigit()
-                                    Text("\(model.usage.used) von \(model.usage.window) Token"
-                                         + (model.usage.measured ? "" : " (geschätzt)"))
+                                    Text(model.usage.measured
+                                         ? String(localized: "\(model.usage.used) von \(model.usage.window) Token")
+                                         : String(localized: "\(model.usage.used) von \(model.usage.window) Token (geschätzt)"))
                                         .font(.eh(12, .caption)).foregroundStyle(EH.muted)
                                         .monospacedDigit()
                                 }
@@ -401,6 +410,8 @@ struct SettingsView: View {
                 }
             }
         }
+        // Asked from in here — compacting, trying a voice — is answered in here.
+        .dataSharingConsent($model.consentRequest, model: model)
     }
 
     private var personaSubtitle: String {
@@ -522,12 +533,13 @@ struct SettingsView: View {
     }
 
     private var speechSubtitle: String {
-        let stt = model.settings.speech.sttSource == .apple ? "Apple-Diktat" : "eigener STT-Endpoint"
+        let stt = model.settings.speech.sttSource == .apple
+            ? String(localized: "Apple-Diktat") : String(localized: "eigener STT-Endpoint")
         let tts: String
         switch model.settings.speech.ttsSource {
-        case .off:    tts = "kein Vorlesen"
-        case .apple:  tts = "Apple-Stimme"
-        case .remote: tts = "eigene Stimme"
+        case .off:    tts = String(localized: "kein Vorlesen")
+        case .apple:  tts = String(localized: "Apple-Stimme")
+        case .remote: tts = String(localized: "eigene Stimme")
         }
         return "\(stt) · \(tts)"
     }
@@ -544,9 +556,9 @@ struct SettingsView: View {
     /// stays out: it is the case that hopefully never occurs, and one line does not hold
     /// everything.
     private func roles(of c: LLMConfig) -> String {
-        guard !c.model.isEmpty else { return "unvollständig" }
+        guard !c.model.isEmpty else { return String(localized: "unvollständig") }
         let vision = c.visionModel.trimmingCharacters(in: .whitespaces)
-        return vision.isEmpty ? c.model : "\(c.model) · Bilder: \(vision)"
+        return vision.isEmpty ? c.model : String(localized: "\(c.model) · Bilder: \(vision)")
     }
 
     private func section<C: View>(_ title: LocalizedStringKey, @ViewBuilder content: () -> C) -> some View {
@@ -556,7 +568,7 @@ struct SettingsView: View {
         }
     }
 
-    private func emptyRow(_ text: String) -> some View {
+    private func emptyRow(_ text: LocalizedStringKey) -> some View {
         Text(text).font(EH.bodySmall).foregroundStyle(EH.muted)
     }
 
@@ -602,7 +614,7 @@ struct SettingsView: View {
         }
     }
 
-    private func stepperRow(_ title: String, value: Binding<Int>, range: ClosedRange<Int>) -> some View {
+    private func stepperRow(_ title: LocalizedStringKey, value: Binding<Int>, range: ClosedRange<Int>) -> some View {
         HStack {
             Text(title).font(EH.bodySmall).foregroundStyle(EH.slate)
             Spacer()

@@ -26,9 +26,9 @@ struct ContextBar: View {
     }
 
     private var caption: String {
-        if usage.compacting { return "verdichte" }
-        if usage.fraction >= 0.75 { return "\(usage.percent) % · verdichtet gleich" }
-        return "\(usage.percent) %"
+        if usage.compacting { return String(localized: "verdichte") }
+        if usage.fraction >= 0.75 { return String(localized: "\(usage.percent) % · verdichtet gleich") }
+        return String(localized: "\(usage.percent) %")
     }
 
     var body: some View {

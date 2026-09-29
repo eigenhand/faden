@@ -58,7 +58,7 @@ struct Embedder {
             return try await LocalEmbedder.shared.embed(texts)
         }
         guard let url = config.embeddingURL, !config.embeddingModel.isEmpty else {
-            throw MemoryError.notConfigured("Der Einbettungs-Endpoint")
+            throw MemoryError.notConfigured(String(localized: "Der Einbettungs-Endpoint"))
         }
         guard !texts.isEmpty else { return [] }
 
@@ -89,7 +89,7 @@ struct Embedder {
             }
             guard let obj = JSONValue.decode(data)?.objectValue,
                   let items = obj["data"]?.arrayValue else {
-                throw MemoryError.embedding("Feld `data` fehlt.")
+                throw MemoryError.embedding(String(localized: "Feld `data` fehlt."))
             }
             for item in items {
                 guard let raw = item["embedding"]?.arrayValue else { continue }
@@ -103,21 +103,21 @@ struct Embedder {
                     case .number(let d): vector.append(Float(d))
                     case .bool(let b):   vector.append(b ? 1 : 0)
                     default:
-                        throw MemoryError.embedding("Unerwarteter Wert im Vektor.")
+                        throw MemoryError.embedding(String(localized: "Unerwarteter Wert im Vektor."))
                     }
                 }
                 vectors.append(vector)
             }
         }
         guard vectors.count == texts.count else {
-            throw MemoryError.embedding("Es kamen \(vectors.count) Vektoren für \(texts.count) Texte zurück.")
+            throw MemoryError.embedding(String(localized: "Es kamen \(vectors.count) Vektoren für \(texts.count) Texte zurück."))
         }
         return vectors
     }
 
     func embed(_ text: String) async throws -> [Float] {
         guard let first = try await embed([text], onWait: nil).first else {
-            throw MemoryError.embedding("Kein Vektor erhalten.")
+            throw MemoryError.embedding(String(localized: "Kein Vektor erhalten."))
         }
         return first
     }

@@ -82,7 +82,7 @@ enum Backoff {
         while true {
             let (bytes, response) = try await Net.session.bytes(for: try build())
             guard let http = response as? HTTPURLResponse else {
-                throw LLMError.transport("Keine HTTP-Antwort")
+                throw LLMError.transport(String(localized: "Keine HTTP-Antwort"))
             }
             if (200 ... 299).contains(http.statusCode) { return bytes }
 
@@ -215,7 +215,7 @@ extension LLMProvider {
                 throw LLMError.decoding(String(
                     localized: "Das Modell hat nur nachgedacht und keinen Text geliefert. Eine höhere maximale Antwortlänge hilft."))
             }
-            throw LLMError.decoding("Das Modell hat keinen Text geliefert.")
+            throw LLMError.decoding(String(localized: "Das Modell hat keinen Text geliefert."))
         }
         return trimmed
     }
@@ -248,7 +248,7 @@ enum Net {
 
 struct TimeoutError: LocalizedError {
     let seconds: Int
-    var errorDescription: String? { "Zeitüberschreitung nach \(seconds) Sekunden." }
+    var errorDescription: String? { String(localized: "Zeitüberschreitung nach \(seconds) Sekunden.") }
 }
 
 /// Runs `work`, giving up after `seconds`. Background jobs must not wait forever —

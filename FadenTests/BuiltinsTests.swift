@@ -15,11 +15,11 @@ import XCTest
 final class BuiltinsTests: XCTestCase {
 
     func testEveryProviderExceptTheBlankOneHasAnAddress() {
-        for provider in Builtins.models where provider.baseURL.isEmpty {
-            XCTAssertEqual(provider.name, "Eigener Endpoint",
-                           "Nur die leere Vorlage darf ohne Adresse dastehen.")
-        }
-        XCTAssertEqual(Builtins.models.filter { $0.baseURL.isEmpty }.count, 1)
+        // The blank preset is the last one; its name is localized, so it is found by position.
+        let blank = Builtins.models.filter { $0.baseURL.isEmpty }
+        XCTAssertEqual(blank.count, 1, "Nur die leere Vorlage darf ohne Adresse dastehen.")
+        XCTAssertEqual(blank.first?.name, Builtins.models.last?.name)
+        XCTAssertEqual(blank.first?.name, String(localized: "Eigener Endpoint"))
     }
 
     /// `endpointURL` glues the address and the path together. A missing slash on the

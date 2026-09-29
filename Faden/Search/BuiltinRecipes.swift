@@ -72,7 +72,7 @@ enum BuiltinRecipes {
 
     static var searxng: SearchRecipe {
         var r = SearchRecipe()
-        r.name = "SearXNG (eigene Instanz)"
+        r.name = String(localized: "SearXNG (eigene Instanz)")
         r.method = .get
         r.url = "https://searx.example.org/search"
         r.queryParamName = "q"
@@ -109,7 +109,7 @@ enum BuiltinRecipes {
     /// the auto-configuration work out the rest.
     static var blank: SearchRecipe {
         var r = SearchRecipe()
-        r.name = "Eigener Anbieter"
+        r.name = String(localized: "Eigener Anbieter")
         r.method = .get
         r.url = ""
         r.queryParamName = "q"

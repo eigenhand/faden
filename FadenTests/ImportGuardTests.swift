@@ -54,7 +54,9 @@ final class ImportGuardTests: XCTestCase {
         ])
         let out = ImportGuard.sanitised(conversation([calls]))
         XCTAssertEqual(out.conversation.messages[0].blocks.count, 1)
-        XCTAssertTrue(out.note?.contains("Werkzeugschritte") == true)
+        let dropped = 1
+        XCTAssertTrue(out.note?.contains(
+            String(localized: "\(dropped) unvollständige Werkzeugschritte")) == true, out.note ?? "")
     }
 
     func testAToolResultWithoutItsCallIsRemoved() {

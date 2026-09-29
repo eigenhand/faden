@@ -37,7 +37,7 @@ actor FolderReader {
                 Fehler: Der freigegebene Ordner ist nicht mehr erreichbar. Er wurde \
                 umbenannt, gelöscht oder die App, die ihn bereitstellt, ist nicht mehr \
                 da. Der Nutzer kann ihn in den Einstellungen neu auswählen.
-                """, false, "Ordner weg")
+                """, false, String(localized: "Ordner weg"))
         }
         let root = resolved.url
         let opened = root.startAccessingSecurityScopedResource()
@@ -53,7 +53,7 @@ actor FolderReader {
         case "read":   return await read(path, block: block, root: root, label: label)
         default:
             return ("Es gibt keine Aktion „\(action)“. Möglich sind: search, find, list, read.",
-                    false, "unbekannt: \(action)")
+                    false, String(localized: "unbekannt: \(action)"))
         }
     }
 
@@ -62,7 +62,7 @@ actor FolderReader {
     private func list(_ path: String, root: URL, label: String)
     -> (text: String, ok: Bool, summary: String) {
         guard let target = SharedFolder.locate(path, under: root) else {
-            return (Self.refusal(path), false, "abgewiesen: \(path)")
+            return (Self.refusal(path), false, String(localized: "abgewiesen: \(path)"))
         }
         // A file rather than a folder is the near miss worth naming: the model has the
         // right path and the wrong action, and "does not exist" would send it looking
@@ -70,16 +70,16 @@ actor FolderReader {
         let isDir = (try? target.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory
         if isDir == false {
             return ("„\(path)“ ist eine Datei, kein Ordner. Nimm „read“.",
-                    false, "kein Ordner: \(path)")
+                    false, String(localized: "kein Ordner: \(path)"))
         }
         guard let entries = try? SharedFolder.list(target) else {
             return ("Den Ordner „\(path.isEmpty ? label : path)“ gibt es nicht, oder er "
-                    + "ließ sich nicht lesen.", false, "nicht lesbar: \(path)")
+                    + "ließ sich nicht lesen.", false, String(localized: "nicht lesbar: \(path)"))
         }
         let here = path.isEmpty ? label : path
         guard !entries.isEmpty else {
             return (Self.fence("Der Ordner „\(here)“ ist leer.", source: here),
-                    true, "\(here): leer")
+                    true, String(localized: "\(here): leer"))
         }
 
         let shown = entries.prefix(SharedFolder.maxEntries)
@@ -109,7 +109,7 @@ actor FolderReader {
     -> (text: String, ok: Bool, summary: String) {
         let q = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !q.isEmpty else {
-            return ("Fehler: Es wurde keine Suchanfrage übergeben.", false, "ohne Anfrage")
+            return ("Fehler: Es wurde keine Suchanfrage übergeben.", false, String(localized: "ohne Anfrage"))
         }
         let hits = SharedFolder.find(q, under: root)
         guard !hits.isEmpty else {
@@ -153,7 +153,7 @@ actor FolderReader {
     -> (text: String, ok: Bool, summary: String) {
         let q = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !q.isEmpty else {
-            return ("Fehler: Es wurde keine Suchanfrage übergeben.", false, "ohne Anfrage")
+            return ("Fehler: Es wurde keine Suchanfrage übergeben.", false, String(localized: "ohne Anfrage"))
         }
         let read = await DocumentLibrary.shared.index(root: root, budget: 45,
                                                       onProgress: onProgress)
@@ -187,15 +187,15 @@ actor FolderReader {
     -> (text: String, ok: Bool, summary: String) {
         let trimmed = path.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
-            return ("Fehler: Es wurde kein Pfad übergeben.", false, "ohne Pfad")
+            return ("Fehler: Es wurde kein Pfad übergeben.", false, String(localized: "ohne Pfad"))
         }
         guard let target = SharedFolder.locate(trimmed, under: root) else {
-            return (Self.refusal(trimmed), false, "abgewiesen: \(trimmed)")
+            return (Self.refusal(trimmed), false, String(localized: "abgewiesen: \(trimmed)"))
         }
         guard FileManager.default.fileExists(atPath: target.path) else {
             return ("Die Datei „\(trimmed)“ gibt es im freigegebenen Ordner nicht. "
                     + "Sieh mit „list“ oder „find“ nach, wie sie wirklich heißt.",
-                    false, "nicht da: \(trimmed)")
+                    false, String(localized: "nicht da: \(trimmed)"))
         }
 
         // Everything a parser here knows goes through the library, which answers from
@@ -206,13 +206,13 @@ actor FolderReader {
                     guard let piece = document.render(block: block, path: trimmed) else {
                         return ("„\(trimmed)“ hat keinen Abschnitt \(block); es sind "
                                 + "\(document.blocks.count). Lies ohne `block`, um zu sehen, "
-                                + "welche es gibt.", false, "kein Abschnitt \(block)")
+                                + "welche es gibt.", false, String(localized: "kein Abschnitt \(block)"))
                     }
                     return (Self.fence(piece, source: trimmed), true,
-                            "\(trimmed) · Abschnitt \(block)")
+                            String(localized: "\(trimmed) · Abschnitt \(block)"))
                 }
                 return (Self.fence(document.render(path: trimmed), source: trimmed), true,
-                        "\(trimmed) · \(document.blocks.count) Abschnitte")
+                        String(localized: "\(trimmed) · \(document.blocks.count) Abschnitte"))
             }
         }
 
@@ -225,19 +225,19 @@ actor FolderReader {
                 body += "\n\n[… hier abgeschnitten, \(truncated) Zeichen fehlen.]"
             }
             return (Self.fence(body, source: trimmed), true,
-                    "\(trimmed) · \(text.count) Zeichen")
+                    String(localized: "\(trimmed) · \(text.count) Zeichen"))
 
         case .notText(let why):
-            return ("\(why) Gelesen wurde „\(trimmed)“.", false, "kein Text: \(trimmed)")
+            return ("\(why) Gelesen wurde „\(trimmed)“.", false, String(localized: "kein Text: \(trimmed)"))
 
         case .tooLarge(let bytes):
             return ("Die Datei „\(trimmed)“ ist mit \(Self.size(bytes)) zu groß zum Lesen "
                     + "(Grenze: \(Self.size(SharedFolder.maxBytes))).",
-                    false, "zu groß: \(trimmed)")
+                    false, String(localized: "zu groß: \(trimmed)"))
 
         case .unreadable(let why):
             return ("„\(trimmed)“ ließ sich nicht lesen: \(why)", false,
-                    "nicht lesbar: \(trimmed)")
+                    String(localized: "nicht lesbar: \(trimmed)"))
         }
     }
 

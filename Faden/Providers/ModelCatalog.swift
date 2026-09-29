@@ -21,8 +21,8 @@ struct RemoteModel: Identifiable, Codable, Equatable, Hashable {
     /// One line of stats for the list, empty when the endpoint told us nothing.
     var stats: String {
         var parts: [String] = []
-        if let c = contextLength { parts.append("\(Self.compact(c)) Kontext") }
-        if let m = maxOutput { parts.append("\(Self.compact(m)) Ausgabe") }
+        if let c = contextLength { parts.append(String(localized: "\(Self.compact(c)) Kontext")) }
+        if let m = maxOutput { parts.append(String(localized: "\(Self.compact(m)) Ausgabe")) }
         if let p = pricing { parts.append(p) }
         if let o = owner, parts.isEmpty { parts.append(o) }
         return parts.joined(separator: " · ")
@@ -71,12 +71,12 @@ enum ModelCatalog {
         guard (200...299).contains(status) else {
             throw LLMError.http(status: status, body: String(data: data, encoding: .utf8) ?? "")
         }
-        guard let json = JSONValue.decode(data) else { throw LLMError.decoding("Keine JSON-Liste.") }
+        guard let json = JSONValue.decode(data) else { throw LLMError.decoding(String(localized: "Keine JSON-Liste.")) }
 
         // Both shapes put the array under `data`; some proxies return a bare array.
         let items = json["data"]?.arrayValue ?? json.arrayValue ?? []
         let models = items.compactMap(parse)
-        guard !models.isEmpty else { throw LLMError.decoding("Die Liste enthielt keine Modelle.") }
+        guard !models.isEmpty else { throw LLMError.decoding(String(localized: "Die Liste enthielt keine Modelle.")) }
         return models.sorted { $0.id < $1.id }
     }
 
@@ -105,7 +105,8 @@ enum ModelCatalog {
            let pout = p["completion"]?.stringValue.flatMap(Double.init) {
             let inM = pin * 1_000_000, outM = pout * 1_000_000
             if inM > 0 || outM > 0 {
-                m.pricing = String(format: "$%.2f/$%.2f pro M", inM, outM)
+                let inText = String(format: "%.2f", inM), outText = String(format: "%.2f", outM)
+                m.pricing = String(localized: "$\(inText)/$\(outText) pro M")
             }
         }
         return m

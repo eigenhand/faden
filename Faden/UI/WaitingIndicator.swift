@@ -18,9 +18,9 @@ struct WaitingIndicator: View {
         if let activity { return activity }
         switch elapsed {
         case ..<2.5:  return nil                        // normal, no need to say anything
-        case ..<10:   return "wartet auf das Modell"
-        case ..<25:   return "das Modell denkt noch"
-        default:      return "das dauert länger als sonst — Stopp bricht ab"
+        case ..<10:   return String(localized: "wartet auf das Modell")
+        case ..<25:   return String(localized: "das Modell denkt noch")
+        default:      return String(localized: "das dauert länger als sonst — Stopp bricht ab")
         }
     }
 
@@ -37,7 +37,7 @@ struct WaitingIndicator: View {
         }
         .animation(.easeOut(duration: 0.3), value: caption)
         .onReceive(clock) { _ in elapsed += 1 }
-        .accessibilityLabel(caption ?? "Antwort wird erstellt")
+        .accessibilityLabel(caption ?? String(localized: "Antwort wird erstellt"))
     }
 }
 
@@ -87,26 +87,26 @@ struct PromptSuggestions: View {
         var out: [Opener] = []
         if searchAvailable {
             out.append(.ask(icon: "magnifyingglass",
-                            question: "Was ist heute in den Nachrichten wichtig?"))
+                            question: String(localized: "Was ist heute in den Nachrichten wichtig?")))
         }
         if visionAvailable {
             out.append(.image(icon: cameraAvailable ? "camera" : "photo",
                               label: cameraAvailable
-                                  ? "Ein Foto aufnehmen und erklären lassen"
-                                  : "Ein Bild aus der Mediathek erklären lassen"))
+                                  ? String(localized: "Ein Foto aufnehmen und erklären lassen")
+                                  : String(localized: "Ein Bild aus der Mediathek erklären lassen")))
         }
         if memoryEnabled {
-            out.append(.ask(icon: "brain", question: "Was weißt du bislang über mich?"))
+            out.append(.ask(icon: "brain", question: String(localized: "Was weißt du bislang über mich?")))
         }
         // The one labelled route into voice mode. In the composer a bare `waveform`
         // stands for it right beside a `mic` — two audio symbols side by side, one for
         // “hold and dictate”, one for “speak hands-free”. Here there is room for the
         // words, and here the symbol is learned.
         if voiceAvailable {
-            out.append(.voice(icon: "waveform", label: "Freihändig sprechen"))
+            out.append(.voice(icon: "waveform", label: String(localized: "Freihändig sprechen")))
         }
         out.append(.ask(icon: "text.alignleft",
-                        question: "Formulier mir eine kurze, freundliche Absage."))
+                        question: String(localized: "Formulier mir eine kurze, freundliche Absage.")))
         return Array(out.prefix(4))
     }
 

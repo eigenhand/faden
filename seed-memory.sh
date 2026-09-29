@@ -43,6 +43,9 @@ settings["memory"] = {"enabled": True, "embeddingBaseURL": "https://api.tensorx.
                       "embeddingKeychainAccount": "perbu.embedding.key", "automatic": True,
                       "topK": 6, "wideSearchTopK": 40, "neighborhoodDepth": 1,
                       "distancePenalty": 6.5, "minimumSimilarity": 0.25}
+# The embedding endpoint is agreed to as well, like the model beside it.
+agreed = settings.setdefault("dataSharing", {}).setdefault("agreed", {})
+agreed["api.tensorx.ai"] = sorted(set(agreed.get("api.tensorx.ai", [])) | {"chat", "embedding"})
 sp.write_text(json.dumps(settings, indent=2))
 print("erwartet: 7 nutzbar, 5 fremd, 2 offen")
 PY

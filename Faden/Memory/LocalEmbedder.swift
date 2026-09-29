@@ -53,7 +53,7 @@ actor LocalEmbedder {
     /// download carries on in the system, and whether it arrived is something only
     /// `hasAssets` says. Which is why this is not an error but a piece of information.
     static func requestAssets(timeout: Duration = .seconds(180)) async throws {
-        guard let probe = makeModel() else { throw MemoryError.notConfigured("Das lokale Modell") }
+        guard let probe = makeModel() else { throw MemoryError.notConfigured(String(localized: "Das lokale Modell")) }
         guard !probe.hasAvailableAssets else { return }
 
         let result: NLContextualEmbedding.AssetsResult? = try await withThrowingTaskGroup(
@@ -73,22 +73,21 @@ actor LocalEmbedder {
         }
 
         guard let result else {
-            throw MemoryError.embedding(
-                "Das System hat noch nicht geantwortet. Der Download läuft unter Umständen "
-                + "weiter — beim nächsten Öffnen steht hier, ob er angekommen ist.")
+            throw MemoryError.embedding(String(localized:
+                "Das System hat noch nicht geantwortet. Der Download läuft unter Umständen weiter — beim nächsten Öffnen steht hier, ob er angekommen ist."))
         }
         guard result == .available else {
-            throw MemoryError.embedding("Das Modell konnte nicht geladen werden (\(result.rawValue)).")
+            throw MemoryError.embedding(String(localized: "Das Modell konnte nicht geladen werden (\(result.rawValue))."))
         }
     }
 
     private func loaded() throws -> NLContextualEmbedding {
         if let model { return model }
         guard let made = Self.makeModel() else {
-            throw MemoryError.notConfigured("Das lokale Modell")
+            throw MemoryError.notConfigured(String(localized: "Das lokale Modell"))
         }
         guard made.hasAvailableAssets else {
-            throw MemoryError.embedding("Das lokale Modell ist noch nicht geladen.")
+            throw MemoryError.embedding(String(localized: "Das lokale Modell ist noch nicht geladen."))
         }
         try made.load()
         model = made
@@ -116,20 +115,20 @@ actor LocalEmbedder {
         // An empty text has no first token; without this line a zero vector would
         // come out, whose cosine to everything is 0 — a hit that looks like a miss.
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { throw MemoryError.embedding("Leerer Text.") }
+        guard !trimmed.isEmpty else { throw MemoryError.embedding(String(localized: "Leerer Text.")) }
 
         guard let result = try? model.embeddingResult(for: trimmed, language: nil) else {
-            throw MemoryError.embedding("Der Text konnte nicht eingebettet werden.")
+            throw MemoryError.embedding(String(localized: "Der Text konnte nicht eingebettet werden."))
         }
         var first: [Double] = []
         result.enumerateTokenVectors(in: trimmed.startIndex ..< trimmed.endIndex) { v, _ in
             first = v
             return false
         }
-        guard !first.isEmpty else { throw MemoryError.embedding("Keine Tokenvektoren.") }
+        guard !first.isEmpty else { throw MemoryError.embedding(String(localized: "Keine Tokenvektoren.")) }
 
         let norm = sqrt(first.reduce(0) { $0 + $1 * $1 })
-        guard norm > 0 else { throw MemoryError.embedding("Nullvektor.") }
+        guard norm > 0 else { throw MemoryError.embedding(String(localized: "Nullvektor.")) }
         return first.map { Float($0 / norm) }
     }
 }

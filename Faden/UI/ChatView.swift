@@ -20,6 +20,8 @@ struct ChatView: View {
     @State private var showLibrary = false
     @State private var loadingImages = false
     @State private var editing: Message?
+    /// The edited question, sent once the edit sheet has closed.
+    @State private var pendingEdit: (UUID, String)?
 
     /// Whether the view still follows the live edge of the transcript.
     ///
@@ -279,9 +281,14 @@ struct ChatView: View {
         .sheet(item: $model.pendingAutoConfig) { pending in
             AutoConfigView(pending: pending)
         }
-        .sheet(item: $editing) { message in
+        .sheet(item: $editing, onDismiss: {
+            // Only once the sheet is gone: the edit may have to ask for consent first,
+            // and that question cannot be put while this sheet is still on screen.
+            if let (id, text) = pendingEdit { model.edit(messageID: id, newText: text) }
+            pendingEdit = nil
+        }) { message in
             EditMessageSheet(message: message) { newText in
-                model.edit(messageID: message.id, newText: newText)
+                pendingEdit = (message.id, newText)
             }
         }
     }
@@ -479,13 +486,13 @@ struct ChatView: View {
     private var streamingAnnouncement: String {
         if let running = model.liveTools.first(where: { !$0.finished }) {
             switch running.name {
-            case "web_search": return "sucht im Web"
-            case "fetch_page": return "liest eine Seite"
-            default:           return "arbeitet"
+            case "web_search": return String(localized: "sucht im Web")
+            case "fetch_page": return String(localized: "liest eine Seite")
+            default:           return String(localized: "arbeitet")
             }
         }
-        if !model.liveText.isEmpty { return "Antwort wird geschrieben" }
-        return "Antwort wird vorbereitet"
+        if !model.liveText.isEmpty { return String(localized: "Antwort wird geschrieben") }
+        return String(localized: "Antwort wird vorbereitet")
     }
 
     // MARK: Composer
@@ -761,7 +768,9 @@ struct ChatView: View {
     private func submit() {
         // Clear only once it has been accepted. It used to be the other way round,
         // and every silent bail-out in `send` took the typed text with it.
-        if model.send(draft) { draft = "" }
+        // Held back for the data-sharing question, it comes through here again once
+        // the answer is yes — and clears the field then.
+        if model.send(draft, resume: { submit() }) { draft = "" }
         // Keep the caret where the next question goes; sending from the keyboard
         // otherwise drops focus and the next keystroke goes nowhere.
         inputFocused = true
@@ -828,7 +837,7 @@ struct EmptyState: View {
             } else {
                 VStack(spacing: 14) {
                     EH.label("Noch nichts eingerichtet")
-                    Text("Faden bringt kein Modell und keinen Suchanbieter mit. Trage deinen Endpoint, deinen Key und den Modellnamen ein — alles bleibt auf diesem Gerät.")
+                    Text("Faden bringt kein Modell und keinen Suchanbieter mit. Trage deinen Endpoint, deinen Key und den Modellnamen ein — deine Chats liegen nur auf diesem Gerät und gehen nur an den Anbieter, den du einrichtest.")
                         .font(EH.bodySmall)
                         .foregroundStyle(EH.slate)
                         .multilineTextAlignment(.center)
@@ -855,10 +864,11 @@ struct ErrorNote: View {
 
     /// Whether trying again has a real chance, or whether the setup needs fixing first.
     private var isWorthRetrying: Bool {
+        // The text is already localized, so match both languages.
         let t = text.lowercased()
-        if t.contains("401") || t.contains("403") || t.contains("nicht eingerichtet")
-            || t.contains("kein modell") || t.contains("key") { return false }
-        return true
+        let setupProblems = ["401", "403", "key", "nicht eingerichtet", "kein modell",
+                             "not set up", "no model"]
+        return !setupProblems.contains { t.contains($0) }
     }
 
     var body: some View {

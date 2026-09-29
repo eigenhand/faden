@@ -64,7 +64,7 @@ enum CapabilityProbe {
     /// answer and a second request would only cost a second time.
     static func toolsAndReasoning(config: LLMConfig, apiKey: String) async -> Reading {
         guard config.wireFormat.needsEndpoint else {
-            return Reading(tools: .inconclusive("Apples Modell kennt keine Werkzeuge."),
+            return Reading(tools: .inconclusive(String(localized: "Apples Modell kennt keine Werkzeuge.")),
                            reasoning: nil)
         }
         // Constant, because the request is about to travel into a concurrent closure
@@ -109,10 +109,9 @@ enum CapabilityProbe {
                                                    + VisionProbe.readableMessage(from: body)),
                                    reasoning: nil)
                 }
-                return Reading(tools: .inconclusive("HTTP \(status) — das sagt nichts über "
-                                                    + "Werkzeuge aus."), reasoning: nil)
+                return Reading(tools: .inconclusive(String(localized: "HTTP \(status) — das sagt nichts über Werkzeuge aus.")), reasoning: nil)
             }
-            return Reading(tools: .inconclusive(error.errorDescription ?? "Unklar."),
+            return Reading(tools: .inconclusive(error.errorDescription ?? String(localized: "Unklar.")),
                            reasoning: nil)
         } catch {
             return Reading(tools: .inconclusive(error.localizedDescription), reasoning: nil)

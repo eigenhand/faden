@@ -13,17 +13,16 @@ enum LLMWireFormat: String, Codable, CaseIterable, Identifiable {
     var label: String {
         switch self {
         case .anthropic:      return "Anthropic Messages"
-        case .openai:         return "OpenAI-kompatibel"
-        case .appleOnDevice:  return "Apple, auf dem Gerät"
+        case .openai:         return String(localized: "OpenAI-kompatibel")
+        case .appleOnDevice:  return String(localized: "Apple, auf dem Gerät")
         }
     }
     var hint: String {
         switch self {
-        case .anthropic: return "Anthropic API und alles, was /v1/messages spricht."
-        case .openai:    return "OpenAI, Groq, Together, OpenRouter, Mistral, Ollama, vLLM, LM Studio …"
+        case .anthropic: return String(localized: "Anthropic API und alles, was /v1/messages spricht.")
+        case .openai:    return String(localized: "OpenAI, Groq, Together, OpenRouter, Mistral, Ollama, vLLM, LM Studio …")
         case .appleOnDevice:
-            return "Das Modell im System. Ohne Endpoint, ohne Schlüssel, ohne Netz — "
-                 + "und ohne Werkzeuge und Bilder."
+            return String(localized: "Das Modell im System. Ohne Endpoint, ohne Schlüssel, ohne Netz — und ohne Werkzeuge und Bilder.")
         }
     }
     /// For the segmented control, where three full names truncate all three.
@@ -43,7 +42,7 @@ enum LLMWireFormat: String, Codable, CaseIterable, Identifiable {
 /// the key and the model id all come from the user.
 struct LLMConfig: Codable, Equatable, Identifiable {
     var id: UUID = UUID()
-    var name: String = "Mein Modell"
+    var name: String = String(localized: "Mein Modell")
     var wireFormat: LLMWireFormat = .anthropic
     /// Base URL without the path, e.g. https://api.anthropic.com
     var baseURL: String = ""
@@ -265,7 +264,7 @@ enum AuthStyle: Codable, Equatable, Hashable {
         switch self {
         case .header(let n, let v): return "Header \(n): \(v)"
         case .queryParam(let n):    return "Query ?\(n)="
-        case .none:                 return "ohne"
+        case .none:                 return String(localized: "ohne")
         }
     }
 }
@@ -277,7 +276,7 @@ enum AuthStyle: Codable, Equatable, Hashable {
 /// locally by `RecipeEngine` — no model call is involved in a normal search.
 struct SearchRecipe: Codable, Equatable, Identifiable {
     var id: UUID = UUID()
-    var name: String = "Eigener Anbieter"
+    var name: String = String(localized: "Eigener Anbieter")
 
     // ---- Request shape
     var method: HTTPMethodKind = .get
@@ -391,6 +390,8 @@ struct AppSettings: Codable, Equatable {
     var showThinking: Bool = true
     var language: AppLanguage = .system
     var appearance: AppAppearance = .system
+    /// Which providers may receive what — see `DataSharingConsent`.
+    var dataSharing = DataSharingConsent()
 
     init() {}
 
@@ -413,6 +414,9 @@ struct AppSettings: Codable, Equatable {
         showThinking        = try c.decodeIfPresent(Bool.self, forKey: .showThinking) ?? d.showThinking
         language            = try c.decodeIfPresent(AppLanguage.self, forKey: .language) ?? d.language
         appearance          = try c.decodeIfPresent(AppAppearance.self, forKey: .appearance) ?? d.appearance
+        // A file from before this existed has agreed to nothing — which is the point:
+        // an existing install is asked once before its next request, like a new one.
+        dataSharing         = (try? c.decodeIfPresent(DataSharingConsent.self, forKey: .dataSharing)) ?? d.dataSharing
     }
 
     var activeLLM: LLMConfig? {

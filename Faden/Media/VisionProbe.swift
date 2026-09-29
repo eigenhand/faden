@@ -62,7 +62,7 @@ enum VisionProbe {
 
     static func run(config: LLMConfig, apiKey: String) async -> Outcome {
         guard let jpeg = probeImage() else {
-            return .inconclusive("Das Testbild ließ sich nicht erzeugen.")
+            return .inconclusive(String(localized: "Das Testbild ließ sich nicht erzeugen."))
         }
         let message = Message(role: .user, blocks: [
             .image(data: jpeg.base64EncodedString(), mediaType: "image/jpeg"),
@@ -89,12 +89,12 @@ enum VisionProbe {
                 // 4xx here is the endpoint saying it cannot take images at all;
                 // 5xx and the rest say nothing about vision.
                 if (400...499).contains(status) {
-                    return .notSupported("Der Endpoint hat das Bild abgelehnt (HTTP \(status)). "
+                    return .notSupported(String(localized: "Der Endpoint hat das Bild abgelehnt (HTTP \(status)). ")
                                          + readableMessage(from: body))
                 }
-                return .inconclusive("HTTP \(status) — das sagt nichts über Bilder aus.")
+                return .inconclusive(String(localized: "HTTP \(status) — das sagt nichts über Bilder aus."))
             }
-            return .inconclusive(error.errorDescription ?? "Unklar.")
+            return .inconclusive(error.errorDescription ?? String(localized: "Unklar."))
         } catch {
             return .inconclusive(error.localizedDescription)
         }

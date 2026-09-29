@@ -41,11 +41,11 @@ struct MemorySettingsView: View {
                             Text("Der Endpoint spricht dasselbe Format wie dein Modell — oft derselbe Anbieter.")
                                 .font(.eh(12, .caption)).foregroundStyle(EH.muted)
                             field("Endpoint", text: $model.settings.memory.embeddingBaseURL,
-                                  placeholder: "https://api.beispiel.dev")
+                                  placeholder: String(localized: "https://api.beispiel.dev"))
                             field("Pfad", text: $model.settings.memory.embeddingPath,
                                   placeholder: "/v1/embeddings")
                             field("Modell", text: $model.settings.memory.embeddingModel,
-                                  placeholder: "z. B. qwen/qwen3-embedding-8b")
+                                  placeholder: String(localized: "z. B. qwen/qwen3-embedding-8b"))
                             VStack(alignment: .leading, spacing: 6) {
                                 EH.label("API-Key")
                                 SecureField(stored ? "gespeichert — zum Ersetzen tippen" : "sk-…", text: $key)
@@ -229,10 +229,7 @@ struct MemorySettingsView: View {
                     Text(assetProblem).font(.eh(12, .caption)).foregroundStyle(EH.bad)
                 }
 
-                Text("Kein Satz verlässt das Telefon, und es braucht keinen Endpoint. "
-                     + "Dafür trifft es gröber: auf neun Fragen gegen vierzehn Erinnerungen "
-                     + "fünfmal richtig gegen siebenmal beim Netzmodell. Eingebettet wird in "
-                     + "8 ms je Satz statt gut acht Sekunden für eine ganze Aufnahme.")
+                Text("Kein Satz verlässt das Telefon, und es braucht keinen Endpoint. Dafür trifft es gröber: auf neun Fragen gegen vierzehn Erinnerungen fünfmal richtig gegen siebenmal beim Netzmodell. Eingebettet wird in 8 ms je Satz statt gut acht Sekunden für eine ganze Aufnahme.")
                     .font(.eh(12, .caption)).foregroundStyle(EH.muted)
             }
         } else {
@@ -241,8 +238,7 @@ struct MemorySettingsView: View {
         }
 
         if index.foreign > 0 {
-            Text("Ein Wechsel macht den vorhandenen Index unbrauchbar — die Vektoren der "
-                 + "anderen Quelle liegen in einem anderen Raum. Sie werden ersetzt, unten steht wie viele.")
+            Text("Ein Wechsel macht den vorhandenen Index unbrauchbar — die Vektoren der anderen Quelle liegen in einem anderen Raum. Sie werden ersetzt, unten steht wie viele.")
                 .font(.eh(12, .caption)).foregroundStyle(EH.warn)
         }
     }
@@ -254,7 +250,7 @@ struct MemorySettingsView: View {
             do {
                 try await LocalEmbedder.requestAssets()
                 assetsReady = LocalEmbedder.hasAssets
-                if !assetsReady { assetProblem = "Das Modell wurde nicht geladen." }
+                if !assetsReady { assetProblem = String(localized: "Das Modell wurde nicht geladen.") }
             } catch {
                 assetProblem = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
             }
@@ -293,7 +289,7 @@ struct MemorySettingsView: View {
                 .accessibilityIdentifier("indexStatus")
 
                 if let dimension = index.dimension {
-                    Text("\(modelName.isEmpty ? "Kein Modell eingetragen" : modelName) · \(dimension) Dimensionen")
+                    Text("\(modelName.isEmpty ? String(localized: "Kein Modell eingetragen") : modelName) · \(dimension) Dimensionen")
                         .font(.eh(11, .caption)).foregroundStyle(EH.muted)
                 }
 
@@ -358,7 +354,7 @@ struct MemorySettingsView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func knopf(_ symbol: String, _ titel: String) -> some View {
+    private func knopf(_ symbol: String, _ titel: LocalizedStringKey) -> some View {
         HStack(spacing: 7) {
             Image(systemName: symbol).font(.eh(11, .caption))
             Text(titel).font(.eh(13, .footnote))
@@ -397,6 +393,9 @@ struct MemorySettingsView: View {
     }
 
     private func runTest() {
+        // The test is the moment this endpoint is first used — the place to ask.
+        if let need = model.settings.embeddingNeed,
+           !model.mayShare([need], then: { runTest() }) { return }
         testing = true; testState = nil
         let config = model.settings.memory
         let apiKey = Keychain.get(account: config.embeddingKeychainAccount) ?? ""
@@ -404,7 +403,7 @@ struct MemorySettingsView: View {
             do {
                 let v = try await Embedder(config: config, apiKey: apiKey)
                     .embed("Ein Satz zum Ausprobieren.")
-                testState = "Funktioniert — \(v.count) Dimensionen."
+                testState = String(localized: "Funktioniert — \(v.count) Dimensionen.")
             } catch {
                 testState = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
             }
@@ -425,7 +424,7 @@ struct MemorySettingsView: View {
         }
     }
 
-    private func stepper(_ title: String, value: Binding<Int>, range: ClosedRange<Int>) -> some View {
+    private func stepper(_ title: LocalizedStringKey, value: Binding<Int>, range: ClosedRange<Int>) -> some View {
         HStack {
             Text(title).font(EH.bodySmall).foregroundStyle(EH.slate)
             Spacer()
